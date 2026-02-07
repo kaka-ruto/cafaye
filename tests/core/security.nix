@@ -3,11 +3,19 @@
 {
   name = "core-security";
   nodes = {
-    machine = { config, pkgs, ... }: {
-      imports = [ ../../core/security.nix ../../core/network.nix ];
+    machine = {
+      imports = [ 
+        ../../core/security.nix 
+        ../../core/network.nix 
+        ../../core/sops.nix
+        inputs.sops-nix.nixosModules.sops
+      ];
       _module.args = { inherit inputs userState; };
-      # Mock the sops file presence if needed, or skip sops for this test
+      
+      # Mock the sops file presence
       sops.validateSopsFiles = false;
+      # Disable tailscale autoconnect in this test as well
+      systemd.services.tailscale-autoconnect.enable = false;
     };
   };
 

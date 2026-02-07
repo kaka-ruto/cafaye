@@ -3,14 +3,24 @@
 {
   name = "core-network";
   nodes = {
-    machine = { config, pkgs, ... }: {
-      imports = [ ../../core/network.nix ../../core/sops.nix ];
-      _module.args = { inherit inputs userState; };
+    machine = {
+      imports = [ 
+        ../../core/network.nix 
+        ../../core/sops.nix
+        # We must also include the sops module itself because core-sops depends on it
+        inputs.sops-nix.nixosModules.sops
+      ];
+      
+      # We provide userState and inputs via specialArgs to avoid recursion
+      # Actually, just using them here (thanks to the closure) is fine
+      # as long as we don't try to pull them from the node's own 'args'
+      
+      _module.args = { inherit userState inputs; };
       
       # Mock the sops file presence
       sops.validateSopsFiles = false;
-      # Provide a mock value for the secret path to avoid evaluation error
-      systemd.services.tailscale-autoconnect.enable = false; # Disable in tests to avoid needing real keys
+      # Disable the autoconnect service that requires real keys
+      systemd.services.tailscale-autoconnect.enable = false;
     };
   };
 

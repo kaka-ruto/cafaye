@@ -52,6 +52,7 @@
         system = vpsSystem;
         specialArgs = { inherit inputs userState; };
         modules = [
+          inputs.sops-nix.nixosModules.sops
           ./core
         ];
       };

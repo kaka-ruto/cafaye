@@ -3,7 +3,7 @@
 {
   name = "core-boot";
   nodes = {
-    machine = { config, pkgs, ... }: {
+    machine = {
       imports = [ ../../core/boot.nix ../../core/hardware.nix ];
       _module.args = { inherit userState; };
     };
@@ -15,6 +15,7 @@
     # Check if ZRAM is enabled
     machine.succeed("zramctl")
     # Check kernel version (should be latest)
+    # Note: We just check if uname succeeds as a proxy for boot success
     machine.succeed("uname -r")
   '';
 }
