@@ -8,6 +8,7 @@
         ../../core/security.nix 
         ../../core/network.nix 
         ../../core/sops.nix
+        ../../core/user.nix
         inputs.sops-nix.nixosModules.sops
       ];
       _module.args = { inherit inputs userState; };

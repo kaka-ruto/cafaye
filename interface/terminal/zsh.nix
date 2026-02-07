@@ -30,11 +30,5 @@ in
   };
 
   # Set Zsh as default shell for the cafaye user
-  users.users.cafaye = {
-    isNormalUser = true;
-    shell = pkgs.zsh;
-    group = "cafaye";
-    extraGroups = [ "wheel" "networkmanager" ];
-  };
-  users.groups.cafaye = {};
+  users.users.cafaye.shell = pkgs.zsh;
 }

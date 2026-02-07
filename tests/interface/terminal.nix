@@ -10,6 +10,7 @@
         ../../core/network.nix
         ../../core/security.nix
         ../../core/sops.nix
+        ../../core/user.nix
         inputs.sops-nix.nixosModules.sops
         ../../interface
       ];

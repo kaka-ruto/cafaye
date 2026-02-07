@@ -4,7 +4,11 @@
   name = "core-boot";
   nodes = {
     machine = {
-      imports = [ ../../core/boot.nix ../../core/hardware.nix ];
+      imports = [ 
+        ../../core/boot.nix 
+        ../../core/hardware.nix 
+        ../../core/user.nix
+      ];
       _module.args = { inherit userState; };
       
     };

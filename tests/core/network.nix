@@ -7,7 +7,7 @@
       imports = [ 
         ../../core/network.nix 
         ../../core/sops.nix
-        # We must also include the sops module itself because core-sops depends on it
+        ../../core/user.nix
         inputs.sops-nix.nixosModules.sops
       ];
       
