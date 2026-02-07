@@ -131,7 +131,7 @@ Tests are mandatory before any commit.
 ### Fast Evaluation (macOS/Anywhere)
 Checks syntax, option existence, and flake logic. Does not run VMs.
 ```bash
-./bin/test-local.sh
+./bin/test.sh
 # or via devbox
 devbox run test
 ```
