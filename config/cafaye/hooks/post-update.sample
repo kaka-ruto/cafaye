@@ -1,0 +1,8 @@
+#!/bin/bash
+# Cafaye OS Post-Update Hook Sample
+# Copy this to ~/.config/cafaye/hooks/post-update and make it executable.
+
+echo "🎉 System update complete! Running post-update tasks..."
+
+# Example: Clean up nix store
+# nix-collect-garbage -d

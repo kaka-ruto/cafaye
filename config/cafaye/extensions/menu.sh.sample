@@ -1,0 +1,14 @@
+# Cafaye OS Menu Extension Sample
+# Copy this to ~/.config/cafaye/extensions/menu.sh to use it.
+
+# You can add new menu items by overriding the show_main_menu function
+# or by adding hooks to the existing ones.
+
+# Example: Adding a custom tool menu
+# show_custom_menu() {
+#     choice=$(gum choose "Tool 1" "Tool 2" "Back")
+#     case "$choice" in
+#         "Tool 1") echo "Running tool 1..." ;;
+#         "Back") show_main_menu ;;
+#     esac
+# }
