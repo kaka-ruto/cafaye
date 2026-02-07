@@ -16,6 +16,8 @@
       sops.validateSopsFiles = false;
       # Disable tailscale autoconnect in this test as well
       systemd.services.tailscale-autoconnect.enable = false;
+      # Workaround for CIM "modules-shrunk" error
+      hardware.enableAllHardware = true;
     };
   };
 

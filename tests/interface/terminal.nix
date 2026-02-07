@@ -18,6 +18,8 @@
       # Mock secrets
       sops.validateSopsFiles = false;
       systemd.services.tailscale-autoconnect.enable = false;
+      # Workaround for CI "modules-shrunk" error
+      hardware.enableAllHardware = true;
     };
   };
 

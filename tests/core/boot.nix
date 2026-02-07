@@ -10,6 +10,7 @@
       # Workaround for CI "modules-shrunk" error: force full bootloader
       virtualisation.useBootLoader = true;
       virtualisation.useEFIBoot = true;
+      hardware.enableAllHardware = true;
     };
   };
 

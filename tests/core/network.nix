@@ -21,6 +21,9 @@
       sops.validateSopsFiles = false;
       # Disable the autoconnect service that requires real keys
       systemd.services.tailscale-autoconnect.enable = false;
+      
+      # Workaround for CI "modules-shrunk" error
+      hardware.enableAllHardware = true;
     };
   };
 
