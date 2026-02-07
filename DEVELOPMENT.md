@@ -372,44 +372,44 @@ Hooks are triggered via `caf-hook-run <name>`.
 
 ### Checklist
 
-- [ ] **User State Schema**
-  - [ ] `user/user-state.json` with JSON schema
-  - [ ] Document all state fields
+- [x] **User State Schema**
+  - [x] `user/user-state.json` with JSON schema
+  - [x] Document all state fields
 
-- [ ] **CLI Core (`cli/`)**
-  - [ ] `cli/main.sh` - `caf` entry point with gum menu
-  - [ ] `cli/scripts/state-read.sh`
-  - [ ] `cli/scripts/state-write.sh`
-  - [ ] `cli/scripts/rebuild.sh` - Wrapper for `nixos-rebuild`
+- [x] **CLI Core (`cli/`)**
+  - [x] `cli/main.sh` - `caf` entry point with gum menu
+  - [x] `cli/scripts/state-read.sh`
+  - [x] `cli/scripts/state-write.sh`
+  - [x] `cli/scripts/rebuild.sh` - Wrapper for `nixos-rebuild`
 
-- [ ] **Main Menu (inspired by `omarchy-menu`)**
-  - [ ] Install submenu
-  - [ ] Status submenu (system health)
-  - [ ] Update submenu
-  - [ ] Theme submenu
-  - [ ] About submenu (fastfetch)
+- [x] **Main Menu (inspired by `omarchy-menu`)**
+  - [x] Install submenu
+  - [x] Status submenu (system health)
+  - [x] Update submenu
+  - [x] Theme submenu
+  - [x] About submenu (fastfetch)
 
-- [ ] **Extensibility (`config/cafaye/`)**
-  - [ ] `config/cafaye/extensions/menu.sh.sample` - User menu overrides
-  - [ ] `config/cafaye/hooks/post-update.sample`
-  - [ ] `config/cafaye/hooks/theme-set.sample`
-  - [ ] `config/cafaye/hooks/rebuild-complete.sample`
-  - [ ] `caf-hook-run <name>` - Execute user hooks
+- [x] **Extensibility (`config/cafaye/`)**
+  - [x] `config/cafaye/extensions/menu.sh.sample` - User menu overrides
+  - [x] `config/cafaye/hooks/post-update.sample`
+  - [x] `config/cafaye/hooks/theme-set.sample`
+  - [x] `config/cafaye/hooks/rebuild-complete.sample`
+  - [x] `caf-hook-run <name>` - Execute user hooks
 
-- [ ] **Utility Commands**
-  - [ ] `caf-cmd-present <cmd>` - Check if command exists
-  - [ ] `caf-show-logo` - Display ASCII logo
-  - [ ] `caf-show-done` - Completion indicator with gum
+- [x] **Utility Commands**
+  - [x] `caf-cmd-present <cmd>` - Check if command exists
+  - [x] `caf-show-logo` - Display ASCII logo
+  - [x] `caf-show-done` - Completion indicator with gum
 
-- [ ] **Testing**
-  - [ ] `tests/cli/main.nix`
-  - [ ] `tests/cli/hooks.nix`
+- [x] **Testing**
+  - [x] `tests/cli/main.nix`
+  - [x] `tests/cli/hooks.nix`
 
 ### Success Criteria
-- [ ] `caf` shows beautiful TUI menu
-- [ ] Menu selections update `user-state.json`
-- [ ] User hooks execute correctly
-- [ ] Menu extensions work
+- [x] `caf` shows beautiful TUI menu
+- [x] Menu selections update `user-state.json`
+- [x] User hooks execute correctly
+- [x] Menu extensions work
 
 ---
 
