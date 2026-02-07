@@ -14,6 +14,7 @@
     "scripts": {
       "check": "./bin/test-local.sh",
       "test": "./bin/test-local.sh",
+      "test-full": "docker build -t cafaye-factory . && docker run --rm -it cafaye-factory",
       "vm": "nix run .#debug-vm",
       "check-ci": "nix flake check"
     }
