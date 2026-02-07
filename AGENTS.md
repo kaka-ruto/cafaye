@@ -101,56 +101,48 @@ git commit -m "Add Ruby language module with tests"
 
 ### One-Sentence Commits
 
-Commit messages must be a single, clear sentence. No paragraphs, no bullet points.
+Commit messages must be a single, clear, prose sentence. 
+
+- **NO** prefixes (feat:, fix:, chore:, refactor:)
+- **NO** Phase mentions (Phase 1:, Phase 2:)
+- **NO** bullet points or multi-line descriptions
+- **NO** "WIP" or incomplete state messages
+
+The message must be a simple, natural language sentence starting with a capital letter and ending with no punctuation (standard git style) or a period if it's a full sentence. High-quality prose only.
 
 ```bash
-# ❌ BAD: Multi-line, verbose
-git commit -m "Add Ruby support
+# ❌ BAD
+git commit -m "feat: add rails support"
+git commit -m "Phase 2: Add Zsh config and theme"
+git commit -m "Update btop config.
+- added colors
+- fixed vim keys"
 
-- Created ruby.nix module
-- Added tests
-- Updated flake.nix"
-
-# ✅ GOOD: Single sentence, action-oriented
-git commit -m "Add Ruby language module with tests"
+# ✅ GOOD
+git commit -m "Implement Ruby language support with corresponding VM tests"
+git commit -m "Apply Catppuccin Mocha theme to the entire terminal stack"
+git commit -m "Fix Tailscale auto-join service recursion in core modules"
 ```
 
-### Only Commit Working Code
+## 🧪 9. How to Test (macOS vs Linux)
 
-Never commit:
-- Code that doesn't pass `nix flake check`
-- Incomplete features or half-finished work
-- Code you haven't tested locally
+Tests are mandatory before any commit. 
 
-**Before every commit:**
-1. Run `nix flake check` - Must pass
-2. Manually test the feature if applicable
-3. Verify the feature is complete and functional
-
-### Commit Grouping Guidelines
-
-| Change Type | Group With |
-| :--- | :--- |
-| New module | Its corresponding test file |
-| Config file | Related module that uses it |
-| Bug fix | Only the files that fix the bug |
-| Refactor | Files touched by the refactor only |
-
-### Commit Message Format
-
-Use present tense, imperative mood. **NEVER use prefixes like `feat:`, `chore:`, `fix:`, or `refactor:`.** Also, do not mention Phase numbers (e.g., "Phase 1"). The message must be a simple, natural language sentence starting with a capital letter.
-
+### Fast Evaluation (macOS/Anywhere)
+Checks syntax, option existence, and flake logic. Does not run VMs.
 ```bash
-# ✅ Good examples
-git commit -m "Add PostgreSQL service module"
-git commit -m "Fix Tailscale connection timeout issue"
-git commit -m "Update Catppuccin theme colors"
-git commit -m "Remove deprecated Ruby 2.x support"
-git commit -m "Refactor editor config management"
+./bin/test-local.sh
+# or via devbox
+devbox run test
+```
 
-# ❌ Bad examples
-git commit -m "Added PostgreSQL"           # Past tense
-git commit -m "Adding PostgreSQL"          # Gerund
-git commit -m "postgresql"                 # Not descriptive
-git commit -m "WIP"                        # Incomplete work
+### Full VM Integration Testing (macOS via Docker)
+Runs the full suite of NixOS VM tests inside a Linux container. This is how you verify "The Factory" will be green.
+```bash
+devbox run test-full
+```
+
+### Full VM Integration Testing (Native Linux)
+```bash
+nix flake check
 ```

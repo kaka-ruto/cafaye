@@ -92,6 +92,8 @@ in
   # Deploy config file
   environment.etc."cafaye/fastfetch/config.jsonc".text = builtins.toJSON fastfetchConfig;
 
+  environment.systemPackages = [ pkgs.fastfetch ];
+
   # Create an alias for easy execution
   environment.shellAliases = {
     fetch = "fastfetch --config /etc/cafaye/fastfetch/config.jsonc";
