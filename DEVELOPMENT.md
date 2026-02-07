@@ -1,0 +1,733 @@
+# 🛠 Cafaye OS: Development Roadmap
+
+Cafaye is the reproducible, AI-first developer OS that turns any cheap VPS into a secure, cloud-native powerhouse accessible from any device.
+
+## 🏗 AI Execution Rules
+
+- **Atomic Development**: Complete, document, and test one feature before moving to the next.
+- **The "Factory" First**: CI/CD (GitHub Actions) and Binary Caching (Cachix) must be functional in v0.1.0.
+- **The Mirror Testing Rule**: Every directory in `modules/`, `config/`, and `interface/` must have a corresponding test in `tests/`.
+- **CLI Naming**: All commands follow the `caf-<thing>-<action>` pattern (e.g., `caf-editor-launch`, `caf-config-refresh`).
+- **Reference Omarchy**: Study `../omarchy/` for aesthetic and UX inspiration, but leverage NixOS's declarative nature.
+
+## 🎯 Why NixOS Makes This Simpler
+
+Unlike Omarchy (built on Arch Linux), Cafaye leverages NixOS's superpowers:
+
+| Omarchy Pattern | NixOS Native Solution |
+| :--- | :--- |
+| Migration scripts | Generations (automatic, atomic) |
+| Snapper snapshots | Boot menu rollback |
+| Complex update scripts | `nix flake update && nixos-rebuild switch` |
+| State toggle files | Declarative in `user-state.json` + rebuild |
+| Package version tracking | `flake.lock` pins everything |
+
+**Result**: ~60% less operational tooling needed. Focus on UX, not infrastructure.
+
+## 📂 Full 1.0.0 Directory Structure
+
+```text
+.
+├── flake.nix             # System entry point & orchestrator
+├── flake.lock            # Dependency version pinning
+├── devbox.json           # Local dev shell (Mac/Linux/Win)
+├── Dockerfile            # Local dev container for macOS users
+├── install.sh            # VPS Bootstrap (nixos-anywhere wrapper)
+├── version               # Current Cafaye version
+│
+├── core/                 # IMMUTABLE SYSTEM ENGINE
+│   ├── default.nix       # Core imports
+│   ├── boot.nix          # Kernel, Zram, & GRUB
+│   ├── security.nix      # Tailscale SSH, Sops-nix, & Firewall
+│   ├── network.nix       # Tailscale & DNS logic
+│   └── hardware-vps.nix  # KVM/QEMU optimizations
+│
+├── interface/            # THE OMARCHY VIBE (UX/UI)
+│   ├── terminal/
+│   │   ├── zsh.nix       # Zsh shell configuration
+│   │   ├── zellij.nix    # Tiling workspace
+│   │   └── starship.nix  # Prompt configuration
+│   ├── tools.nix         # CLI tools (zoxide, eza, bat, fd, ripgrep, fzf)
+│   └── theme.nix         # Global theme management
+│
+├── modules/              # THE LEGO BLOCKS (Logic)
+│   ├── languages/
+│   │   ├── ruby.nix
+│   │   ├── python.nix
+│   │   ├── node.nix
+│   │   └── rust.nix
+│   │
+│   ├── frameworks/
+│   │   ├── rails.nix     # → languages/ruby + services/postgresql
+│   │   ├── django.nix    # → languages/python + services/postgresql
+│   │   └── nextjs.nix    # → languages/node
+│   │
+│   ├── services/
+│   │   ├── postgresql.nix
+│   │   ├── redis.nix
+│   │   └── docker.nix
+│   │
+│   ├── editors/
+│   │   ├── neovim.nix
+│   │   ├── helix.nix
+│   │   ├── vscode-server.nix
+│   │   └── distributions/
+│   │       └── nvim/
+│   │           ├── astronvim.nix
+│   │           ├── lazyvim.nix
+│   │           ├── nvchad.nix
+│   │           └── lunarvim.nix
+│   │
+│   └── ai/
+│       ├── ollama.nix
+│       ├── aider.nix
+│       └── continue.nix
+│
+├── config/               # DEFAULT CONFIGURATIONS
+│   ├── terminal/
+│   │   ├── zsh/
+│   │   │   └── .zshrc
+│   │   ├── zellij/
+│   │   │   └── config.kdl
+│   │   ├── starship/
+│   │   │   └── starship.toml
+│   │   ├── git/              # Git aliases & settings
+│   │   │   └── config
+│   │   ├── btop/             # System monitor
+│   │   │   └── btop.conf
+│   │   ├── lazygit/          # Git TUI
+│   │   │   └── config.yml
+│   │   └── fastfetch/        # System info display
+│   │       └── config.jsonc
+│   │
+│   ├── editors/
+│   │   ├── defaults/
+│   │   │   ├── nvim/
+│   │   │   ├── helix/
+│   │   │   └── vscode/
+│   │   └── distributions/
+│   │       └── nvim/
+│   │           ├── astronvim/
+│   │           ├── lazyvim/
+│   │           ├── nvchad/
+│   │           └── lunarvim/
+│   │
+│   ├── themes/
+│   │   └── catppuccin/
+│   │       ├── colors.toml       # Base color definitions
+│   │       ├── nvim.lua
+│   │       ├── helix.toml
+│   │       ├── vscode.json
+│   │       ├── zellij.kdl
+│   │       ├── starship.toml
+│   │       ├── btop.theme
+│   │       └── lazygit.yml
+│   │
+│   ├── templates/            # Themeable config templates
+│   │   ├── btop.theme.tpl    # {{ accent }}, {{ background }} placeholders
+│   │   └── editors/
+│   │       └── nvim/
+│   │
+│   └── cafaye/               # Extensibility
+│       ├── extensions/       # User menu extensions
+│       │   └── menu.sh.sample
+│       ├── hooks/            # User hook scripts
+│       │   ├── post-update.sample
+│       │   ├── theme-set.sample
+│       │   └── rebuild-complete.sample
+│       └── branding/
+│           ├── logo.txt      # ASCII art logo
+│           └── about.txt     # System description
+│
+├── cli/                  # THE "CAF" CLI
+│   ├── main.sh           # `caf` entry point
+│   ├── menus/            # Gum-based TUI screens
+│   └── scripts/          # Helper scripts
+│
+├── user/                 # SYSTEM STATE
+│   └── user-state.json   # User choices
+│
+├── secrets/              # ENCRYPTED SECRETS (sops-nix)
+│   ├── secrets.yaml
+│   └── .sops.yaml
+│
+├── tests/                # THE QUALITY MIRROR (1:1 mapping)
+│   ├── core/
+│   ├── interface/
+│   ├── modules/
+│   ├── config/
+│   ├── cli/
+│   └── integration/
+│
+└── .github/
+    └── workflows/
+        └── factory.yml
+```
+
+## 🎨 Omarchy Patterns to Emulate
+
+### Command Naming Prefixes
+
+Borrowed from `../omarchy/AGENTS.md`:
+
+| Prefix | Purpose | Example |
+| :--- | :--- | :--- |
+| `cmd-` | Check if commands exist, utilities | `caf-cmd-present git` |
+| `config-` | Configuration management | `caf-config-refresh nvim` |
+| `editor-` | Editor operations | `caf-editor-launch` |
+| `theme-` | Theme management | `caf-theme-set catppuccin` |
+| `system-` | System operations | `caf-system-update` |
+| `debug-` | Diagnostics | `caf-debug-collect` |
+| `docker-` | Docker operations | `caf-docker-db-install` |
+| `hook-` | User hooks | `caf-hook-run post-update` |
+| `keys-` | Keybinding reference | `caf-keys-show` |
+
+### Reference Files from Omarchy
+
+| Pattern | Omarchy File | Purpose |
+| :--- | :--- | :--- |
+| Menu System | `bin/omarchy-menu` | TUI menu with gum |
+| Config Refresh | `bin/omarchy-refresh-config` | Safe updates with backup |
+| Debug Collection | `bin/omarchy-debug` | System diagnostics |
+| Dev Env Setup | `bin/omarchy-install-dev-env` | One-command stacks |
+| Docker DBs | `bin/omarchy-install-docker-dbs` | Quick database containers |
+| Theme Templates | `default/themed/*.tpl` | `{{ color }}` placeholders |
+| Hook System | `bin/omarchy-hook` | User-extensible hooks |
+| Show Done | `bin/omarchy-show-done` | Completion indicator |
+| Git Config | `config/git/config` | Sensible git defaults |
+| Fastfetch | `config/fastfetch/config.jsonc` | System info display |
+| Btop | `config/btop/btop.conf` | System monitor config |
+| Starship | `config/starship.toml` | Prompt configuration |
+| Colors | `themes/catppuccin/colors.toml` | Theme colors |
+
+## 🗂 Configuration Management
+
+### Three-Layer Model
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│  Layer 3: USER OVERRIDES (~/.config/...)                        │
+│  User's personal customizations. NEVER touched by Cafaye.       │
+├─────────────────────────────────────────────────────────────────┤
+│  Layer 2: DISTRIBUTION CONFIGS (/etc/cafaye/editors/dist/...)   │
+│  Opinionated configs (AstroNvim, LazyVim). Managed by Cafaye.   │
+├─────────────────────────────────────────────────────────────────┤
+│  Layer 1: SYSTEM DEFAULTS (/etc/cafaye/...)                     │
+│  Base Cafaye configs. Immutable via NixOS.                      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Theme Template System
+
+Borrowed from Omarchy's `default/themed/*.tpl` pattern:
+
+```toml
+# config/templates/btop.theme.tpl
+theme[main_bg]="{{ background }}"
+theme[main_fg]="{{ foreground }}"
+theme[hi_fg]="{{ accent }}"
+theme[selected_bg]="{{ color8 }}"
+```
+
+Colors defined in `config/themes/catppuccin/colors.toml`:
+
+```toml
+accent = "#89b4fa"
+background = "#1e1e2e"
+foreground = "#cdd6f4"
+color0 = "#45475a"
+# ... etc
+```
+
+### Hook System
+
+Users can extend Cafaye with hooks in `~/.config/cafaye/hooks/`:
+
+```bash
+# ~/.config/cafaye/hooks/post-update
+#!/bin/bash
+echo "System updated! Running custom tasks..."
+```
+
+Hooks are triggered via `caf-hook-run <name>`.
+
+## 🔐 Secrets Management
+
+| Secret | Purpose | Storage |
+| :--- | :--- | :--- |
+| **Tailscale Auth Key** | VPN enrollment | `secrets/secrets.yaml` |
+| **AI API Keys** | External LLMs | `secrets/secrets.yaml` |
+| **Cachix Token** | Binary cache | GitHub Actions |
+
+---
+
+## 📍 Phase 1: v0.1.0 - The Factory
+
+**Goal**: CI/CD pipeline and core bootable system with Tailscale.
+
+### Checklist
+
+- [ ] **Project Initialization**
+  - [ ] Create `flake.nix` with basic NixOS configuration
+  - [ ] Create `devbox.json` for local development shell
+  - [ ] Create `Dockerfile` for macOS development
+  - [ ] Create `version` file (0.1.0)
+
+- [ ] **Core System (`core/`)**
+  - [ ] `core/default.nix` - Import all core modules
+  - [ ] `core/boot.nix` - GRUB, kernel, ZRAM
+  - [ ] `core/hardware-vps.nix` - KVM/QEMU optimizations
+  - [ ] `core/network.nix` - Networking + Tailscale
+  - [ ] `core/security.nix` - Firewall, SSH via Tailscale only
+
+- [ ] **Secrets Setup**
+  - [ ] `secrets/.sops.yaml` configuration
+  - [ ] Tailscale auth key encryption
+
+- [ ] **CI/CD Pipeline**
+  - [ ] `.github/workflows/factory.yml`
+  - [ ] `nix flake check` validation
+  - [ ] VM boot tests
+  - [ ] Cachix push
+
+- [ ] **Testing**
+  - [ ] `tests/core/boot.nix`
+  - [ ] `tests/core/network.nix`
+  - [ ] `tests/core/security.nix`
+
+### Success Criteria
+- [ ] VM boots and Tailscale connects
+- [ ] SSH accessible only via Tailscale
+- [ ] CI passes and Cachix populated
+
+---
+
+## 📍 Phase 2: v0.2.0 - Terminal Experience
+
+**Goal**: Beautiful terminal with essential CLI tools and theming.
+
+### Checklist
+
+- [ ] **Terminal Interface (`interface/terminal/`)**
+  - [ ] `interface/terminal/zsh.nix` - Zsh with plugins
+  - [ ] `interface/terminal/zellij.nix` - Tiling multiplexer
+  - [ ] `interface/terminal/starship.nix` - Prompt
+
+- [ ] **Essential CLI Tools (`interface/tools.nix`)**
+  - [ ] `zoxide` - Smart cd with frecency
+  - [ ] `eza` - Modern ls with icons
+  - [ ] `bat` - Cat with syntax highlighting
+  - [ ] `fd` - Fast find
+  - [ ] `ripgrep` - Fast grep
+  - [ ] `fzf` - Fuzzy finder
+  - [ ] `btop` - System monitor (vim keys enabled)
+  - [ ] `lazygit` - Git TUI
+  - [ ] `fastfetch` - System info display
+
+- [ ] **Terminal Configs (`config/terminal/`)**
+  - [ ] `config/terminal/zsh/.zshrc` - Aliases, zoxide init
+  - [ ] `config/terminal/zellij/config.kdl` - Compact layout, Alt+H/J/K/L
+  - [ ] `config/terminal/starship/starship.toml` - Git, Tailscale status
+  - [ ] `config/terminal/git/config` - Aliases (co, br, ci, st), rebase on pull
+  - [ ] `config/terminal/btop/btop.conf` - Vim keys, theme integration
+  - [ ] `config/terminal/lazygit/config.yml` - Theme integration
+  - [ ] `config/terminal/fastfetch/config.jsonc` - Cafaye branding
+
+- [ ] **Theme System (`config/themes/`)**
+  - [ ] `config/themes/catppuccin/colors.toml` - Base color definitions
+  - [ ] `config/themes/catppuccin/zellij.kdl`
+  - [ ] `config/themes/catppuccin/starship.toml`
+  - [ ] `config/themes/catppuccin/btop.theme`
+  - [ ] `config/themes/catppuccin/lazygit.yml`
+
+- [ ] **Template System (`config/templates/`)**
+  - [ ] `config/templates/btop.theme.tpl` - With `{{ color }}` placeholders
+  - [ ] `caf-theme-apply` - Generate configs from templates
+
+- [ ] **Branding (`config/cafaye/branding/`)**
+  - [ ] `logo.txt` - ASCII art logo
+  - [ ] `about.txt` - System description for fastfetch
+
+- [ ] **Login Experience**
+  - [ ] Fastfetch on SSH login (show system info)
+  - [ ] Auto-start Zellij session
+
+- [ ] **Testing**
+  - [ ] `tests/interface/terminal/zsh.nix`
+  - [ ] `tests/interface/terminal/zellij.nix`
+  - [ ] `tests/interface/tools.nix`
+  - [ ] `tests/config/terminal/`
+
+### Success Criteria
+- [ ] SSH login shows fastfetch, then Zellij with Starship
+- [ ] All CLI tools available (zoxide, eza, bat, etc.)
+- [ ] Catppuccin colors throughout
+- [ ] Alt+H/J/K/L navigation works
+
+---
+
+## 📍 Phase 3: v0.3.0 - The Caf CLI
+
+**Goal**: TUI management system with state management and extensibility.
+
+### Checklist
+
+- [ ] **User State Schema**
+  - [ ] `user/user-state.json` with JSON schema
+  - [ ] Document all state fields
+
+- [ ] **CLI Core (`cli/`)**
+  - [ ] `cli/main.sh` - `caf` entry point with gum menu
+  - [ ] `cli/scripts/state-read.sh`
+  - [ ] `cli/scripts/state-write.sh`
+  - [ ] `cli/scripts/rebuild.sh` - Wrapper for `nixos-rebuild`
+
+- [ ] **Main Menu (inspired by `omarchy-menu`)**
+  - [ ] Install submenu
+  - [ ] Status submenu (system health)
+  - [ ] Update submenu
+  - [ ] Theme submenu
+  - [ ] About submenu (fastfetch)
+
+- [ ] **Extensibility (`config/cafaye/`)**
+  - [ ] `config/cafaye/extensions/menu.sh.sample` - User menu overrides
+  - [ ] `config/cafaye/hooks/post-update.sample`
+  - [ ] `config/cafaye/hooks/theme-set.sample`
+  - [ ] `config/cafaye/hooks/rebuild-complete.sample`
+  - [ ] `caf-hook-run <name>` - Execute user hooks
+
+- [ ] **Utility Commands**
+  - [ ] `caf-cmd-present <cmd>` - Check if command exists
+  - [ ] `caf-show-logo` - Display ASCII logo
+  - [ ] `caf-show-done` - Completion indicator with gum
+
+- [ ] **Testing**
+  - [ ] `tests/cli/main.nix`
+  - [ ] `tests/cli/hooks.nix`
+
+### Success Criteria
+- [ ] `caf` shows beautiful TUI menu
+- [ ] Menu selections update `user-state.json`
+- [ ] User hooks execute correctly
+- [ ] Menu extensions work
+
+---
+
+## 📍 Phase 4: v0.4.0 - Languages & Services
+
+**Goal**: Runtime languages, database services, and Docker databases.
+
+### Checklist
+
+- [ ] **Language Modules (`modules/languages/`)**
+  - [ ] `modules/languages/ruby.nix`
+  - [ ] `modules/languages/python.nix`
+  - [ ] `modules/languages/node.nix`
+  - [ ] `modules/languages/rust.nix`
+
+- [ ] **Service Modules (`modules/services/`)**
+  - [ ] `modules/services/postgresql.nix`
+  - [ ] `modules/services/redis.nix`
+  - [ ] `modules/services/docker.nix`
+
+- [ ] **Docker Database Containers (inspired by `omarchy-install-docker-dbs`)**
+  - [ ] `caf-docker-db-install` - Interactive DB selection
+  - [ ] Support: MySQL, PostgreSQL, Redis, MongoDB, MariaDB
+  - [ ] Bound to localhost only
+  - [ ] Auto-restart on reboot
+
+- [ ] **CLI Integration**
+  - [ ] `caf install ruby` updates state and rebuilds
+  - [ ] `caf install postgresql` updates state and rebuilds
+
+- [ ] **Testing**
+  - [ ] `tests/modules/languages/*.nix`
+  - [ ] `tests/modules/services/*.nix`
+
+### Success Criteria
+- [ ] `caf install ruby` → `ruby --version` works
+- [ ] PostgreSQL accepts connections
+- [ ] Docker daemon runs
+- [ ] `caf-docker-db-install` launches containers
+
+---
+
+## 📍 Phase 5: v0.5.0 - Frameworks
+
+**Goal**: Framework stacks with auto-dependency resolution.
+
+### Checklist
+
+- [ ] **Framework Modules (`modules/frameworks/`)**
+  - [ ] `modules/frameworks/rails.nix` - Auto-enables Ruby + PostgreSQL
+  - [ ] `modules/frameworks/django.nix` - Auto-enables Python + PostgreSQL
+  - [ ] `modules/frameworks/nextjs.nix` - Auto-enables Node
+
+- [ ] **Dependency Resolution**
+  - [ ] Framework enables required languages
+  - [ ] Framework enables required services
+
+- [ ] **CLI Integration**
+  - [ ] `caf install rails` shows dependency info
+  - [ ] Confirm before installing dependencies
+
+- [ ] **Testing**
+  - [ ] `tests/modules/frameworks/rails.nix`
+  - [ ] `tests/modules/frameworks/django.nix`
+  - [ ] `tests/modules/frameworks/nextjs.nix`
+
+### Success Criteria
+- [ ] `caf install rails` installs Ruby + PostgreSQL + Rails
+- [ ] New Rails app can be created and runs
+
+---
+
+## 📍 Phase 6: v0.6.0 - Base Editors
+
+**Goal**: Core editor installations and config management.
+
+### Checklist
+
+- [ ] **Editor Modules (`modules/editors/`)**
+  - [ ] `modules/editors/neovim.nix`
+  - [ ] `modules/editors/helix.nix`
+  - [ ] `modules/editors/vscode-server.nix` - Bound to Tailscale
+
+- [ ] **Default Configs (`config/editors/defaults/`)**
+  - [ ] `config/editors/defaults/nvim/init.lua`
+  - [ ] `config/editors/defaults/helix/config.toml`
+  - [ ] `config/editors/defaults/vscode/settings.json`
+
+- [ ] **Config Management CLI (inspired by `omarchy-refresh-config`)**
+  - [ ] `caf-config-init <editor>` - Initialize user config
+  - [ ] `caf-config-refresh <path>` - Reset with backup
+  - [ ] `caf-config-diff <editor>` - Show changes
+  - [ ] `caf-editor-launch` - Launch configured editor
+  - [ ] `caf-editor-set <editor>` - Set default editor
+
+- [ ] **Testing**
+  - [ ] `tests/modules/editors/neovim.nix`
+  - [ ] `tests/modules/editors/helix.nix`
+  - [ ] `tests/modules/editors/vscode-server.nix`
+
+### Success Criteria
+- [ ] `nvim --version` works
+- [ ] VS Code Server accessible via browser
+- [ ] `caf-config-refresh` backs up and resets config
+
+---
+
+## 📍 Phase 7: v0.7.0 - Editor Distributions
+
+**Goal**: Opinionated Neovim distributions with theme integration.
+
+### Checklist
+
+- [ ] **Distribution Modules (`modules/editors/distributions/nvim/`)**
+  - [ ] `astronvim.nix` - Auto-enables neovim
+  - [ ] `lazyvim.nix`
+  - [ ] `nvchad.nix`
+  - [ ] `lunarvim.nix`
+
+- [ ] **Distribution Configs (`config/editors/distributions/nvim/`)**
+  - [ ] Full AstroNvim config
+  - [ ] Full LazyVim config
+  - [ ] Full NvChad config
+  - [ ] Full LunarVim config
+
+- [ ] **User Config Templates**
+  - [ ] `config/templates/editors/nvim/init.lua.tpl`
+  - [ ] `config/templates/editors/nvim/user/init.lua.tpl`
+
+- [ ] **Theme Integration**
+  - [ ] `config/themes/catppuccin/nvim.lua`
+
+- [ ] **CLI Integration**
+  - [ ] `caf-editor-distribution-set nvim astronvim`
+  - [ ] Only one distribution active at a time
+
+- [ ] **Testing**
+  - [ ] `tests/modules/editors/distributions/nvim/*.nix`
+
+### Success Criteria
+- [ ] `caf install astronvim` configures Neovim
+- [ ] `nvim` launches with AstroNvim + Catppuccin
+- [ ] User overrides in `~/.config/nvim/lua/user/` work
+
+---
+
+## 📍 Phase 8: v0.8.0 - AI Integration
+
+**Goal**: Local AI inference and coding assistants.
+
+### Checklist
+
+- [ ] **AI Modules (`modules/ai/`)**
+  - [ ] `modules/ai/ollama.nix` - Systemd service, localhost only
+  - [ ] `modules/ai/aider.nix` - AI pair programming
+  - [ ] `modules/ai/continue.nix` - IDE extension support
+
+- [ ] **Ollama Configuration**
+  - [ ] Pre-download default model (codellama:7b)
+  - [ ] ZRAM optimization
+
+- [ ] **Secrets for External APIs**
+  - [ ] Add API keys to `secrets/secrets.yaml`
+  - [ ] `caf-ai-keys-manage`
+
+- [ ] **Starship Integration**
+  - [ ] Show active Ollama model in prompt
+  - [ ] AI status indicator
+
+- [ ] **Testing**
+  - [ ] `tests/modules/ai/ollama.nix`
+  - [ ] `tests/modules/ai/aider.nix`
+
+### Success Criteria
+- [ ] Ollama API responds
+- [ ] Aider works with local models
+- [ ] Starship shows AI model
+
+---
+
+## 📍 Phase 9: v0.9.0 - Operations & Polish
+
+**Goal**: System diagnostics, help, and quality-of-life features.
+
+### Checklist
+
+- [ ] **Debug & Diagnostics (inspired by `omarchy-debug`, `omarchy-upload-log`)**
+  - [ ] `caf-debug-collect` - Gather system info, journalctl, dmesg
+  - [ ] `caf-debug-upload` - Upload to paste service (0x0.st)
+  - [ ] `caf-debug-view` - View locally
+  - [ ] Log upload options: `this-boot`, `last-boot`, `installed-packages`
+
+- [ ] **System Doctor**
+  - [ ] `caf-system-doctor` - Check health, suggest fixes
+  - [ ] Verify services running
+  - [ ] Check disk space
+  - [ ] Verify Tailscale connected
+  - [ ] Check NixOS generation health
+
+- [ ] **Update Wrapper**
+  - [ ] `caf-system-update` - `nix flake update && rebuild`
+  - [ ] Show what will change
+  - [ ] Remind about rollback
+  - [ ] Run `caf-hook-run post-update`
+
+- [ ] **Release Channels (inspired by `omarchy-channel-set`)**
+  - [ ] `caf-channel-set [stable|rc|edge|dev]`
+  - [ ] Channels use different git refs in flake inputs
+  - [ ] Stable = main branch, Edge = latest, Dev = development
+
+- [ ] **Timezone Selection (inspired by `omarchy-tz-select`)**
+  - [ ] `caf-tz-select` - Interactive timezone picker with gum filter
+  - [ ] NixOS declarative approach for persistence
+
+- [ ] **Keybindings Cheatsheet (inspired by `omarchy-menu-keybindings`)**
+  - [ ] `caf-keys-show` - Interactive keybindings reference
+  - [ ] Zellij shortcuts
+  - [ ] Neovim/editor shortcuts
+  - [ ] CLI tool shortcuts
+
+- [ ] **Branding Polish**
+  - [ ] `caf-about-show` - System info display (fastfetch wrapper)
+  - [ ] Polish ASCII logo
+  - [ ] `caf-show-done` - Completion indicator
+  - [ ] `caf-version` - Display current version
+  - [ ] `caf-version-pkgs` - Show last update time
+
+- [ ] **Testing**
+  - [ ] `tests/cli/debug.nix`
+  - [ ] `tests/cli/doctor.nix`
+
+### Success Criteria
+- [ ] `caf-debug-collect` generates useful log
+- [ ] `caf-debug-upload` successfully uploads to 0x0.st
+- [ ] `caf-system-doctor` reports health status
+- [ ] `caf-keys-show` displays cheatsheet
+- [ ] `caf-channel-set stable` switches channels
+- [ ] `caf-system-update` runs smoothly with hooks
+
+---
+
+## 📍 Phase 10: v1.0.0 - Production Ready
+
+**Goal**: First-run experience, install script, and documentation.
+
+### Checklist
+
+- [ ] **Install Script (`install.sh`)**
+  - [ ] One-liner VPS bootstrap (nixos-anywhere)
+  - [ ] Show ASCII logo during install
+  - [ ] Tailscale auth key prompt
+  - [ ] Progress indicators with gum
+
+- [ ] **First-Run Wizard**
+  - [ ] ASCII logo welcome
+  - [ ] `caf setup` wizard
+  - [ ] Choose editor, distribution, languages, AI
+  - [ ] Apply and rebuild
+  - [ ] Run `caf-hook-run first-run`
+
+- [ ] **Documentation**
+  - [ ] Comprehensive README with GIFs
+  - [ ] `docs/` folder with guides
+  - [ ] `CONTRIBUTING.md`
+  - [ ] Keybindings reference doc
+
+- [ ] **Security Audit**
+  - [ ] Zero exposed ports (Tailscale only)
+  - [ ] Validate sops-nix encryption
+  - [ ] Review firewall rules
+
+- [ ] **Integration Tests**
+  - [ ] `tests/integration/full-rails-stack.nix`
+  - [ ] `tests/integration/first-run-wizard.nix`
+
+### Success Criteria
+- [ ] Fresh VPS transformed with one command
+- [ ] First-run wizard works smoothly
+- [ ] Documentation complete
+- [ ] Security review passes
+
+---
+
+## 🧪 Testing Protocol
+
+Run `nix flake check` before every commit:
+
+1. Verify Nix syntax
+2. Boot VM for each test
+3. Execute test assertions
+
+### Test Naming Convention
+
+Tests mirror source structure:
+- `modules/editors/neovim.nix` → `tests/modules/editors/neovim.nix`
+- `config/terminal/git/` → `tests/config/terminal/git/`
+
+---
+
+## 📚 Reference Materials
+
+### Omarchy Repository: `../omarchy/`
+
+| Category | Files to Study |
+| :--- | :--- |
+| **Menu System** | `bin/omarchy-menu` |
+| **Config Refresh** | `bin/omarchy-refresh-config` |
+| **Debug** | `bin/omarchy-debug` |
+| **Hooks** | `bin/omarchy-hook`, `config/omarchy/hooks/*.sample` |
+| **Extensions** | `config/omarchy/extensions/menu.sh` |
+| **Dev Env** | `bin/omarchy-install-dev-env` |
+| **Docker DBs** | `bin/omarchy-install-docker-dbs` |
+| **Theme Templates** | `default/themed/*.tpl` |
+| **Theme Apply** | `bin/omarchy-theme-set-templates` |
+| **Show Utils** | `bin/omarchy-show-logo`, `bin/omarchy-show-done` |
+| **Git Config** | `config/git/config` |
+| **Fastfetch** | `config/fastfetch/config.jsonc` |
+| **Btop** | `config/btop/btop.conf` |
+| **Starship** | `config/starship.toml` |
+| **Colors** | `themes/catppuccin/colors.toml` |
+| **AGENTS.md** | Command naming conventions |
