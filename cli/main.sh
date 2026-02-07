@@ -8,22 +8,22 @@ export PATH="$CLI_DIR/scripts:$PATH"
 
 show_main_menu() {
     clear
-    cat /etc/cafaye/branding/logo.txt 2>/dev/null || echo "☕ Cafaye OS"
+    caf-logo-show
     echo ""
     
     choice=$(gum choose --header "Main Menu" \
         "📦 Install (Languages & Services)" \
         "🎨 Style (Themes & UI)" \
-        "⚙️  Setup (System Config)" \
-        "🚀 Rebuild System" \
+        "🏥 Status (System Health)" \
+        "🔄 Update & Rebuild" \
         "  About" \
         "👋 Exit")
 
     case "$choice" in
         *"Install"*) show_install_menu ;;
         *"Style"*) show_style_menu ;;
-        *"Setup"*) show_setup_menu ;;
-        *"Rebuild"*) caf-system-rebuild ;;
+        *"Status"*) show_status_menu ;;
+        *"Update"*) run_system_update ;;
         *"About"*) show_about ;;
         *"Exit"*) exit 0 ;;
     esac
@@ -32,7 +32,7 @@ show_main_menu() {
 show_install_menu() {
     choice=$(gum choose --header "Install Submenu" \
         "🦀 Rust" \
-        "🐹 Go" \
+        "Hamster Go" \
         "🟢 Node.js" \
         "🐍 Python" \
         "💎 Ruby" \
@@ -41,13 +41,87 @@ show_install_menu() {
 
     case "$choice" in
         "🦀 Rust") toggle_language "rust" ;;
-        "🐹 Go") toggle_language "go" ;;
+        "Hamster Go") toggle_language "go" ;;
         "🟢 Node.js") toggle_language "nodejs" ;;
         "🐍 Python") toggle_language "python" ;;
         "💎 Ruby") toggle_language "ruby" ;;
         "🐳 Docker") toggle_service "docker" ;;
         "⬅️  Back") show_main_menu ;;
     esac
+}
+
+run_system_update() {
+    gum confirm "Perform a full system update and rebuild?" || return
+    
+    # Run pre-update hook if any
+    caf-hook-run pre-update
+    
+    # Execute rebuild
+    caf-system-rebuild
+    
+    # Run post-update hook
+    caf-hook-run post-update
+    
+    caf-task-done "System Update"
+    read -p "Press enter to return..."
+    show_main_menu
+}
+
+show_status_menu() {
+    clear
+    echo "🏥 Cafaye System Health"
+    echo "------------------------"
+    
+    # Check Tailscale
+    if caf-cmd-present tailscale; then
+        ts_status=$(tailscale status --short 2>/dev/null || echo "Not connected")
+        echo "🌐 Tailscale: $ts_status"
+    fi
+    
+    # Check ZRAM
+    if caf-cmd-present zramctl; then
+        zram_status=$(zramctl --noheadings | wc -l)
+        if [[ $zram_status -gt 0 ]]; then
+            echo "🧠 ZRAM: Enabled"
+        else
+            echo "🧠 ZRAM: Disabled"
+        fi
+    fi
+    
+    # Check Docker
+    if caf-cmd-present docker; then
+        if systemctl is-active --quiet docker; then
+            echo "🐳 Docker: Active"
+        else
+            echo "🐳 Docker: Inactive"
+        fi
+    fi
+
+    # Check NixOS generation
+    gen=$(readlink /nix/var/nix/profiles/system | cut -d- -f2)
+    echo "📌 Current Generation: $gen"
+    
+    echo "------------------------"
+    read -p "Press enter to return..."
+    show_main_menu
+}
+
+show_style_menu() {
+    choice=$(gum choose --header "Style Submenu" \
+        "🌙 Catppuccin Mocha" \
+        "☀️  Light Mode (Coming Soon)" \
+        "⬅️  Back")
+
+    case "$choice" in
+        *"Mocha"*) 
+            caf-state-write "interface.theme" "catppuccin-mocha"
+            caf-hook-run theme-set
+            echo "Theme set to Catppuccin Mocha!"
+            sleep 1
+            ;;
+        "⬅️  Back") show_main_menu ;;
+    esac
+    show_style_menu
 }
 
 toggle_language() {
@@ -80,18 +154,6 @@ toggle_service() {
         caf-system-rebuild
     fi
     show_install_menu
-}
-
-show_style_menu() {
-    echo "Stying coming soon..."
-    sleep 1
-    show_main_menu
-}
-
-show_setup_menu() {
-    echo "Setup coming soon..."
-    sleep 1
-    show_main_menu
 }
 
 show_about() {

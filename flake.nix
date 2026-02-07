@@ -58,6 +58,7 @@
           ./core
           ./interface
           ./modules
+          ./cli
         ];
       };
     };
