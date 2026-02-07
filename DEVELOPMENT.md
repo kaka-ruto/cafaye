@@ -267,38 +267,38 @@ Hooks are triggered via `caf-hook-run <name>`.
 
 ### Checklist
 
-- [ ] **Project Initialization**
-  - [ ] Create `flake.nix` with basic NixOS configuration
-  - [ ] Create `devbox.json` for local development shell
-  - [ ] Create `Dockerfile` for macOS development
-  - [ ] Create `version` file (0.1.0)
+- [x] **Project Initialization**
+  - [x] Create `flake.nix` with basic NixOS configuration
+  - [x] Create `devbox.json` for local development shell
+  - [x] Create `Dockerfile` for macOS development
+  - [x] Create `version` file (0.1.0)
 
-- [ ] **Core System (`core/`)**
-  - [ ] `core/default.nix` - Import all core modules
-  - [ ] `core/boot.nix` - GRUB, kernel, ZRAM
-  - [ ] `core/hardware.nix` - KVM/QEMU optimizations
-  - [ ] `core/network.nix` - Networking + Tailscale
-  - [ ] `core/security.nix` - Firewall, SSH via Tailscale only
+- [x] **Core System (`core/`)**
+  - [x] `core/default.nix` - Import all core modules
+  - [x] `core/boot.nix` - GRUB, kernel, ZRAM
+  - [x] `core/hardware.nix` - KVM/QEMU optimizations
+  - [x] `core/network.nix` - Networking + Tailscale
+  - [x] `core/security.nix` - Firewall, SSH via Tailscale only
 
-- [ ] **Secrets Setup**
-  - [ ] `secrets/.sops.yaml` configuration
-  - [ ] Tailscale auth key encryption
+- [x] **Secrets Setup**
+  - [x] `secrets/.sops.yaml` configuration
+  - [x] Tailscale auth key encryption
 
-- [ ] **CI/CD Pipeline**
-  - [ ] `.github/workflows/factory.yml`
-  - [ ] `nix flake check` validation
-  - [ ] VM boot tests
-  - [ ] Cachix push
+- [x] **CI/CD Pipeline**
+  - [x] `.github/workflows/factory.yml`
+  - [x] `nix flake check` validation
+  - [x] VM boot tests
+  - [x] Cachix push
 
-- [ ] **Testing**
-  - [ ] `tests/core/boot.nix`
-  - [ ] `tests/core/network.nix`
-  - [ ] `tests/core/security.nix`
+- [x] **Testing**
+  - [x] `tests/core/boot.nix`
+  - [x] `tests/core/network.nix`
+  - [x] `tests/core/security.nix`
 
 ### Success Criteria
-- [ ] VM boots and Tailscale connects
-- [ ] SSH accessible only via Tailscale
-- [ ] CI passes and Cachix populated
+- [x] VM boots and Tailscale connects
+- [x] SSH accessible only via Tailscale
+- [x] CI passes and Cachix populated
 
 ---
 
