@@ -138,7 +138,7 @@ Never commit:
 
 ### Commit Message Format
 
-Use present tense, imperative mood:
+Use present tense, imperative mood. **NEVER use prefixes like `feat:`, `chore:`, `fix:`, or `refactor:`.** Also, do not mention Phase numbers (e.g., "Phase 1"). The message must be a simple, natural language sentence starting with a capital letter.
 
 ```bash
 # ✅ Good examples
