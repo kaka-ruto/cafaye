@@ -17,13 +17,6 @@ jobs:
         uses: cachix/install-nix-action@v25
         with:
           nix_path: nixpkgs=channel:nixos-unstable
-          
-      - name: Cachix Cache
-        uses: cachix/cachix-action@v14
-        with:
-          name: cafaye
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-        continue-on-error: true
 
       - name: Run Core Tests
         run: |
