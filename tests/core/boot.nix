@@ -6,6 +6,10 @@
     machine = {
       imports = [ ../../core/boot.nix ../../core/hardware.nix ];
       _module.args = { inherit userState; };
+      
+      # Workaround for CI "modules-shrunk" error: force full bootloader
+      virtualisation.useBootLoader = true;
+      virtualisation.useEFIBoot = true;
     };
   };
 
