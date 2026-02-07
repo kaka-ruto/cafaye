@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README.md with project vision
 - DEVELOPMENT.md with 10-phase roadmap
 - AGENTS.md with AI developer instructions
+- Core system modules (boot, network, security, hardware)
+- NixOS VM tests for core systems
+- CI/CD workflow (The Factory) with Cachix integration
+- Initial `install.sh` bootstrap script
+- JSON-based user state system (`user/user-state.json`)
+- SOPS-nix encryption setup and secrets examples
 
 ---
 

@@ -1,10 +1,6 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, ... }:
 
 {
-  imports = [
-    inputs.sops-nix.nixosModules.sops
-  ];
-
   # Enable the firewall
   networking.firewall.enable = true;
 
@@ -22,10 +18,6 @@
   # Zero-Trust: only allow SSH via Tailscale
   networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 22 ];
 
-  # SOPS configuration
-  sops.defaultSopsFile = ../secrets/secrets.yaml;
-  sops.age.keyFile = "/var/lib/sops-nix/key.txt";
-  
-  # Fail2ban for basic brute force protection on exposed SSH (if any)
+  # Fail2ban for basic brute force protection
   services.fail2ban.enable = true;
 }

@@ -6,6 +6,7 @@
     ./hardware.nix
     ./network.nix
     ./security.nix
+    ./sops.nix
   ];
 
   # Basic system settings that don't fit elsewhere

@@ -17,7 +17,4 @@
   };
 
   swapDevices = [ ];
-
-  # Minimal architecture optimization
-  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 }
