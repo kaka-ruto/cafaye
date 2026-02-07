@@ -25,6 +25,13 @@ in
       # Greet with fastfetch if interactive
       if [[ $- == *i* ]]; then
         fastfetch --config /etc/cafaye/fastfetch/config.jsonc
+        
+        # Auto-start Zellij if not already inside a session
+        if [[ -z "$ZELLIJ" ]]; then
+          if [[ "$ZELLIJ_AUTO_ATTACH" != "false" ]]; then
+            zellij attach -c cafaye || zellij
+          fi
+        fi
       fi
     '';
   };

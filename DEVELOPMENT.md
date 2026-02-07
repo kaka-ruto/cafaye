@@ -308,61 +308,61 @@ Hooks are triggered via `caf-hook-run <name>`.
 
 ### Checklist
 
-- [ ] **Terminal Interface (`interface/terminal/`)**
-  - [ ] `interface/terminal/zsh.nix` - Zsh with plugins
-  - [ ] `interface/terminal/zellij.nix` - Tiling multiplexer
-  - [ ] `interface/terminal/starship.nix` - Prompt
+- [x] **Terminal Interface (`interface/terminal/`)**
+  - [x] `interface/terminal/zsh.nix` - Zsh with plugins
+  - [x] `interface/terminal/zellij.nix` - Tiling multiplexer
+  - [x] `interface/terminal/starship.nix` - Prompt
 
-- [ ] **Essential CLI Tools (`interface/tools.nix`)**
-  - [ ] `zoxide` - Smart cd with frecency
-  - [ ] `eza` - Modern ls with icons
-  - [ ] `bat` - Cat with syntax highlighting
-  - [ ] `fd` - Fast find
-  - [ ] `ripgrep` - Fast grep
-  - [ ] `fzf` - Fuzzy finder
-  - [ ] `btop` - System monitor (vim keys enabled)
-  - [ ] `lazygit` - Git TUI
-  - [ ] `fastfetch` - System info display
+- [x] **Essential CLI Tools (`interface/tools.nix`)**
+  - [x] `zoxide` - Smart cd with frecency
+  - [x] `eza` - Modern ls with icons
+  - [x] `bat` - Cat with syntax highlighting
+  - [x] `fd` - Fast find
+  - [x] `ripgrep` - Fast grep
+  - [x] `fzf` - Fuzzy finder
+  - [x] `btop` - System monitor (vim keys enabled)
+  - [x] `lazygit` - Git TUI
+  - [x] `fastfetch` - System info display
 
-- [ ] **Terminal Configs (`config/terminal/`)**
-  - [ ] `config/terminal/zsh/.zshrc` - Aliases, zoxide init
-  - [ ] `config/terminal/zellij/config.kdl` - Compact layout, Alt+H/J/K/L
-  - [ ] `config/terminal/starship/starship.toml` - Git, Tailscale status
-  - [ ] `config/terminal/git/config` - Aliases (co, br, ci, st), rebase on pull
-  - [ ] `config/terminal/btop/btop.conf` - Vim keys, theme integration
-  - [ ] `config/terminal/lazygit/config.yml` - Theme integration
-  - [ ] `config/terminal/fastfetch/config.jsonc` - Cafaye branding
+- [x] **Terminal Configs (`config/terminal/`)**
+  - [x] `config/terminal/zsh/.zshrc` - Aliases, zoxide init
+  - [x] `config/terminal/zellij/config.kdl` - Compact layout, Alt+H/J/K/L
+  - [x] `config/terminal/starship/starship.toml` - Git, Tailscale status
+  - [x] `config/terminal/git/config` - Aliases (co, br, ci, st), rebase on pull
+  - [x] `config/terminal/btop/btop.conf` - Vim keys, theme integration
+  - [x] `config/terminal/lazygit/config.yml` - Theme integration
+  - [x] `config/terminal/fastfetch/config.jsonc` - Cafaye branding
 
-- [ ] **Theme System (`config/themes/`)**
-  - [ ] `config/themes/catppuccin/colors.toml` - Base color definitions
-  - [ ] `config/themes/catppuccin/zellij.kdl`
-  - [ ] `config/themes/catppuccin/starship.toml`
-  - [ ] `config/themes/catppuccin/btop.theme`
-  - [ ] `config/themes/catppuccin/lazygit.yml`
+- [x] **Theme System (`config/themes/`)**
+  - [x] `config/themes/catppuccin/colors.toml` - Base color definitions
+  - [x] `config/themes/catppuccin/zellij.kdl`
+  - [x] `config/themes/catppuccin/starship.toml`
+  - [x] `config/themes/catppuccin/btop.theme`
+  - [x] `config/themes/catppuccin/lazygit.yml`
 
-- [ ] **Template System (`config/templates/`)**
-  - [ ] `config/templates/btop.theme.tpl` - With `{{ color }}` placeholders
-  - [ ] `caf-theme-apply` - Generate configs from templates
+- [x] **Template System (`config/templates/`)**
+  - [x] `config/templates/btop.theme.tpl` - With `{{ color }}` placeholders
+  - [x] `caf-theme-apply` - Generate configs from templates
 
-- [ ] **Branding (`config/cafaye/branding/`)**
-  - [ ] `logo.txt` - ASCII art logo
-  - [ ] `about.txt` - System description for fastfetch
+- [x] **Branding (`config/cafaye/branding/`)**
+  - [x] `logo.txt` - ASCII art logo
+  - [x] `about.txt` - System description for fastfetch
 
-- [ ] **Login Experience**
-  - [ ] Fastfetch on SSH login (show system info)
-  - [ ] Auto-start Zellij session
+- [x] **Login Experience**
+  - [x] Fastfetch on SSH login (show system info)
+  - [x] Auto-start Zellij session
 
-- [ ] **Testing**
-  - [ ] `tests/interface/terminal/zsh.nix`
-  - [ ] `tests/interface/terminal/zellij.nix`
-  - [ ] `tests/interface/tools.nix`
-  - [ ] `tests/config/terminal/`
+- [x] **Testing**
+  - [x] `tests/interface/terminal/zsh.nix`
+  - [x] `tests/interface/terminal/zellij.nix`
+  - [x] `tests/interface/tools.nix`
+  - [x] `tests/config/terminal/`
 
 ### Success Criteria
-- [ ] SSH login shows fastfetch, then Zellij with Starship
-- [ ] All CLI tools available (zoxide, eza, bat, etc.)
-- [ ] Catppuccin colors throughout
-- [ ] Alt+H/J/K/L navigation works
+- [x] SSH login shows fastfetch, then Zellij with Starship
+- [x] All CLI tools available (zoxide, eza, bat, etc.)
+- [x] Catppuccin colors throughout
+- [x] Alt+H/J/K/L navigation works
 
 ---
 

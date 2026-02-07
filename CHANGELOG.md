@@ -5,6 +5,24 @@ All notable changes to Cafaye OS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-02-08
+
+### Added
+- **Terminal Interface**: Complete Zsh configuration with Starship prompt and Oh My Zsh plugins
+- **Workspace Management**: Zellij tiling multiplexer with auto-start and auto-attach logic
+- **Essential Toolset**: Installed and configured `zoxide`, `eza`, `bat`, `fd`, `ripgrep`, `fzf`, `btop`, `lazygit`, and `fastfetch`
+- **Design System**: Global Catppuccin Mocha theme implemented across all terminal tools
+- **Branding**: ASCII art logo and system details integration
+- **Automation**: `direnv` and `nix-direnv` for automatic per-project environment loading
+- **Compatibility**: Integrated `nix-ld` to support unpatched dynamic binaries (standard for IDE servers)
+- **Quality**: Dedicated VM tests for terminal experience and tool availability
+
+### Fixed
+- SSH login flow to properly greet with system info and enter Zellij
+- Catppuccin color consistency across different terminal emulators and tools
+
+---
+
 ## [0.1.0] - 2026-02-07
 
 ### Added
