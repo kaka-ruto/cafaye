@@ -7,10 +7,11 @@
       imports = [ ../../core/boot.nix ../../core/hardware.nix ];
       _module.args = { inherit userState; };
       
-      # Workaround for CI "modules-shrunk" error: force full bootloader
+      # Workaround for CI "modules-shrunk" error: force full bootloader + LTS kernel
       virtualisation.useBootLoader = true;
       virtualisation.useEFIBoot = true;
       hardware.enableAllHardware = true;
+      boot.kernelPackages = pkgs.linuxPackages_6_6;
     };
   };
 
