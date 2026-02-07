@@ -14,9 +14,9 @@
       
       # Mock the sops file presence
       sops.validateSopsFiles = false;
-      # Disable tailscale autoconnect in this test as well
-      systemd.services.tailscale-autoconnect.enable = false;
-      # Workaround for CIM "modules-shrunk" error
+      # Workaround for CI "modules-shrunk" error: force full bootloader + LTS kernel
+      virtualisation.useBootLoader = true;
+      virtualisation.useEFIBoot = true;
       hardware.enableAllHardware = true;
       boot.kernelPackages = pkgs.lib.mkForce pkgs.linuxPackages_6_6;
     };
