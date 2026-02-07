@@ -48,7 +48,7 @@
       }
     ) // {
       # NixOS configuration for the VPS (stays outside eachSystem)
-      nixosConfigurations.cafaye-vps = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.cafaye = nixpkgs.lib.nixosSystem {
         system = vpsSystem;
         specialArgs = { inherit inputs userState; };
         modules = [

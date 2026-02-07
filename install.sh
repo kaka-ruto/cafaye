@@ -53,7 +53,7 @@ fi
 # Note: We assume the user has set up their SSH keys to the target VPS
 # and has a local key for sops/age decryption if required.
 nix run github:nix-community/nixos-anywhere -- \
-    --flake .#cafaye-vps \
+    --flake .#cafaye \
     --ssh-port "$PORT" \
     "$IP"
 
