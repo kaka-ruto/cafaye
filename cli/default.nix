@@ -7,13 +7,14 @@ let
     installPhase = ''
       mkdir -p $out/bin
       cp main.sh $out/bin/caf
-      chmod +x $out/bin/caf
       
       # Copy scripts
-      cp -r scripts/* $out/bin/
-      chmod +x $out/bin/caf-*
-      # Also chmod the helpers if any
-      chmod +x $out/bin/*.sh
+      if [ -d scripts ]; then
+        cp -r scripts/* $out/bin/
+      fi
+
+      # Make everything in bin executable
+      find $out/bin -type f -exec chmod +x {} +
     '';
   };
 in
