@@ -618,7 +618,7 @@ Hooks are triggered via `caf-hook-run <name>`.
 - [ ] **Release Channels (inspired by `omarchy-channel-set`)**
   - [ ] `caf-channel-set [stable|rc|edge|dev]`
   - [ ] Channels use different git refs in flake inputs
-  - [ ] Stable = main branch, Edge = latest, Dev = development
+  - [ ] Stable = master branch, Edge = latest, Dev = development
 
 - [ ] **Timezone Selection (inspired by `omarchy-tz-select`)**
   - [ ] `caf-tz-select` - Interactive timezone picker with gum filter

@@ -6,7 +6,7 @@ This document describes how to cut a new release of Cafaye OS.
 
 - All tests pass: `nix flake check`
 - All changes committed (no uncommitted work)
-- You are on the `main` branch
+- You are on the `master` branch
 
 ## Release Process
 
@@ -52,7 +52,7 @@ git tag -a v0.1.0 -m "Release v0.1.0"
 ### 5. Push to Remote
 
 ```bash
-git push origin main
+git push origin master
 git push origin v0.1.0
 ```
 
@@ -104,9 +104,9 @@ Cafaye supports multiple release channels (implemented in Phase 9):
 
 | Channel | Branch | Stability | Audience |
 | :--- | :--- | :--- | :--- |
-| **stable** | `main` (tagged) | Production-ready | All users |
+| **stable** | `master` (tagged) | Production-ready | All users |
 | **rc** | `rc` | Release candidate | Early adopters |
-| **edge** | `main` (HEAD) | Latest features | Testers |
+| **edge** | `master` (HEAD) | Latest features | Testers |
 | **dev** | `dev` | Experimental | Developers only |
 
 ### Channel Commands
@@ -160,11 +160,11 @@ For critical fixes to a released version:
    git push origin v0.4.1
    ```
 
-5. Merge back to main:
+5. Merge back to master:
    ```bash
-   git checkout main
+   git checkout master
    git merge hotfix/v0.4.1
-   git push origin main
+   git push origin master
    ```
 
 ---
