@@ -1,6 +1,6 @@
 # ☕ Cafaye OS
 
-> **The server-side Omarchy.** An AI-first developer OS that turns any cheap VPS into a secure, cloud-native powerhouse accessible from any device.
+> An AI-first developer OS that turns any cheap VPS into a secure, cloud-native powerhouse accessible from any device.
 
 Cafaye (pronounced _ca-fay_) brings the luxury, keyboard-driven experience of [Omarchy](../omarchy/) to the cloud. It's a modern, highly opinionated server operating system built on NixOS—designed to be easy to use, easy to extend, beautiful, safe, secure, fast, powerful, and accessible from anywhere.
 
@@ -76,7 +76,6 @@ Cafaye (pronounced _ca-fay_) brings the luxury, keyboard-driven experience of [O
 ├── tests/           # THE MIRROR (1:1 test mapping)
 └── .github/         # THE FACTORY (CI/CD & Cachix)
 ```
-
 
 ## 🚀 Key Features
 

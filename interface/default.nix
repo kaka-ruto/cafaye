@@ -10,6 +10,7 @@
     ./terminal/btop.nix
     ./terminal/lazygit.nix
     ./terminal/fastfetch.nix
+    ./ide
   ];
 
   # Global branding deployment
