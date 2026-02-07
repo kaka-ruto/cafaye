@@ -11,7 +11,7 @@
       virtualisation.useBootLoader = true;
       virtualisation.useEFIBoot = true;
       hardware.enableAllHardware = true;
-      boot.kernelPackages = pkgs.linuxPackages_6_6;
+      boot.kernelPackages = pkgs.lib.mkForce pkgs.linuxPackages_6_6;
     };
   };
 
