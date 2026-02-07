@@ -12,9 +12,10 @@
       "echo '☕ Welcome to the Cafaye OS development shell!'"
     ],
     "scripts": {
-      "check": "nix flake check",
-      "test": "nix flake check",
-      "vm": "nix run .#debug-vm"
+      "check": "./bin/test-local.sh",
+      "test": "./bin/test-local.sh",
+      "vm": "nix run .#debug-vm",
+      "check-ci": "nix flake check"
     }
   }
 }
