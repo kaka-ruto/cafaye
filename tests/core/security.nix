@@ -25,7 +25,7 @@
     # Check if SSH is enabled
     machine.wait_for_unit("sshd.service")
     # Check if firewall is enabled
-    machine.succeed("systemctl is-active nftables || systemctl is-active iptables")
+    machine.wait_for_unit("firewall.service")
     # Check if fail2ban is running
     machine.wait_for_unit("fail2ban.service")
   '';
