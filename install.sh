@@ -17,9 +17,27 @@ echo "------------------------------------------"
 
 # Check for nix
 if ! command -v nix &> /dev/null; then
-    echo -e "${RED}Error: nix is not installed.${NC}"
-    echo "Please install nix first: curl -L https://nixos.org/nix/install | sh"
-    exit 1
+    echo -e "${BLUE}Nix is not installed on this machine. Cafaye OS requires Nix to run.${NC}"
+    echo -e "Would you like to install it now using the Determinate Systems installer? (y/N)"
+    read -r INSTALL_NIX
+    if [[ "$INSTALL_NIX" =~ ^[Yy]$ ]]; then
+        echo -e "${BLUE}Installing Nix...${NC}"
+        curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+        
+        # Try to source nix for the current session
+        if [ -f "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]; then
+            . "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
+        fi
+        
+        if ! command -v nix &> /dev/null; then
+            echo -e "${RED}Nix was installed but is not in the current PATH.${NC}"
+            echo "Please restart your terminal and run this script again."
+            exit 1
+        fi
+    else
+        echo -e "${RED}Error: Nix is required to continue.${NC}"
+        exit 1
+    fi
 fi
 
 # Check for nixos-anywhere
