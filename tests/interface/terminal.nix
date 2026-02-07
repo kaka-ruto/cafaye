@@ -11,10 +11,7 @@
         ../../core/security.nix
         ../../core/sops.nix
         inputs.sops-nix.nixosModules.sops
-        ../../interface/tools.nix
-        ../../interface/terminal/zsh.nix
-        ../../interface/terminal/starship.nix
-        ../../interface/terminal/zellij.nix
+        ../../interface
       ];
       _module.args = { inherit inputs userState; };
 
@@ -35,6 +32,8 @@
     machine.succeed("rg --version")
     machine.succeed("jq --version")
     machine.succeed("fastfetch --version")
+    machine.succeed("btop --version")
+    machine.succeed("lazygit --version")
     
     # Test if Zsh is configured correctly for the user
     # Note: we check if the user shell is indeed zsh

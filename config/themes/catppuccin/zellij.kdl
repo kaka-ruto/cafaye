@@ -1,0 +1,20 @@
+themes {
+    catppuccin-mocha {
+        bg "#585b70" // Surface2
+        fg "#cdd6f4" // Text
+        red "#f38ba8"
+        green "#a6e3a1"
+        blue "#89b4fa"
+        yellow "#f9e2af"
+        magenta "#cba6f7" // Mauve
+        orange "#fab387" // Peach
+        cyan "#89dceb" // Sky
+        black "#1e1e2e" // Base
+        white "#cdd6f4" // Text
+    }
+}
+
+theme "catppuccin-mocha"
+default_layout "compact"
+mouse_mode true
+copy_on_select true

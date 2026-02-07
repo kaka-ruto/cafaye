@@ -15,13 +15,15 @@ in
       plugins = [ "git" "sudo" "docker" "direnv" ];
     };
 
-    # Initialize zoxide
+    # Initialize starship and zoxide
     interactiveShellInit = ''
+      export STARSHIP_CONFIG=/etc/cafaye/terminal/starship.toml
+      eval "$(${pkgs.starship}/bin/starship init zsh)"
       eval "$(${pkgs.zoxide}/bin/zoxide init zsh)"
       
       # Greet with fastfetch if interactive
       if [[ $- == *i* ]]; then
-        ${pkgs.fastfetch}/bin/fastfetch
+        fastfetch --config /etc/cafaye/fastfetch/config.jsonc
       fi
     '';
   };

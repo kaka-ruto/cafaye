@@ -2,16 +2,18 @@
 
 let
   zellijEnabled = userState.interface.terminal.multiplexer == "zellij";
+  configDir = "/etc/cafaye/zellij";
 in
 {
-  # If programs.zellij is not in NixOS (it might be HM only), we use environment.systemPackages
   environment.systemPackages = if zellijEnabled then [ pkgs.zellij ] else [];
 
+  # Deploy the config file
+  environment.etc."cafaye/zellij/config.kdl".source = ../../config/themes/catppuccin/zellij.kdl;
+
   # Auto-start Zellij on SSH login if desired
-  # We use a helper script or just the zsh init
   programs.zsh.interactiveShellInit = if zellijEnabled then ''
     if [[ -z "$ZELLIJ" && "$SSH_CONNECTION" != "" ]]; then
-      exec ${pkgs.zellij}/bin/zellij attach -c
+      exec ${pkgs.zellij}/bin/zellij --config ${configDir}/config.kdl attach -c
     fi
   '' else "";
 }
