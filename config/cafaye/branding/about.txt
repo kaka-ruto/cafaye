@@ -1,0 +1,3 @@
+Cafaye OS is a reproducible, AI-first developer OS.
+Built on NixOS, inspired by Omarchy.
+https://github.com/kaka-ruto/cafaye

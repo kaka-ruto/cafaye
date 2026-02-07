@@ -5,5 +5,12 @@
     "authorized_keys": [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI..."
     ]
+  },
+  "interface": {
+    "terminal": {
+      "shell": "zsh",
+      "multiplexer": "zellij"
+    },
+    "theme": "catppuccin-mocha"
   }
 }

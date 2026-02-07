@@ -3,7 +3,14 @@
     "tailscale_enabled": true,
     "zram_enabled": true,
     "authorized_keys": [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI..."
+      "ssh-ed25519 YOUR_SSH_PUBLIC_KEY_HERE"
     ]
+  },
+  "interface": {
+    "terminal": {
+      "shell": "zsh",
+      "multiplexer": "zellij"
+    },
+    "theme": "catppuccin-mocha"
   }
 }
