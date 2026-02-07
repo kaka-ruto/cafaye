@@ -12,5 +12,15 @@
       "multiplexer": "zellij"
     },
     "theme": "catppuccin-mocha"
+  },
+  "languages": {
+    "rust": true,
+    "go": true,
+    "nodejs": true,
+    "python": true,
+    "ruby": true
+  },
+  "dev_tools": {
+    "docker": true
   }
 }

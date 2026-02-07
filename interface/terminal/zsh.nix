@@ -20,6 +20,7 @@ in
       export STARSHIP_CONFIG=/etc/cafaye/terminal/starship.toml
       eval "$(${pkgs.starship}/bin/starship init zsh)"
       eval "$(${pkgs.zoxide}/bin/zoxide init zsh)"
+      eval "$(${pkgs.direnv}/bin/direnv hook zsh)"
       
       # Greet with fastfetch if interactive
       if [[ $- == *i* ]]; then

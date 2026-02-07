@@ -45,6 +45,7 @@
           core-network = pkgs.testers.runNixOSTest (import ./tests/core/network.nix { inherit pkgs inputs userState; });
           core-security = pkgs.testers.runNixOSTest (import ./tests/core/security.nix { inherit pkgs inputs userState; });
           interface-terminal = pkgs.testers.runNixOSTest (import ./tests/interface/terminal.nix { inherit pkgs inputs userState; });
+          modules-languages = pkgs.testers.runNixOSTest (import ./tests/modules/languages.nix { inherit pkgs inputs userState; });
         };
       }
     ) // {
@@ -56,6 +57,7 @@
           inputs.sops-nix.nixosModules.sops
           ./core
           ./interface
+          ./modules
         ];
       };
     };

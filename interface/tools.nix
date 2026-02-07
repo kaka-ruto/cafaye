@@ -18,6 +18,8 @@
     
     # Development
     git          # Version control
+    direnv       # Env auto-loader
+    nix-direnv   # Faster nix shells for direnv
   ];
 
   # Basic aliases to encourage using the new tools
