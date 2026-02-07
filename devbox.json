@@ -1,0 +1,20 @@
+{
+  "packages": [
+    "nix",
+    "gum",
+    "sops",
+    "age",
+    "git",
+    "jq"
+  ],
+  "shell": {
+    "init_hook": [
+      "echo '☕ Welcome to the Cafaye OS development shell!'"
+    ],
+    "scripts": {
+      "check": "nix flake check",
+      "test": "nix flake check",
+      "vm": "nix run .#debug-vm"
+    }
+  }
+}

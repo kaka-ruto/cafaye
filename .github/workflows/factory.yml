@@ -1,0 +1,32 @@
+name: "The Factory"
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check:
+    name: Check & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Nix
+        uses: cachix/install-nix-action@v25
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          
+      - name: Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v2
+        
+      - name: Cachix Cache
+        uses: cachix/cachix-action@v14
+        with:
+          name: cafaye
+          # authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}' # To be added by user later
+
+      - name: Run Core Tests
+        run: |
+          nix flake check --show-trace

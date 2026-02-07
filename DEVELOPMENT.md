@@ -40,7 +40,7 @@ Unlike Omarchy (built on Arch Linux), Cafaye leverages NixOS's superpowers:
 │   ├── boot.nix          # Kernel, Zram, & GRUB
 │   ├── security.nix      # Tailscale SSH, Sops-nix, & Firewall
 │   ├── network.nix       # Tailscale & DNS logic
-│   └── hardware-vps.nix  # KVM/QEMU optimizations
+│   └── hardware.nix  # KVM/QEMU optimizations
 │
 ├── interface/            # THE OMARCHY VIBE (UX/UI)
 │   ├── terminal/
@@ -276,7 +276,7 @@ Hooks are triggered via `caf-hook-run <name>`.
 - [ ] **Core System (`core/`)**
   - [ ] `core/default.nix` - Import all core modules
   - [ ] `core/boot.nix` - GRUB, kernel, ZRAM
-  - [ ] `core/hardware-vps.nix` - KVM/QEMU optimizations
+  - [ ] `core/hardware.nix` - KVM/QEMU optimizations
   - [ ] `core/network.nix` - Networking + Tailscale
   - [ ] `core/security.nix` - Firewall, SSH via Tailscale only
 

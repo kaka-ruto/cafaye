@@ -1,6 +1,22 @@
-# Ignore build outputs from performing a nix-build or `nix build` command
+# .gitignore for Cafaye OS
+
+# Nix
 result
 result-*
+.direnv/
+.vscode/
 
-# Ignore automatically generated direnv output
-.direnv
+# Secrets (SOPS keys should never be committed)
+keys.txt
+*.age
+*.pem
+secrets/secrets.yaml
+!secrets/secrets.yaml.example
+
+# User state (local development state)
+!user/user-state.json.example
+
+# Temporary files
+*.swp
+*~
+.DS_Store
