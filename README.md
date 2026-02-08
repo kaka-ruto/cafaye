@@ -276,7 +276,7 @@ The bootstrap script will:
  ## 📖 Documentation
  
  - **[Installation Guide](docs/INSTALL.md)** - How to install on a VPS
- - **[First Run Guide](docs/FIRST_RUN.md)** - Configuration wizard details
+  - **[Setup Guide](docs/SETUP.md)** - Configuration wizard details
  - **[Contributing](CONTRIBUTING.md)** - Development guidelines
  - **[DEVELOPMENT.md](DEVELOPMENT.md)** - Detailed roadmap with phase checklists
  - **[AGENTS.md](AGENTS.md)** - AI developer instructions
