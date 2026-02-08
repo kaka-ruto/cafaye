@@ -14,6 +14,7 @@
           ../../core/user.nix
           ../../modules
           ../../interface
+          ../../cli
           inputs.sops-nix.nixosModules.sops
         ];
         _module.args = { inherit inputs userState; };
