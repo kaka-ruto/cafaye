@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Cafaye OS Editor Set
+# Usage: caf-editor-set <editor>
+
+editor=$1
+
+if [[ -z "$editor" ]]; then
+    editor=$(gum choose --header "Select Default Editor" \
+        "neovim" \
+        "helix" \
+        "vscode_server" \
+        "none")
+fi
+
+case "$editor" in
+    neovim|helix|vscode_server|none)
+        caf-state-write "editors.default" "\"$editor\""
+        echo "✅ Default editor set to: $editor"
+        caf-task-done "Editor Set"
+        ;;
+    *)
+        echo "❌ Invalid editor: $editor"
+        echo "   Valid options: neovim, helix, vscode_server, none"
+        exit 1
+        ;;
+esac

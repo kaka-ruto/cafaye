@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Cafaye OS Editor Launcher (inspired by omarchy-launch-editor)
+# Launch the default editor as determined by user state (or nvim if missing).
+
+default_editor=$(caf-state-read "editors.default" 2>/dev/null)
+
+# Fallback to nvim if no default set
+[[ -z "$default_editor" || "$default_editor" == "null" ]] && default_editor="neovim"
+
+case "$default_editor" in
+  neovim)
+    caf-cmd-present nvim && exec nvim "$@"
+    ;;
+  helix)
+    caf-cmd-present hx && exec hx "$@"
+    ;;
+  vscode_server)
+    echo "🌐 VS Code Server: http://127.0.0.1:8080"
+    echo "   Connect via SSH tunnel or Tailscale"
+    ;;
+  *)
+    echo "❌ Unknown editor: $default_editor"
+    exit 1
+    ;;
+esac

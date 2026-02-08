@@ -77,6 +77,28 @@
                 }
             }
         },
+        "editors": {
+            "type": "object",
+            "properties": {
+                "neovim": {
+                    "type": "boolean"
+                },
+                "helix": {
+                    "type": "boolean"
+                },
+                "vscode_server": {
+                    "type": "boolean"
+                },
+                "default": {
+                    "enum": [
+                        "neovim",
+                        "helix",
+                        "vscode_server",
+                        "none"
+                    ]
+                }
+            }
+        },
         "dev_tools": {
             "type": "object",
             "additionalProperties": {

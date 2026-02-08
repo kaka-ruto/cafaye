@@ -5,6 +5,7 @@
     ./languages
     ./services
     ./frameworks
+    ./editors
     ./dev-tools/docker.nix
   ];
 }

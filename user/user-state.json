@@ -31,5 +31,11 @@
     "rails": false,
     "django": false,
     "nextjs": false
+  },
+  "editors": {
+    "neovim": true,
+    "helix": false,
+    "vscode_server": false,
+    "default": "neovim"
   }
 }

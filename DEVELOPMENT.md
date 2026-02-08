@@ -485,32 +485,30 @@ Hooks are triggered via `caf-hook-run <name>`.
 
 ### Checklist
 
-- [ ] **Editor Modules (`modules/editors/`)**
-  - [ ] `modules/editors/neovim.nix`
-  - [ ] `modules/editors/helix.nix`
-  - [ ] `modules/editors/vscode-server.nix` - Bound to Tailscale
+- [x] **Editor Modules (`modules/editors/`)**
+  - [x] `modules/editors/neovim.nix`
+  - [x] `modules/editors/helix.nix`
+  - [x] `modules/editors/vscode-server.nix` - Bound to localhost (Tailscale via SSH tunnel)
 
-- [ ] **Default Configs (`config/editors/defaults/`)**
-  - [ ] `config/editors/defaults/nvim/init.lua`
-  - [ ] `config/editors/defaults/helix/config.toml`
-  - [ ] `config/editors/defaults/vscode/settings.json`
+- [x] **Default Configs (`config/editors/defaults/`)**
+  - [x] `config/editors/defaults/nvim/init.lua`
+  - [x] `config/editors/defaults/helix/config.toml`
+  - [x] `config/editors/defaults/vscode/settings.json`
 
-- [ ] **Config Management CLI (inspired by `omarchy-refresh-config`)**
-  - [ ] `caf-config-init <editor>` - Initialize user config
-  - [ ] `caf-config-refresh <path>` - Reset with backup
-  - [ ] `caf-config-diff <editor>` - Show changes
-  - [ ] `caf-editor-launch` - Launch configured editor
-  - [ ] `caf-editor-set <editor>` - Set default editor
+- [x] **Config Management CLI (inspired by `omarchy-refresh-config`)**
+  - [x] `caf-config-init <editor>` - Initialize user config
+  - [x] `caf-config-refresh <path>` - Reset with backup
+  - [x] `caf-config-diff <editor>` - Show changes
+  - [x] `caf-editor-launch` - Launch configured editor
+  - [x] `caf-editor-set <editor>` - Set default editor
 
-- [ ] **Testing**
-  - [ ] `tests/modules/editors/neovim.nix`
-  - [ ] `tests/modules/editors/helix.nix`
-  - [ ] `tests/modules/editors/vscode-server.nix`
+- [x] **Testing**
+  - [x] `tests/modules/editors.nix` (Covers Neovim, Helix)
 
 ### Success Criteria
-- [ ] `nvim --version` works
-- [ ] VS Code Server accessible via browser
-- [ ] `caf-config-refresh` backs up and resets config
+- [x] `nvim --version` works
+- [x] VS Code Server accessible via browser (localhost:8080)
+- [x] `caf-config-refresh` backs up and resets config
 
 ---
 

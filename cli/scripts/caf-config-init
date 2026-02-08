@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Cafaye OS Config Init
+# Usage: caf-config-init <editor>
+
+editor=$1
+
+if [[ -z "$editor" ]]; then
+    editor=$(gum choose --header "Select Editor to Initialize" \
+        "nvim" \
+        "helix" \
+        "vscode")
+fi
+
+case "$editor" in
+    nvim)
+        config_dir="$HOME/.config/nvim"
+        default_src="/etc/cafaye/editors/defaults/nvim"
+        ;;
+    helix)
+        config_dir="$HOME/.config/helix"
+        default_src="/etc/cafaye/editors/defaults/helix"
+        ;;
+    vscode)
+        config_dir="$HOME/.config/Code/User"
+        default_src="/etc/cafaye/editors/defaults/vscode"
+        ;;
+    *)
+        echo "❌ Unknown editor: $editor"
+        exit 1
+        ;;
+esac
+
+if [[ -d "$config_dir" ]]; then
+    echo "⚠️  Config already exists at $config_dir"
+    gum confirm "Backup and replace?" || exit 0
+    backup_dir="$config_dir.backup.$(date +%Y%m%d_%H%M%S)"
+    mv "$config_dir" "$backup_dir"
+    echo "📦 Backed up to $backup_dir"
+fi
+
+mkdir -p "$config_dir"
+cp -r "$default_src/"* "$config_dir/"
+echo "✅ Initialized $editor config at $config_dir"
+caf-task-done "Config Init ($editor)"

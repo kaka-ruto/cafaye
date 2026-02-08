@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Cafaye OS Config Diff
+# Usage: caf-config-diff <editor>
+
+editor=$1
+
+if [[ -z "$editor" ]]; then
+    editor=$(gum choose --header "Select Editor to Compare" \
+        "nvim" \
+        "helix" \
+        "vscode")
+fi
+
+case "$editor" in
+    nvim)
+        config_dir="$HOME/.config/nvim"
+        default_src="/etc/cafaye/editors/defaults/nvim"
+        ;;
+    helix)
+        config_dir="$HOME/.config/helix"
+        default_src="/etc/cafaye/editors/defaults/helix"
+        ;;
+    vscode)
+        config_dir="$HOME/.config/Code/User"
+        default_src="/etc/cafaye/editors/defaults/vscode"
+        ;;
+    *)
+        echo "❌ Unknown editor: $editor"
+        exit 1
+        ;;
+esac
+
+if [[ ! -d "$config_dir" ]]; then
+    echo "❌ User config not found: $config_dir"
+    exit 1
+fi
+
+if [[ ! -d "$default_src" ]]; then
+    echo "❌ Default config not found: $default_src"
+    exit 1
+fi
+
+echo "📊 Comparing $config_dir with system defaults..."
+echo ""
+diff -rq "$default_src" "$config_dir" 2>/dev/null || echo "✅ No differences from defaults"

@@ -5,6 +5,27 @@ All notable changes to Cafaye OS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-02-08
+
+### Added
+- **Editor Modules**: Declarative NixOS modules for core development editors:
+  - **Neovim**: Full installation with build tools (gcc, make, tree-sitter, ripgrep, fd)
+  - **Helix**: Modern modal editor with built-in LSP support
+  - **VS Code Server**: Browser-based IDE via code-server, bound to localhost:8080
+- **Default Configurations**: Sensible, Catppuccin-themed defaults for all editors:
+  - `config/editors/defaults/nvim/init.lua` - Minimal Lua config with modern keymaps
+  - `config/editors/defaults/helix/config.toml` - Catppuccin Mocha with auto-save
+  - `config/editors/defaults/vscode/settings.json` - Developer-friendly VS Code settings
+- **Config Management CLI** (inspired by `omarchy-refresh-config`):
+  - `caf-config-init` - Initialize user config from defaults with backup
+  - `caf-config-refresh` - Reset config with timestamped backup and diff
+  - `caf-config-diff` - Compare user config against system defaults
+  - `caf-editor-launch` - Launch the configured default editor
+  - `caf-editor-set` - Set the default editor preference
+- **VM Tests**: Automated verification of editor availability (`tests/modules/editors.nix`)
+
+---
+
 ## [0.5.0] - 2026-02-08
 
 ### Added
