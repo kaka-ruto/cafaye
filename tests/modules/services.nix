@@ -21,7 +21,7 @@ in
           ../../core/security.nix
           ../../core/sops.nix
           ../../core/user.nix
-          ../..//modules/services
+          ../../modules/services
           inputs.sops-nix.nixosModules.sops
         ];
         _module.args = { inherit inputs; userState = testState; };
