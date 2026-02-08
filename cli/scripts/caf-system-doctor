@@ -119,3 +119,6 @@ else
   [ "$FAILED_UNITS" -gt 0 ] && echo "   - Run: systemctl status <unit> to investigate"
   [ "$STORE_COUNT" -ge 50000 ] && echo "   - Run: sudo nix-collect-garbage -d"
 fi
+
+# Always exit 0 - this is informational, not an error
+exit 0
