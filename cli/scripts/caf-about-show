@@ -4,7 +4,7 @@
 # Display system info with Cafaye branding
 
 # Show Cafaye logo first
-caf-show-logo 2>/dev/null
+caf-logo-show 2>/dev/null
 
 # Then show system info
 if command -v fastfetch >/dev/null 2>&1; then
