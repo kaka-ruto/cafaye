@@ -16,7 +16,14 @@
           ../../interface
           inputs.sops-nix.nixosModules.sops
         ];
-        _module.args = { inherit inputs userState; };
+        _module.args = {
+          inherit inputs;
+          userState = userState // {
+            services = (userState.services or { }) // { postgresql = true; redis = true; };
+            frameworks = (userState.frameworks or { }) // { rails = true; };
+            languages = (userState.languages or { }) // { ruby = true; };
+          };
+        };
 
         sops.validateSopsFiles = false;
         systemd.services.tailscale-autoconnect.enable = false;
