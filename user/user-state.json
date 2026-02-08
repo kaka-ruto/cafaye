@@ -14,21 +14,21 @@
     "theme": "catppuccin-mocha"
   },
   "languages": {
-    "rust": true,
-    "go": true,
-    "nodejs": true,
-    "python": true,
+    "rust": false,
+    "go": false,
+    "nodejs": false,
+    "python": false,
     "ruby": true
   },
   "dev_tools": {
     "docker": true
   },
   "services": {
-    "postgresql": false,
+    "postgresql": true,
     "redis": false
   },
   "frameworks": {
-    "rails": false,
+    "rails": true,
     "django": false,
     "nextjs": false
   },
@@ -40,7 +40,7 @@
     "distributions": {
       "nvim": {
         "lazyvim": false,
-        "astronvim": false,
+        "astronvim": true,
         "nvchad": false,
         "lunarvim": false
       }
