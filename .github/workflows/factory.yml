@@ -11,6 +11,7 @@ jobs:
   check:
     name: Syntax Check
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       
@@ -33,11 +34,11 @@ jobs:
           nix flake check --show-trace --option max-jobs 8
 
   # Phase 2: Parallel VM Test Groups
-  # Split into separate jobs for parallel execution
   test-core:
     name: Core Tests
     needs: check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v9
@@ -55,6 +56,7 @@ jobs:
     name: CLI Tests
     needs: check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v9
@@ -72,6 +74,7 @@ jobs:
     name: Modules Tests
     needs: check
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v9
@@ -85,10 +88,16 @@ jobs:
       - name: Run Modules Unified Test
         run: nix build --show-trace .#checks.x86_64-linux.modules-unified
 
+  # Phase 3: Integration Tests (parallel)
   test-integration:
     name: Integration Tests
     needs: [test-core, test-cli, test-modules]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        test: [first-run-wizard, rails]
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v9
@@ -99,7 +108,25 @@ jobs:
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
         continue-on-error: true
       
-      - name: Run Integration Tests
+      - name: Run Integration Test - ${{ matrix.test }}
+        run: nix build --show-trace .#checks.x86_64-linux.integration-${{ matrix.test }}
+
+  # Phase 4: Summary (only runs if all tests pass)
+  summary:
+    name: Test Summary
+    needs: [test-core, test-cli, test-modules, test-integration]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check All Tests Passed
         run: |
-          nix build --show-trace .#checks.x86_64-linux.integration-first-run-wizard
-          nix build --show-trace .#checks.x86_64-linux.integration-rails
+          if [ "${{ needs.test-core.result }}" == "success" ] && \
+             [ "${{ needs.test-cli.result }}" == "success" ] && \
+             [ "${{ needs.test-modules.result }}" == "success" ] && \
+             [ "${{ needs.test-integration.result }}" == "success" ]; then
+            echo "✅ All tests passed!"
+            exit 0
+          else
+            echo "❌ Some tests failed"
+            exit 1
+          fi
