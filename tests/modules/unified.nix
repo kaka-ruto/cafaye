@@ -69,14 +69,14 @@ in
     machine.succeed("redis-cli ping | grep PONG")
 
     # === MODULES-EDITORS TESTS ===
-    # Test if editors are installed
-    ${if (testState.editors.neovim or false) then ''
+    # Test if editors are installed (only if enabled in testState)
+    ${pkgs.lib.optionalString (testState.editors.neovim or false) ''
       machine.succeed("nvim --version")
-    '' else ''}
+    ''}
     
-    ${if (testState.editors.helix or false) then ''
+    ${pkgs.lib.optionalString (testState.editors.helix or false) ''
       machine.succeed("hx --version")
-    '' else ''}
+    ''}
 
     # === INTERFACE-TERMINAL TESTS ===
     # Test if essential tools are in PATH
@@ -96,17 +96,17 @@ in
     machine.succeed("zellij --version")
 
     # === MODULES-FRAMEWORKS TESTS ===
-    # Test framework tools are available
-    ${if (testState.frameworks.rails or false) then ''
+    # Test framework tools are available (only if enabled in testState)
+    ${pkgs.lib.optionalString (testState.frameworks.rails or false) ''
       machine.succeed("which rails || gem list rails")
-    '' else ''''}
+    ''}
     
-    ${if (testState.frameworks.django or false) then ''
+    ${pkgs.lib.optionalString (testState.frameworks.django or false) ''
       machine.succeed("which django-admin || pip list | grep -i django")
-    '' else ''''}
+    ''}
     
-    ${if (testState.frameworks.nextjs or false) then ''
+    ${pkgs.lib.optionalString (testState.frameworks.nextjs or false) ''
       machine.succeed("npx --version")
-    '' else ''''}
+    ''}
   '';
 }
