@@ -99,14 +99,14 @@ in
     # Test framework tools are available
     ${if (testState.frameworks.rails or false) then ''
       machine.succeed("which rails || gem list rails")
-    '' else ''}
+    '' else ''''}
     
     ${if (testState.frameworks.django or false) then ''
       machine.succeed("which django-admin || pip list | grep -i django")
-    '' else ''}
+    '' else ''''}
     
     ${if (testState.frameworks.nextjs or false) then ''
       machine.succeed("npx --version")
-    '' else ''}
+    '' else ''''}
   '';
 }
