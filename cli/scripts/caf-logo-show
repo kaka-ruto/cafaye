@@ -1,16 +1,27 @@
 #!/bin/bash
 
-# Displays the Cafaye ASCII logo
-# Usage: caf-show-logo
+# Cafaye OS Logo Display
+# Display the Cafaye coffee logo in the terminal
 
-LOGO_FILE="/etc/cafaye/branding/logo.txt"
+clear
+echo -e "\033[38;5;180m"
+cat <<'EOF'
+                   )  )
+                  (  (
+                   )  )
+                  (  (
+                ________
+               /        \
+              |  ~~~~~~  |
+              |  ~~~~~~  |
+              |  ~~~~~~  |
+              |__________|____
+              \   CAFAYE     /|
+               \____________/ |
+                |          |  /
+                |__________|/
 
-if [[ ! -f "$LOGO_FILE" ]]; then
-    LOGO_FILE="$(git rev-parse --show-toplevel 2>/dev/null)/config/cafaye/branding/logo.txt"
-fi
-
-if [[ -f "$LOGO_FILE" ]]; then
-    cat "$LOGO_FILE"
-else
-    echo "☕ Cafaye OS"
-fi
+  ☕ Cloud Development, Perfected
+EOF
+echo -e "\033[0m"
+echo

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Cafaye OS Show Done (inspired by omarchy-show-done)
+# Cafaye OS Done Indicator
 # Display a "Done!" message with a spinner and wait for user to press any key.
 
 echo
