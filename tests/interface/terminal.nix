@@ -40,8 +40,8 @@
     # Note: we check if the user shell is indeed zsh
     machine.succeed("getent passwd cafaye | grep /zsh")
     
-    # Test if interactive zsh has starship hook
-    machine.succeed("sudo -u cafaye zsh -i -c 'starship --version'")
+    # Test if interactive zsh has starship hook (disable zellij auto-start to avoid hanging)
+    machine.succeed("sudo -u cafaye env ZELLIJ_AUTO_ATTACH=false zsh -i -c 'starship --version'")
     
     # Test Zellij availability
     machine.succeed("zellij --version")
