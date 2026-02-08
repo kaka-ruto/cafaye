@@ -17,6 +17,15 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "boot": {
+                    "type": "object",
+                    "properties": {
+                        "grub_device": {
+                            "type": "string",
+                            "description": "Disk device for GRUB bootloader (e.g., /dev/vda, /dev/sda, /dev/nvme0n1)"
+                        }
+                    }
                 }
             }
         },

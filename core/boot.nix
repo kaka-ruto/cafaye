@@ -4,7 +4,7 @@
   # Bootloader configuration
   boot.loader.grub = {
     enable = true;
-    device = "/dev/vda"; # Standard for most VPS (KVM)
+    device = userState.core.boot.grub_device or "/dev/vda";
   };
 
   # Use a modern kernel

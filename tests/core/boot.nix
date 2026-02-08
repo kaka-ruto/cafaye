@@ -3,7 +3,7 @@
 {
   name = "core-boot";
   nodes = {
-    machine = {
+    machine = { config, ... }: {
       imports = [ 
         ../../core/boot.nix 
         ../../core/hardware.nix 
@@ -11,6 +11,13 @@
       ];
       _module.args = { inherit userState; };
       
+      # Verify the GRUB device is configured from user state
+      assertions = [
+        {
+          assertion = config.boot.loader.grub.device == (userState.core.boot.grub_device or "/dev/vda");
+          message = "GRUB device should match user state configuration";
+        }
+      ];
     };
   };
 

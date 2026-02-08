@@ -4,7 +4,10 @@
     "zram_enabled": true,
     "authorized_keys": [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI..."
-    ]
+    ],
+    "boot": {
+      "grub_device": "/dev/vda"
+    }
   },
   "interface": {
     "terminal": {
