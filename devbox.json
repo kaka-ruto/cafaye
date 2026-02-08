@@ -15,8 +15,8 @@
       "check": "./bin/test.sh",
       "test": "./bin/test.sh",
       "test-full": "docker build --platform linux/amd64 -t cafaye-factory . && docker run --platform linux/amd64 --rm -it cafaye-factory",
-      "vm": "nix run .#debug-vm",
-      "check-ci": "nix flake check"
+      "vm": "nix run --extra-experimental-features 'nix-command flakes' .#debug-vm",
+      "check-ci": "nix flake check --extra-experimental-features 'nix-command flakes'"
     }
   }
 }
