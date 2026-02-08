@@ -21,3 +21,4 @@ secrets/secrets.yaml
 *~
 .DS_Store
 .devbox/
+.factory/
