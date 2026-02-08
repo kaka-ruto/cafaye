@@ -677,11 +677,22 @@ Run `nix flake check` before every commit:
 
 To verify a clean build in an isolated environment (requires Docker on host):
 
-```bash
-# If on Apple Silicon (M1/M2/M3), ensure x86 emulation 
-docker build --platform linux/amd64 -t cafaye-factory .
-docker run --platform linux/amd64 --rm -it cafaye-factory
-```
+1. **Install Devbox** (optional, simplifies commands):
+   ```bash
+   curl -fsSL https://get.jetpack.io/devbox | bash
+   ```
+
+2. **Run Tests**:
+   ```bash
+   devbox run test-full
+   ```
+
+3. **Or Manual Docker**:
+   ```bash
+   # If on Apple Silicon (M1/M2/M3), ensure x86 emulation 
+   docker build --platform linux/amd64 -t cafaye-factory .
+   docker run --platform linux/amd64 --rm -it cafaye-factory
+   ```
 
 This runs `nix flake check` inside a Docker container, ensuring no local contamination.
 

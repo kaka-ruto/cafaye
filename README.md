@@ -139,6 +139,10 @@ When developing Cafaye, reference the local Omarchy repository (`../omarchy/`):
 curl -fsSL https://cafaye.com/install.sh | bash
 
 # Or, for development
+# 1. Install Devbox (if not already installed)
+curl -fsSL https://get.jetpack.io/devbox | bash
+
+# 2. Clone and enter environment
 git clone https://github.com/kaka-ruto/cafaye
 cd cafaye
 devbox shell       # macOS/Linux dev environment
