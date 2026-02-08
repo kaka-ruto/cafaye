@@ -33,12 +33,13 @@
     machine.start()
     machine.wait_for_unit("multi-user.target")
 
-    # Test if caf-factory-check script exists and is executable
-    machine.succeed("test -x /etc/cafaye/cli/scripts/caf-factory-check")
+    # Test if caf-factory-check script exists and is executable (installed via package)
+    machine.succeed("which caf-factory-check")
+    machine.succeed("test -x $(which caf-factory-check)")
 
     # Test if the script can show help/usage (it will fail without gh auth, but should exist)
     # First check it doesn't have syntax errors
-    machine.succeed("bash -n /etc/cafaye/cli/scripts/caf-factory-check")
+    machine.succeed("bash -n $(which caf-factory-check)")
 
     # Test that gh CLI is available
     machine.succeed("which gh")
