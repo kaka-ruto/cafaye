@@ -18,6 +18,8 @@ SINCE_HOURS=24
 COMMIT_FILTER=""
 SHOW_LATEST=false
 SHOW_IN_PROGRESS=false
+SHOW_FAILED_STEPS=false
+RUN_ID=""
 
 usage() {
     echo "Usage: caf-factory-check [OPTIONS]"
@@ -28,6 +30,8 @@ usage() {
     echo "  --commit SHA         Filter by specific commit SHA"
     echo "  --latest             Show only the latest run"
     echo "  --in-progress        Include currently running builds"
+    echo "  --failed-steps       Show failed steps for the latest failed run"
+    echo "  --run-id ID          Show failed steps for specific run ID"
     echo "  -h, --help           Show this help"
     echo ""
     echo "Examples:"
@@ -36,6 +40,8 @@ usage() {
     echo "  caf-factory-check --commit abc123       # Check specific commit"
     echo "  caf-factory-check --latest              # Show latest run only"
     echo "  caf-factory-check --in-progress         # Include running builds"
+    echo "  caf-factory-check --failed-steps        # Show failed steps only"
+    echo "  caf-factory-check --run-id 12345        # Show failed steps for run"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -59,6 +65,14 @@ while [[ $# -gt 0 ]]; do
         --in-progress)
             SHOW_IN_PROGRESS=true
             shift
+            ;;
+        --failed-steps)
+            SHOW_FAILED_STEPS=true
+            shift
+            ;;
+        --run-id)
+            RUN_ID="$2"
+            shift 2
             ;;
         -h|--help)
             usage
@@ -155,6 +169,73 @@ get_status_icon() {
     else
         echo "🔄"
     fi
+}
+
+fetch_failed_steps() {
+    local run_id="$1"
+    
+    # Get all jobs for the run and filter for failed ones
+    gh run view "$run_id" \
+        --json jobs \
+        -q '.jobs | map(select(.conclusion == "failure" or .conclusion == "startup_failure" or .conclusion == "timed_out")) | map({name: .name, conclusion: .conclusion, startedAt: .startedAt, completedAt: .completedAt, logsUrl: .logsUrl})'
+}
+
+show_failed_steps() {
+    local run_id="$1"
+    
+    if [[ -z "$run_id" ]]; then
+        # Get the latest failed run
+        local latest_failed
+        latest_failed=$(gh run list -b master -L 1 --json databaseId,conclusion,displayTitle -q '[.[] | select(.conclusion=="failure")] | .[0]')
+        
+        if [[ -z "$latest_failed" ]] || [[ "$latest_failed" == "null" ]]; then
+            echo "✅ No failed runs found on master"
+            return 0
+        fi
+        
+        run_id=$(echo "$latest_failed" | jq -r '.databaseId')
+        local run_title
+        run_title=$(echo "$latest_failed" | jq -r '.displayTitle')
+        
+        echo ""
+        echo "🏭 FAILED STEPS FOR LATEST RUN"
+        echo "═══════════════════════════════════════════"
+        echo "Run: $run_title"
+        echo "Run ID: $run_id"
+        echo ""
+    else
+        echo ""
+        echo "🏭 FAILED STEPS FOR RUN ID: $run_id"
+        echo "═══════════════════════════════════════════"
+        echo ""
+    fi
+    
+    # Fetch and display failed steps
+    local failed_jobs
+    failed_jobs=$(fetch_failed_steps "$run_id")
+    
+    if [[ "$failed_jobs" == "[]" ]] || [[ -z "$failed_jobs" ]]; then
+        echo "⚠️  No failed steps found for this run"
+        return 0
+    fi
+    
+    local count
+    count=$(echo "$failed_jobs" | jq 'length')
+    echo "Found $count failed job(s):"
+    echo ""
+    
+    echo "$failed_jobs" | jq -r '.[] | "
+❌ \(.name)
+   Status: \(.conclusion)
+   Started: \(.startedAt)
+   Completed: \(.completedAt)
+   ────────────────────────────────────────
+"'
+    
+    echo ""
+    echo "To view full logs for a specific job:"
+    echo "   gh run view $run_id --log-failed"
+    echo ""
 }
 
 save_and_display() {
@@ -257,7 +338,13 @@ show_last_check() {
 }
 
 # Main execution
-if [[ "$WATCH_MODE" == true ]]; then
+if [[ "$SHOW_FAILED_STEPS" == true ]] || [[ -n "$RUN_ID" ]]; then
+    if [[ -n "$RUN_ID" ]]; then
+        show_failed_steps "$RUN_ID"
+    else
+        show_failed_steps ""
+    fi
+elif [[ "$WATCH_MODE" == true ]]; then
     echo "👁️  Watching for failures (Ctrl+C to stop)..."
     while true; do
         clear

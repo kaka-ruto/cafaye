@@ -39,6 +39,8 @@ in
     # Normal mode: fail2ban should be running
     machine.wait_for_unit("fail2ban.service")
     # Normal mode: SSH should only be accessible via Tailscale
+    # Wait for tailscale0 interface to appear (Tailscale creates it asynchronously)
+    machine.wait_until_succeeds("ip link show tailscale0", timeout=30)
     machine.succeed("iptables -L | grep -q 'tailscale0'")
     ''}
   '';
