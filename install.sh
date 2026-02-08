@@ -100,17 +100,31 @@ install_nixos() {
 
 # Main
 main() {
+  local auto_yes=false
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --yes)
+        auto_yes=true
+        shift
+        ;;
+      *)
+        echo "Unknown option: $1"
+        echo "Usage: $0 [--yes]"
+        exit 1
+        ;;
+    esac
+  done
+
   echo -e "${GREEN}☕ Cafaye OS Installer${NC}"
   echo -e "${YELLOW}========================${NC}"
   echo ""
-  
-  # Check root
+
   check_root
-  
-  # Detect OS
+
   local os
   os=$(detect_os)
-  
+
   case "$os" in
     nixos)
       log "Already running NixOS!"
@@ -131,27 +145,32 @@ main() {
       exit 1
       ;;
   esac
-  
+
   echo ""
   log_info "This will:"
   echo "  1. Install Nix (multi-user)"
   echo "  2. Clone Cafaye"
   echo "  3. Install NixOS"
   echo ""
-  
-  read -p "Continue? (y/N): " -n 1 -r
-  echo
-  
+
+  if [[ "$auto_yes" == true ]] || [[ ! -t 0 ]]; then
+    REPLY="y"
+    echo "Auto-confirming (non-interactive mode)..."
+  else
+    read -p "Continue? (y/N): " -n 1 -r
+    echo
+  fi
+
   if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "Cancelled"
     exit 0
   fi
-  
+
   echo ""
   install_nix
   clone_cafaye
   install_nixos
-  
+
   echo ""
   log "Installation complete!"
   echo ""
