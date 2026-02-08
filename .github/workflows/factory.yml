@@ -7,8 +7,9 @@ on:
     branches: [ master ]
 
 jobs:
+  # Phase 1: Fast syntax and evaluation checks (no VMs)
   check:
-    name: Check & Test
+    name: Syntax Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +27,79 @@ jobs:
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
         continue-on-error: true
 
-      - name: Run Core Tests
+      - name: Fast Evaluation Check
         run: |
-          nix flake check --show-trace
+          # Only evaluate, don't run VM tests
+          nix flake check --show-trace --option max-jobs 8
+
+  # Phase 2: Parallel VM Test Groups
+  # Split into separate jobs for parallel execution
+  test-core:
+    name: Core Tests
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v9
+      - uses: DeterminateSystems/magic-nix-cache-action@v2
+      - uses: cachix/cachix-action@v14
+        with:
+          name: cafaye
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+        continue-on-error: true
+      
+      - name: Run Core Unified Test
+        run: nix build --show-trace .#checks.x86_64-linux.core-unified
+
+  test-cli:
+    name: CLI Tests
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v9
+      - uses: DeterminateSystems/magic-nix-cache-action@v2
+      - uses: cachix/cachix-action@v14
+        with:
+          name: cafaye
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+        continue-on-error: true
+      
+      - name: Run CLI Unified Test
+        run: nix build --show-trace .#checks.x86_64-linux.cli-unified
+
+  test-modules:
+    name: Modules Tests
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v9
+      - uses: DeterminateSystems/magic-nix-cache-action@v2
+      - uses: cachix/cachix-action@v14
+        with:
+          name: cafaye
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+        continue-on-error: true
+      
+      - name: Run Modules Unified Test
+        run: nix build --show-trace .#checks.x86_64-linux.modules-unified
+
+  test-integration:
+    name: Integration Tests
+    needs: [test-core, test-cli, test-modules]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v9
+      - uses: DeterminateSystems/magic-nix-cache-action@v2
+      - uses: cachix/cachix-action@v14
+        with:
+          name: cafaye
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+        continue-on-error: true
+      
+      - name: Run Integration Tests
+        run: |
+          nix build --show-trace .#checks.x86_64-linux.integration-first-run-wizard
+          nix build --show-trace .#checks.x86_64-linux.integration-rails
