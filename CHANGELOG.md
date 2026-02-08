@@ -5,6 +5,23 @@ All notable changes to Cafaye OS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-02-08
+
+### Added
+- **Caf CLI**: A flagship TUI management tool built with `bash` and `gum` for system administration
+- **State Management**: Introduced `user-state.schema.json` for strict configuration validation
+- **Core Utilities**: Standardized system helpers following the `caf-<thing>-<action>` pattern (e.g., `caf-state-read`, `caf-system-rebuild`)
+- **Hook System**: Implemented `caf-hook-run` to allow user-defined scripts for `pre-update`, `post-update`, and `theme-set`
+- **Extensibility**: Added support for user menu extensions in `~/.config/cafaye/extensions/`
+- **Quality**: Dedicated VM tests for the CLI management layer and hook execution
+
+### Fixed
+- CI runner hanging during interactive shell tests by disabling Zellij auto-attach in test environments
+- Missing `jq` and `git` dependencies in the system CLI module
+- Hardcoded local paths in state management scripts to use system-standard `/etc/cafaye`
+
+---
+
 ## [0.2.0] - 2026-02-08
 
 ### Added
