@@ -1,5 +1,8 @@
 { pkgs, inputs, userState, ... }:
 
+let
+  bootstrapMode = userState.core.security.bootstrap_mode or false;
+in
 {
   name = "core-security";
   nodes = {
@@ -27,7 +30,16 @@
     machine.wait_for_unit("sshd.service")
     # Check if firewall is enabled
     machine.wait_for_unit("firewall.service")
-    # Check if fail2ban is running
+    ${if bootstrapMode then ''
+    # Bootstrap mode: fail2ban should be disabled
+    machine.fail("systemctl is-active fail2ban.service")
+    # Bootstrap mode: SSH should be accessible on all interfaces
+    machine.succeed("iptables -L | grep -q 'dpt:ssh'")
+    '' else ''
+    # Normal mode: fail2ban should be running
     machine.wait_for_unit("fail2ban.service")
+    # Normal mode: SSH should only be accessible via Tailscale
+    machine.succeed("iptables -L | grep -q 'tailscale0'")
+    ''}
   '';
 }

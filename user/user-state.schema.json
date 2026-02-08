@@ -26,6 +26,15 @@
                             "description": "Disk device for GRUB bootloader (e.g., /dev/vda, /dev/sda, /dev/nvme0n1)"
                         }
                     }
+                },
+                "security": {
+                    "type": "object",
+                    "properties": {
+                        "bootstrap_mode": {
+                            "type": "boolean",
+                            "description": "Temporarily allow direct SSH access during initial setup (disable after Tailscale is confirmed working)"
+                        }
+                    }
                 }
             }
         },
