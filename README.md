@@ -7,17 +7,16 @@
 **One command. That's it.**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash -- root@<your-vps-ip>
 ```
 
-The installer runs on **your machine** (not the VPS) and:
+That's it! The installer:
 
-1. **Installs dependencies** (Nix, nixos-anywhere, SSH, git)
-2. **Gathers VPS info** (IP, SSH key, TailScale)
-3. **Deploys NixOS** to your VPS using `nixos-anywhere`
-4. **Your VPS reboots** into Cafaye OS
+1. SSHs into your VPS
+2. Downloads and installs NixOS
+3. VPS reboots into Cafaye OS
 
-After reboot, SSH in and run `caf-setup` to configure your development environment.
+Then SSH in and run `caf-setup`.
 
 ---
 
@@ -156,16 +155,36 @@ When developing Cafaye, reference the local Omarchy repository (`../omarchy/`):
 **One command. That's it.**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash -- root@<your-vps-ip>
 ```
 
 The installer will:
-1. Run on **your machine** (not the VPS)
-2. Install required tools (Nix, nixos-anywhere, SSH, git)
-3. Ask for your VPS connection details (IP, SSH key)
-4. Optionally configure TailScale
-5. Deploy NixOS to your VPS
-6. Your VPS reboots into Cafaye OS
+
+1. SSH into your VPS
+2. Install NixOS (auto-downloads dependencies)
+3. VPS reboots into Cafaye OS
+
+**After installation:**
+
+```bash
+# SSH into your new Cafaye OS
+ssh root@<your-vps-ip>
+
+# Configure your development environment
+caf-setup
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--port <n>` | SSH port (default: 22) |
+| `--setup` | Automatically run `caf-setup` after reboot |
+
+Example with options:
+```bash
+curl -fsSL https://.../install.sh | bash -- root@192.168.1.100 --port 2222 --setup
+```
 
 ---
 
