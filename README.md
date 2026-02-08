@@ -162,17 +162,23 @@ When developing Cafaye, reference the local Omarchy repository (`../omarchy/`):
 
 ## 🏗 Install on VPS
 
-**One command. That's it.**
+**Two simple steps:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash -- root@<your-vps-ip>
+# Step 1: SSH into your fresh VPS
+ssh root@<your-vps-ip>
+
+# Step 2: Run the installer
+curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
 ```
 
 The installer will:
 
-1. SSH into your VPS
-2. Install NixOS (auto-downloads dependencies)
-3. VPS reboots into Cafaye OS
+1. Detect Debian/Ubuntu
+2. Install Nix (multi-user)
+3. Clone Cafaye
+4. Install NixOS
+5. VPS reboots into Cafaye OS
 
 **After installation:**
 
@@ -184,31 +190,12 @@ ssh root@<your-vps-ip>
 caf-setup
 ```
 
-### Options
-
-| Option | Description |
-|--------|-------------|
-| `--port <n>` | SSH port (default: 22) |
-| `--setup` | Automatically run `caf-setup` after reboot |
-
-Example with options:
-```bash
-curl -fsSL https://.../install.sh | bash -- root@192.168.1.100 --port 2222 --setup
-```
-
 ---
 
 **What you'll need:**
 - A fresh VPS (Ubuntu 24.04 or Debian 12)
 - At least 2GB RAM (1GB works with ZRAM)
 - Root SSH access
-
-**The installer will ask you:**
-1. VPS IP address and SSH credentials
-2. SSH keys (from agent, file, or paste)
-3. Tailscale (optional, for secure access)
-4. Development preset (Rails, Django, Node.js, Go, Rust, or Custom)
-5. Code editor preference (Neovim, Helix, VS Code)
 
 ---
 
