@@ -153,7 +153,7 @@ When developing Cafaye, reference the local Omarchy repository (`../omarchy/`):
 **One command. That's it.**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
 ```
 
 The bootstrap script will:

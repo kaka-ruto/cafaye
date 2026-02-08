@@ -227,6 +227,6 @@ caf-system-rebuild
 
 ## 📚 More Information
 
-- [First Run Guide](FIRST_RUN.md)
+- [Setup Guide](SETUP.md)
 - [Documentation](../README.md)
 - [GitHub](https://github.com/kaka-ruto/cafaye)
