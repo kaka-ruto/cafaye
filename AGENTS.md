@@ -128,6 +128,21 @@ git commit -m "Fix Tailscale auto-join service recursion in core modules"
 
 Tests are mandatory before any commit.
 
+### Important: Always Run from cafaye/ Directory
+
+**Always run all commands from the `/Users/kaka/Code/Cafaye/cafaye/` directory.** This ensures proper path resolution for install.sh and other scripts.
+
+Example:
+```bash
+# ❌ BAD: Running from parent directory
+cd /Users/kaka/Code/Cafaye
+bash ./bin/test.sh
+
+# ✅ GOOD: Running from cafaye directory
+cd /Users/kaka/Code/Cafaye/cafaye
+bash bin/test.sh
+```
+
 ### Fast Evaluation (macOS/Anywhere)
 Checks syntax, option existence, and flake logic. Does not run VMs.
 ```bash

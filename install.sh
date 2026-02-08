@@ -32,15 +32,28 @@ EOF
 
 # Check if running from repo or need to self-clone
 self_clone() {
+  # When running via curl|bash, $0 is '-' (stdin), so we need to clone
+  if [[ "$0" == "-" ]]; then
+    local temp_dir=$(mktemp -d)
+    cd "$temp_dir"
+    
+    git clone --depth 1 https://github.com/kaka-ruto/cafaye
+    cd cafaye
+    
+    echo -e "${GREEN}✓ Downloaded Cafaye to $temp_dir/cafaye${NC}"
+    echo "$temp_dir/cafaye"
+    return 0
+  fi
+  
+  # Running from a file - check if we're in a valid cafaye repo
   local script_dir="$(cd "$(dirname "$0")" && pwd)"
   
-  # Check if we're in a valid cafaye repo
   if [[ -f "$script_dir/flake.nix" && -d "$script_dir/installer" ]]; then
     echo "$script_dir"
     return 0
   fi
   
-  # We need to clone
+  # We need to clone (file exists but not in cafaye repo)
   echo -e "${BLUE}Downloading Cafaye OS...${NC}"
   
   local temp_dir=$(mktemp -d)
@@ -201,8 +214,8 @@ main() {
   # Self-clone if needed
   cafaye_dir=$(self_clone)
   
-  # If we cloned, re-execute this script from the cloned repo
-  if [[ "$cafaye_dir" != "$(cd "$(dirname "$0")" && pwd)" ]]; then
+  # Only re-exec if not running from stdin ($0 == "-")
+  if [[ "$0" != "-" && "$cafaye_dir" != "$(cd "$(dirname "$0")" && pwd)" ]]; then
     exec "$cafaye_dir/install.sh" "$@"
   fi
   
