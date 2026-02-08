@@ -41,6 +41,10 @@ in
     # Normal mode: SSH should only be accessible via Tailscale
     # Wait for tailscale0 interface to appear (Tailscale creates it asynchronously)
     machine.wait_until_succeeds("ip link show tailscale0", timeout=30)
+    # Reload firewall to ensure rules are applied for the new interface
+    machine.succeed("systemctl reload firewall")
+    # Give firewall a moment to apply rules
+    machine.sleep(1)
     machine.succeed("iptables -L | grep -q 'tailscale0'")
     ''}
   '';

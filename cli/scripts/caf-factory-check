@@ -19,6 +19,7 @@ COMMIT_FILTER=""
 SHOW_LATEST=false
 SHOW_IN_PROGRESS=false
 SHOW_FAILED_STEPS=false
+SHOW_LOGS=false
 RUN_ID=""
 
 usage() {
@@ -32,6 +33,7 @@ usage() {
     echo "  --in-progress        Include currently running builds"
     echo "  --failed-steps       Show failed steps for the latest failed run"
     echo "  --run-id ID          Show failed steps for specific run ID"
+    echo "  --logs               Show actual error logs from failed steps"
     echo "  -h, --help           Show this help"
     echo ""
     echo "Examples:"
@@ -42,6 +44,8 @@ usage() {
     echo "  caf-factory-check --in-progress         # Include running builds"
     echo "  caf-factory-check --failed-steps        # Show failed steps only"
     echo "  caf-factory-check --run-id 12345        # Show failed steps for run"
+    echo "  caf-factory-check --logs                # Show full error logs"
+    echo "  caf-factory-check --commit abc123 --logs # Show logs for commit"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -73,6 +77,10 @@ while [[ $# -gt 0 ]]; do
         --run-id)
             RUN_ID="$2"
             shift 2
+            ;;
+        --logs)
+            SHOW_LOGS=true
+            shift
             ;;
         -h|--help)
             usage
@@ -178,6 +186,12 @@ fetch_failed_steps() {
     gh run view "$run_id" \
         --json jobs \
         -q '.jobs | map(select(.conclusion == "failure" or .conclusion == "startup_failure" or .conclusion == "timed_out")) | map({name: .name, conclusion: .conclusion, startedAt: .startedAt, completedAt: .completedAt, logsUrl: .logsUrl})'
+}
+
+fetch_run_logs() {
+    local run_id="$1"
+    # Fetch the failed logs for a run
+    gh run view "$run_id" --log-failed 2>&1 || echo "Failed to fetch logs"
 }
 
 show_failed_steps() {
@@ -368,8 +382,104 @@ show_last_check() {
     fi
 }
 
+show_run_logs() {
+    local run_id="$1"
+    
+    if [[ -z "$run_id" ]]; then
+        # Get the latest run (failed or not)
+        local latest_run
+        latest_run=$(gh run list -b master -L 1 --json databaseId,conclusion,displayTitle,headSha -q '.[0]')
+        
+        if [[ -z "$latest_run" ]] || [[ "$latest_run" == "null" ]]; then
+            echo "No runs found on master"
+            return 1
+        fi
+        
+        run_id=$(echo "$latest_run" | jq -r '.databaseId')
+        local run_title
+        run_title=$(echo "$latest_run" | jq -r '.displayTitle')
+        local run_commit
+        run_commit=$(echo "$latest_run" | jq -r '.headSha[:8]')
+        local conclusion
+        conclusion=$(echo "$latest_run" | jq -r '.conclusion')
+        
+        echo ""
+        echo "🏭 LOGS FOR LATEST RUN"
+        echo "═══════════════════════════════════════════"
+        echo "Run: $run_title"
+        echo "Commit: $run_commit"
+        echo "Run ID: $run_id"
+        echo "Status: ${conclusion:-in_progress}"
+        echo ""
+        
+        if [[ "$conclusion" != "failure" ]]; then
+            echo "⚠️  This run did not fail. Showing logs anyway..."
+            echo ""
+        fi
+    else
+        # Get run details
+        local run_details
+        run_details=$(gh run view "$run_id" --json databaseId,conclusion,displayTitle,headSha 2>/dev/null || echo "")
+        
+        if [[ -z "$run_details" ]]; then
+            echo "❌ Could not find run with ID: $run_id"
+            return 1
+        fi
+        
+        local run_title
+        run_title=$(echo "$run_details" | jq -r '.displayTitle')
+        local run_commit
+        run_commit=$(echo "$run_details" | jq -r '.headSha[:8]')
+        local conclusion
+        conclusion=$(echo "$run_details" | jq -r '.conclusion')
+        
+        echo ""
+        echo "🏭 LOGS FOR RUN ID: $run_id"
+        echo "═══════════════════════════════════════════"
+        echo "Run: $run_title"
+        echo "Commit: $run_commit"
+        echo "Status: ${conclusion:-in_progress}"
+        echo ""
+    fi
+    
+    # Fetch and display logs
+    echo "📋 FETCHING LOGS..."
+    echo "═══════════════════════════════════════════"
+    echo ""
+    
+    local logs
+    logs=$(fetch_run_logs "$run_id")
+    
+    # Show last 100 lines of logs (to avoid overwhelming output)
+    echo "$logs" | tail -100
+    
+    echo ""
+    echo "═══════════════════════════════════════════"
+    echo ""
+    echo "💾 To view complete logs, run:"
+    echo "   gh run view $run_id --log-failed"
+    echo ""
+}
+
 # Main execution
-if [[ "$SHOW_FAILED_STEPS" == true ]] || [[ -n "$RUN_ID" ]]; then
+if [[ "$SHOW_LOGS" == true ]]; then
+    if [[ -n "$RUN_ID" ]]; then
+        show_run_logs "$RUN_ID"
+    elif [[ -n "$COMMIT_FILTER" ]]; then
+        # Find run for specific commit
+        commit_run=$(gh run list -b master -L 20 --json databaseId,headSha,conclusion -q "[.[] | select(.headSha | startswith(\"$COMMIT_FILTER\"))] | .[0]")
+        
+        if [[ -z "$commit_run" ]] || [[ "$commit_run" == "null" ]]; then
+            echo "❌ No runs found for commit: $COMMIT_FILTER"
+            exit 1
+        fi
+        
+        run_id=$(echo "$commit_run" | jq -r '.databaseId')
+        show_run_logs "$run_id"
+    else
+        show_run_logs ""
+    fi
+elif [[ "$SHOW_FAILED_STEPS" == true ]] || [[ -n "$RUN_ID" ]]; then
     if [[ -n "$RUN_ID" ]]; then
         show_failed_steps "$RUN_ID"
     else
