@@ -12,7 +12,8 @@ show_main_menu() {
     echo ""
     
     choice=$(gum choose --header "Main Menu" \
-        "📦 Install (Languages & Services)" \
+        "📦 Install (Languages & Frameworks)" \
+        "⚙️  Services (Postgres, Redis)" \
         "🎨 Style (Themes & UI)" \
         "🏥 Status (System Health)" \
         "🔄 Update & Rebuild" \
@@ -21,6 +22,7 @@ show_main_menu() {
 
     case "$choice" in
         *"Install"*) show_install_menu ;;
+        *"Services"*) show_services_menu ;;
         *"Style"*) show_style_menu ;;
         *"Status"*) show_status_menu ;;
         *"Update"*) run_system_update ;;
@@ -37,6 +39,7 @@ show_install_menu() {
         "🐍 Python" \
         "💎 Ruby" \
         "🐳 Docker" \
+        "🗄️  Docker DBs" \
         "⬅️  Back")
 
     case "$choice" in
@@ -46,8 +49,38 @@ show_install_menu() {
         "🐍 Python") toggle_language "python" ;;
         "💎 Ruby") toggle_language "ruby" ;;
         "🐳 Docker") toggle_service "docker" ;;
+        *"Docker DBs"*) caf-docker-db-install ;;
         "⬅️  Back") show_main_menu ;;
     esac
+}
+
+show_services_menu() {
+    choice=$(gum choose --header "Backend Services" \
+        "🐘 PostgreSQL" \
+        "🧠 Redis" \
+        "⬅️  Back")
+
+    case "$choice" in
+        *"PostgreSQL"*) toggle_backend_service "postgresql" ;;
+        *"Redis"*) toggle_backend_service "redis" ;;
+        "⬅️  Back") show_main_menu ;;
+    esac
+}
+
+toggle_backend_service() {
+    service=$1
+    current=$(caf-state-read "services.$service")
+    
+    if [[ "$current" == "true" ]]; then
+        gum confirm "Disable $service (System Service)?" && caf-state-write "services.$service" "false"
+    else
+        gum confirm "Enable $service (System Service)?" && caf-state-write "services.$service" "true"
+    fi
+    
+    if gum confirm "Apply changes now? (Rebuild)"; then
+        caf-system-rebuild
+    fi
+    show_services_menu
 }
 
 run_system_update() {

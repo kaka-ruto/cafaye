@@ -22,5 +22,9 @@
   },
   "dev_tools": {
     "docker": true
+  },
+  "services": {
+    "postgresql": false,
+    "redis": false
   }
 }

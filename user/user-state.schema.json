@@ -52,6 +52,17 @@
                 "type": "boolean"
             }
         },
+        "services": {
+            "type": "object",
+            "properties": {
+                "postgresql": {
+                    "type": "boolean"
+                },
+                "redis": {
+                    "type": "boolean"
+                }
+            }
+        },
         "dev_tools": {
             "type": "object",
             "additionalProperties": {

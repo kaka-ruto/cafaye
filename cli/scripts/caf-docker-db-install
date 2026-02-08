@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# Cafaye OS Docker DB Installer
+# Usage: caf-docker-db-install
+
+show_menu() {
+    clear
+    caf-logo-show
+    echo "🐳 Docker Database Installer"
+    echo "----------------------------"
+    
+    choice=$(gum choose --header "Select a Database to Install" \
+        "🐬 MySQL" \
+        "🦭 MariaDB" \
+        "🍃 MongoDB" \
+        "🐘 PostgreSQL (Container)" \
+        "⬅️  Back")
+
+    case "$choice" in
+        *"MySQL"*) install_mysql ;;
+        *"MariaDB"*) install_mariadb ;;
+        *"MongoDB"*) install_mongo ;;
+        *"PostgreSQL"*) install_postgres ;;
+        *"Back"*) exit 0 ;;
+    esac
+}
+
+install_mysql() {
+    password=$(gum input --password --placeholder "Set MySQL root password")
+    port=$(gum input --placeholder "Port (default 3306)" --value "3306")
+    
+    echo "🚀 Launching MySQL container..."
+    docker run -d \
+        --name cafaye-mysql \
+        -p "$port":3306 \
+        -e MYSQL_ROOT_PASSWORD="$password" \
+        mysql:latest
+        
+    caf-task-done "MySQL Installation"
+}
+
+install_mariadb() {
+    password=$(gum input --password --placeholder "Set MariaDB root password")
+    port=$(gum input --placeholder "Port (default 3306)" --value "3306")
+    
+    echo "🚀 Launching MariaDB container..."
+    docker run -d \
+        --name cafaye-mariadb \
+        -p "$port":3306 \
+        -e MARIADB_ROOT_PASSWORD="$password" \
+        mariadb:latest
+        
+    caf-task-done "MariaDB Installation"
+}
+
+install_mongo() {
+    port=$(gum input --placeholder "Port (default 27017)" --value "27017")
+    
+    echo "🚀 Launching MongoDB container..."
+    docker run -d \
+        --name cafaye-mongo \
+        -p "$port":27017 \
+        mongodb/mongodb-community-server:latest
+        
+    caf-task-done "MongoDB Installation"
+}
+
+install_postgres() {
+    password=$(gum input --password --placeholder "Set Postgres password")
+    port=$(gum input --placeholder "Port (default 5433 to avoid conflict)" --value "5433")
+    
+    echo "🚀 Launching PostgreSQL container..."
+    docker run -d \
+        --name cafaye-postgres-container \
+        -p "$port":5432 \
+        -e POSTGRES_PASSWORD="$password" \
+        postgres:latest
+        
+    caf-task-done "PostgreSQL Container Installation"
+}
+
+# Start
+show_menu
