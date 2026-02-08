@@ -161,22 +161,34 @@ Turn any fresh VPS into a Cafaye Powerhouse in minutes.
 
 ## 💻 Local Development
 
-# Or, for development
-# 1. Install Devbox (if not already installed)
-curl -fsSL https://get.jetpack.io/devbox | bash
+**Prerequisites:**
+- Devbox (manages Nix environment)
+- Docker (for full integration tests)
 
-# 2. Clone and enter environment
-git clone https://github.com/kaka-ruto/cafaye
-cd cafaye
-devbox shell       # macOS/Linux dev environment
-nix flake check    # Run the test suite
+**Steps:**
 
-# Run full integration tests in Docker (Recommended before pushing)
-devbox run test-full
-# Or manually (force amd64 to match VPS architecture):
-# docker build --platform linux/amd64 -t cafaye-factory .
-# docker run --platform linux/amd64 --rm -it cafaye-factory
-```
+1. **Install Devbox (if not already installed):**
+   ```bash
+   curl -fsSL https://get.jetpack.io/devbox | bash
+   ```
+
+2. **Clone and enter the development environment:**
+   ```bash
+   git clone https://github.com/kaka-ruto/cafaye
+   cd cafaye
+   devbox shell       # macOS/Linux dev environment
+   nix flake check    # Run the test suite
+   ```
+
+3. **Run full integration tests in Docker (Recommended before pushing):**
+   ```bash
+   devbox run test-full
+   ```
+   Or manually (force amd64 to match VPS architecture):
+   ```bash
+   docker build --platform linux/amd64 -t cafaye-factory .
+   docker run --platform linux/amd64 --rm -it cafaye-factory
+   ```
 
 ## 📖 Documentation
 
