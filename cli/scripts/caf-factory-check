@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Cafaye Factory CI/CD Status Checker
-# Polls GitHub Actions for failed builds and displays them
-# Usage: caf-factory-check [--watch] [--since-hours N]
+# Polls GitHub Actions for builds and displays them
+# Usage: caf-factory-check [--watch] [--since-hours N] [--commit SHA] [--latest]
 
 set -e
 
@@ -10,10 +10,33 @@ SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 FACTORY_DIR="$REPO_ROOT/.factory"
 FACTORY_LOG="$FACTORY_DIR/failures.json"
+FACTORY_ALL_LOG="$FACTORY_DIR/all-runs.json"
 
 # Parse arguments
 WATCH_MODE=false
 SINCE_HOURS=24
+COMMIT_FILTER=""
+SHOW_LATEST=false
+SHOW_IN_PROGRESS=false
+
+usage() {
+    echo "Usage: caf-factory-check [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  --watch              Watch mode - refreshes every 60 seconds"
+    echo "  --since-hours N      Look back N hours (default: 24)"
+    echo "  --commit SHA         Filter by specific commit SHA"
+    echo "  --latest             Show only the latest run"
+    echo "  --in-progress        Include currently running builds"
+    echo "  -h, --help           Show this help"
+    echo ""
+    echo "Examples:"
+    echo "  caf-factory-check                       # Check last 24h for failures"
+    echo "  caf-factory-check --watch               # Watch for failures"
+    echo "  caf-factory-check --commit abc123       # Check specific commit"
+    echo "  caf-factory-check --latest              # Show latest run only"
+    echo "  caf-factory-check --in-progress         # Include running builds"
+}
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -25,9 +48,25 @@ while [[ $# -gt 0 ]]; do
             SINCE_HOURS="$2"
             shift 2
             ;;
+        --commit)
+            COMMIT_FILTER="$2"
+            shift 2
+            ;;
+        --latest)
+            SHOW_LATEST=true
+            shift
+            ;;
+        --in-progress)
+            SHOW_IN_PROGRESS=true
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: caf-factory-check [--watch] [--since-hours N]"
+            usage
             exit 1
             ;;
     esac
@@ -50,57 +89,151 @@ if ! gh auth status &> /dev/null; then
     exit 1
 fi
 
+get_current_commit() {
+    git rev-parse HEAD 2>/dev/null || echo ""
+}
+
+fetch_runs() {
+    local limit=${1:-50}
+    gh run list \
+        -b master \
+        -L "$limit" \
+        --json databaseId,status,conclusion,headBranch,headSha,createdAt,url,event,displayTitle
+}
+
 fetch_failures() {
     local since_date
     since_date=$(date -u -v-${SINCE_HOURS}H +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u -d "${SINCE_HOURS} hours ago" +"%Y-%m-%dT%H:%M:%SZ")
     
-    # Get failed workflow runs on master from the last N hours
+    local jq_filter="[.[] | select(.status==\"completed\" and (.conclusion==\"failure\" or .conclusion==\"startup_failure\" or .conclusion==\"timed_out\")) | select(.createdAt >= \"$since_date\")]"
+    
+    # If commit filter provided, add it
+    if [[ -n "$COMMIT_FILTER" ]]; then
+        jq_filter="[.[] | select(.headSha | startswith(\"$COMMIT_FILTER\")) | select(.status==\"completed\" and (.conclusion==\"failure\" or .conclusion==\"startup_failure\" or .conclusion==\"timed_out\"))]"
+    fi
+    
     gh run list \
         -b master \
         -L 50 \
         --json databaseId,status,conclusion,headBranch,headSha,createdAt,url,event,displayTitle \
-        -q "[.[] | select(.status==\"completed\" and (.conclusion==\"failure\" or .conclusion==\"startup_failure\" or .conclusion==\"timed_out\")) | select(.createdAt >= \"$since_date\")]"
+        -q "$jq_filter"
+}
+
+fetch_all_runs() {
+    local limit=${1:-20}
+    local jq_filter="."
+    
+    # If commit filter provided
+    if [[ -n "$COMMIT_FILTER" ]]; then
+        jq_filter="[.[] | select(.headSha | startswith(\"$COMMIT_FILTER\"))]"
+    fi
+    
+    # If showing latest only
+    if [[ "$SHOW_LATEST" == true ]]; then
+        jq_filter="$jq_filter | .[0:1]"
+    fi
+    
+    gh run list \
+        -b master \
+        -L "$limit" \
+        --json databaseId,status,conclusion,headBranch,headSha,createdAt,url,event,displayTitle \
+        -q "$jq_filter"
+}
+
+get_status_icon() {
+    local status="$1"
+    local conclusion="$2"
+    
+    if [[ "$status" == "completed" ]]; then
+        case "$conclusion" in
+            "success") echo "✅" ;;
+            "failure") echo "❌" ;;
+            "cancelled") echo "🚫" ;;
+            "skipped") echo "⏭️" ;;
+            *) echo "❓" ;;
+        esac
+    else
+        echo "🔄"
+    fi
 }
 
 save_and_display() {
-    local failures
-    failures=$(fetch_failures)
+    local runs
     
-    if [[ "$failures" == "[]" ]] || [[ -z "$failures" ]]; then
-        echo "✅ No failed builds on master in the last ${SINCE_HOURS}h"
-        echo "[]" > "$FACTORY_LOG"
+    # Fetch appropriate data based on mode
+    if [[ "$SHOW_IN_PROGRESS" == true ]] || [[ -n "$COMMIT_FILTER" ]] || [[ "$SHOW_LATEST" == true ]]; then
+        runs=$(fetch_all_runs)
+        echo "$runs" > "$FACTORY_ALL_LOG"
+    else
+        local failures
+        failures=$(fetch_failures)
+        echo "$failures" > "$FACTORY_LOG"
+        
+        if [[ "$failures" == "[]" ]] || [[ -z "$failures" ]]; then
+            echo "✅ No failed builds on master in the last ${SINCE_HOURS}h"
+            return 0
+        fi
+        runs="$failures"
+    fi
+    
+    if [[ "$runs" == "[]" ]] || [[ -z "$runs" ]]; then
+        echo "ℹ️  No runs found matching criteria"
         return 0
     fi
     
-    # Save to log file
-    echo "$failures" > "$FACTORY_LOG"
-    
-    # Display results
     local count
-    count=$(echo "$failures" | jq 'length')
+    count=$(echo "$runs" | jq 'length')
+    
     echo ""
-    echo "🏭 FACTORY FAILURES (last ${SINCE_HOURS}h)"
+    if [[ "$SHOW_LATEST" == true ]]; then
+        echo "🏭 LATEST FACTORY RUN"
+    elif [[ -n "$COMMIT_FILTER" ]]; then
+        echo "🏭 FACTORY RUNS FOR COMMIT: ${COMMIT_FILTER}"
+    elif [[ "$SHOW_IN_PROGRESS" == true ]]; then
+        echo "🏭 FACTORY RUNS (including in-progress)"
+    else
+        echo "🏭 FACTORY FAILURES (last ${SINCE_HOURS}h)"
+    fi
     echo "═══════════════════════════════════════════"
-    echo "Found $count failed run(s)"
+    echo "Found $count run(s)"
     echo ""
     
-    echo "$failures" | jq -r '.[] | "
-📋 \(.displayTitle)
+    # Display each run with proper status icons
+    echo "$runs" | jq -r '.[] | 
+        (if .status == "completed" then
+            (if .conclusion == "success" then "✅"
+             elif .conclusion == "failure" then "❌"
+             elif .conclusion == "cancelled" then "🚫"
+             elif .conclusion == "skipped" then "⏭️"
+             else "❓" end)
+         else "🔄" end) as $icon |
+        "
+\($icon) \(.displayTitle)
    Run ID: \(.databaseId)
    Commit: \(.headSha[:8])
+   Status: \(.status)\(if .conclusion then " (\(.conclusion))" else "" end)
    When:   \(.createdAt)
    URL:    \(.url)
    ────────────────────────────────────────
 "'
     
     echo ""
-    echo "💾 Full details saved to: $FACTORY_LOG"
+    if [[ "$SHOW_IN_PROGRESS" == true ]] || [[ -n "$COMMIT_FILTER" ]] || [[ "$SHOW_LATEST" == true ]]; then
+        echo "💾 Full details saved to: $FACTORY_ALL_LOG"
+    else
+        echo "💾 Full details saved to: $FACTORY_LOG"
+    fi
     echo ""
     echo "To view logs for a specific run:"
     echo "   gh run view <run-id> --log-failed"
     echo ""
-    echo "To share with AI assistant, run:"
-    echo "   cat $FACTORY_LOG"
+    echo "To filter by current commit:"
+    current_commit=$(get_current_commit)
+    if [[ -n "$current_commit" ]]; then
+        echo "   caf-factory-check --commit ${current_commit:0:7}"
+    else
+        echo "   caf-factory-check --commit <sha>"
+    fi
 }
 
 show_last_check() {
