@@ -56,6 +56,35 @@
           integration-first-run-wizard = pkgs.testers.runNixOSTest (import ./tests/integration/first-run-wizard.nix { inherit pkgs inputs userState; });
           integration-rails = pkgs.testers.runNixOSTest (import ./tests/integration/rails.nix { inherit pkgs inputs userState; });
         };
+
+        packages = {
+          default = pkgs.callPackage ./cli/package.nix { };
+
+          dockerImage = pkgs.dockerTools.buildImage {
+            name = "cafaye";
+            tag = "latest";
+            copyToRoot = pkgs.buildEnv {
+              name = "image-root";
+              paths = [ 
+                (pkgs.callPackage ./cli/package.nix { })
+                pkgs.bashInteractive 
+                pkgs.coreutils
+                pkgs.git
+                pkgs.gum
+                pkgs.jq
+                pkgs.fzf
+                pkgs.ripgrep
+                pkgs.bat
+                pkgs.eza
+                pkgs.zoxide
+              ];
+            };
+            config = { 
+              Cmd = [ "bash" ]; 
+              Env = [ "PATH=/bin:/usr/bin" ];
+            };
+          };
+        };
       }
     ) // {
       # NixOS configuration for the VPS (stays outside eachSystem)
