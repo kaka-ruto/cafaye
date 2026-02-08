@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# Cafaye OS Editor Distribution Set
+# Usage: caf-editor-distribution-set <editor> <distribution>
+
+editor=$1
+distribution=$2
+
+if [[ -z "$editor" ]]; then
+    editor=$(gum choose --header "Select Editor" \
+        "nvim")
+fi
+
+if [[ "$editor" != "nvim" ]]; then
+    echo "❌ Only nvim distributions are currently supported"
+    exit 1
+fi
+
+if [[ -z "$distribution" ]]; then
+    distribution=$(gum choose --header "Select Neovim Distribution" \
+        "lazyvim" \
+        "astronvim" \
+        "nvchad" \
+        "lunarvim" \
+        "none")
+fi
+
+# Validate distribution
+case "$distribution" in
+    lazyvim|astronvim|nvchad|lunarvim|none)
+        ;;
+    *)
+        echo "❌ Invalid distribution: $distribution"
+        echo "   Valid: lazyvim, astronvim, nvchad, lunarvim, none"
+        exit 1
+        ;;
+esac
+
+# Clear other distributions (only one active at a time)
+for dist in lazyvim astronvim nvchad lunarvim; do
+    caf-state-write "editors.distributions.nvim.$dist" "false"
+done
+
+if [[ "$distribution" != "none" ]]; then
+    caf-state-write "editors.distributions.nvim.$distribution" "true"
+    echo "✅ Set nvim distribution to: $distribution"
+    echo ""
+    echo "💡 Run 'caf-nvim-distribution-setup' to configure your editor"
+else
+    echo "✅ Cleared nvim distribution (using base neovim config)"
+fi
+
+caf-task-done "Distribution Set"

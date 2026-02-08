@@ -49,6 +49,7 @@
           modules-services = pkgs.testers.runNixOSTest (import ./tests/modules/services.nix { inherit pkgs inputs userState; });
           modules-frameworks = pkgs.testers.runNixOSTest (import ./tests/modules/frameworks.nix { inherit pkgs inputs userState; });
           modules-editors = pkgs.testers.runNixOSTest (import ./tests/modules/editors.nix { inherit pkgs inputs userState; });
+          modules-editors-distributions = pkgs.testers.runNixOSTest (import ./tests/modules/editors-distributions.nix { inherit pkgs inputs userState; });
           cli-main = pkgs.testers.runNixOSTest (import ./tests/cli/main.nix { inherit pkgs inputs userState; });
         };
       }

@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# Cafaye OS Neovim Distribution Setup
+# Sets up the selected distribution with Cafaye theming
+
+NVIM_CONFIG="$HOME/.config/nvim"
+BACKUP_DIR="$NVIM_CONFIG.backup.$(date +%s)"
+
+# Get active distribution
+get_active_distribution() {
+    for dist in lazyvim astronvim nvchad lunarvim; do
+        val=$(caf-state-read "editors.distributions.nvim.$dist" 2>/dev/null)
+        if [[ "$val" == "true" ]]; then
+            echo "$dist"
+            return
+        fi
+    done
+    echo "none"
+}
+
+distribution=$(get_active_distribution)
+
+if [[ "$distribution" == "none" ]]; then
+    echo "❌ No distribution selected. Run: caf-editor-distribution-set nvim <distribution>"
+    exit 1
+fi
+
+echo "🔧 Setting up $distribution..."
+
+# Backup existing config
+if [[ -d "$NVIM_CONFIG" ]]; then
+    echo "📦 Backing up existing config to $BACKUP_DIR"
+    mv "$NVIM_CONFIG" "$BACKUP_DIR"
+fi
+
+case "$distribution" in
+    lazyvim)
+        echo "📥 Cloning LazyVim starter..."
+        git clone https://github.com/LazyVim/starter "$NVIM_CONFIG" --depth 1
+        rm -rf "$NVIM_CONFIG/.git"
+        
+        # Copy Cafaye theme config
+        cp /etc/cafaye/editors/distributions/nvim/lazyvim/lua/plugins/colorscheme.lua \
+           "$NVIM_CONFIG/lua/plugins/colorscheme.lua"
+        ;;
+        
+    astronvim)
+        echo "📥 Cloning AstroNvim..."
+        git clone --depth 1 https://github.com/AstroNvim/template "$NVIM_CONFIG"
+        rm -rf "$NVIM_CONFIG/.git"
+        
+        # Copy Cafaye theme config
+        cp /etc/cafaye/editors/distributions/nvim/astronvim/init.lua \
+           "$NVIM_CONFIG/lua/user/init.lua" 2>/dev/null || true
+        ;;
+        
+    nvchad)
+        echo "📥 Cloning NvChad..."
+        git clone https://github.com/NvChad/starter "$NVIM_CONFIG" --depth 1
+        rm -rf "$NVIM_CONFIG/.git"
+        
+        # Copy Cafaye theme config
+        cp /etc/cafaye/editors/distributions/nvim/nvchad/chadrc.lua \
+           "$NVIM_CONFIG/lua/chadrc.lua"
+        ;;
+        
+    lunarvim)
+        echo "📥 Installing LunarVim..."
+        # LunarVim has its own installer
+        LV_BRANCH='release-1.4/neovim-0.9' bash <(curl -s https://raw.githubusercontent.com/LunarVim/LunarVim/release-1.4/neovim-0.9/utils/installer/install.sh) -y
+        
+        # Copy Cafaye theme config
+        cp /etc/cafaye/editors/distributions/nvim/lunarvim/config.lua \
+           "$HOME/.config/lvim/config.lua"
+        ;;
+esac
+
+echo "✅ $distribution configured with Catppuccin theme!"
+echo ""
+echo "💡 Launch with: nvim"
+echo "📝 User overrides: $NVIM_CONFIG/lua/plugins/"
+
+caf-task-done "Nvim Distribution Setup"

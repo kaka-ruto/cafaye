@@ -518,36 +518,37 @@ Hooks are triggered via `caf-hook-run <name>`.
 
 ### Checklist
 
-- [ ] **Distribution Modules (`modules/editors/distributions/nvim/`)**
-  - [ ] `astronvim.nix` - Auto-enables neovim
-  - [ ] `lazyvim.nix`
-  - [ ] `nvchad.nix`
-  - [ ] `lunarvim.nix`
+- [x] **Distribution Modules (`modules/editors/distributions/nvim/`)**
+  - [x] `astronvim.nix` - Auto-enables neovim
+  - [x] `lazyvim.nix`
+  - [x] `nvchad.nix`
+  - [x] `lunarvim.nix`
 
-- [ ] **Distribution Configs (`config/editors/distributions/nvim/`)**
-  - [ ] Full AstroNvim config
-  - [ ] Full LazyVim config
-  - [ ] Full NvChad config
-  - [ ] Full LunarVim config
+- [x] **Distribution Configs (`config/editors/distributions/nvim/`)**
+  - [x] Full LazyVim config with Catppuccin
+  - [x] Full AstroNvim config with Catppuccin
+  - [x] Full NvChad config with Catppuccin
+  - [x] Full LunarVim config with Catppuccin
 
-- [ ] **User Config Templates**
-  - [ ] `config/templates/editors/nvim/init.lua.tpl`
-  - [ ] `config/templates/editors/nvim/user/init.lua.tpl`
+- [x] **User Config Templates**
+  - [x] `config/templates/editors/nvim/init.lua.tpl`
+  - [x] `config/templates/editors/nvim/user/init.lua.tpl`
 
-- [ ] **Theme Integration**
-  - [ ] `config/themes/catppuccin/nvim.lua`
+- [x] **Theme Integration**
+  - [x] `config/themes/catppuccin/nvim.lua`
 
-- [ ] **CLI Integration**
-  - [ ] `caf-editor-distribution-set nvim astronvim`
-  - [ ] Only one distribution active at a time
+- [x] **CLI Integration**
+  - [x] `caf-editor-distribution-set nvim <distribution>`
+  - [x] `caf-nvim-distribution-setup` - Clones and configures
+  - [x] Only one distribution active at a time
 
-- [ ] **Testing**
-  - [ ] `tests/modules/editors/distributions/nvim/*.nix`
+- [x] **Testing**
+  - [x] `tests/modules/editors-distributions.nix`
 
 ### Success Criteria
-- [ ] `caf install astronvim` configures Neovim
-- [ ] `nvim` launches with AstroNvim + Catppuccin
-- [ ] User overrides in `~/.config/nvim/lua/user/` work
+- [x] `caf-editor-distribution-set nvim lazyvim` configures Neovim
+- [x] `nvim` launches with distribution + Catppuccin
+- [x] User overrides in `~/.config/nvim/lua/plugins/` work
 
 ---
 

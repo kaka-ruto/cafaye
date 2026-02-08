@@ -5,6 +5,28 @@ All notable changes to Cafaye OS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-02-08
+
+### Added
+- **Neovim Distribution System**: Support for popular opinionated Neovim configurations:
+  - **LazyVim**: Modern plugin manager with curated defaults
+  - **AstroNvim**: Feature-rich IDE-like experience
+  - **NvChad**: Fast, beautiful, and extensible
+  - **LunarVim**: IDE layer for Neovim
+- **Distribution Configs**: Pre-configured starter templates with Catppuccin theming:
+  - `config/editors/distributions/nvim/lazyvim/` - Full LazyVim setup
+  - `config/editors/distributions/nvim/astronvim/` - AstroNvim user config
+  - `config/editors/distributions/nvim/nvchad/` - NvChad chadrc.lua
+  - `config/editors/distributions/nvim/lunarvim/` - LunarVim config.lua
+- **Catppuccin Theme Integration**: Comprehensive `config/themes/catppuccin/nvim.lua` with full plugin integrations
+- **User Config Templates**: `config/templates/editors/nvim/` for custom setups
+- **CLI Utilities**:
+  - `caf-editor-distribution-set` - Select and activate a distribution (mutual exclusion)
+  - `caf-nvim-distribution-setup` - Clone starter template and apply theming
+- **VM Tests**: `tests/modules/editors-distributions.nix` verifies distribution integration
+
+---
+
 ## [0.6.0] - 2026-02-08
 
 ### Added

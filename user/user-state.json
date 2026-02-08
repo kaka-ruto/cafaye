@@ -36,6 +36,14 @@
     "neovim": true,
     "helix": false,
     "vscode_server": false,
-    "default": "neovim"
+    "default": "neovim",
+    "distributions": {
+      "nvim": {
+        "lazyvim": false,
+        "astronvim": false,
+        "nvchad": false,
+        "lunarvim": false
+      }
+    }
   }
 }

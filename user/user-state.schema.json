@@ -96,6 +96,28 @@
                         "vscode_server",
                         "none"
                     ]
+                },
+                "distributions": {
+                    "type": "object",
+                    "properties": {
+                        "nvim": {
+                            "type": "object",
+                            "properties": {
+                                "lazyvim": {
+                                    "type": "boolean"
+                                },
+                                "astronvim": {
+                                    "type": "boolean"
+                                },
+                                "nvchad": {
+                                    "type": "boolean"
+                                },
+                                "lunarvim": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
