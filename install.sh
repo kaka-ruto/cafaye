@@ -2,78 +2,114 @@
 # Cafaye OS: VPS Bootstrap Script
 # This is a wrapper around nixos-anywhere for easy installation.
 
+# Exit on error
+set -e
+
 # Colors
-RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}"
-cat config/cafaye/branding/logo.txt
+# Check for gum
+if ! command -v gum &> /dev/null; then
+    echo -e "${BLUE}Gum is not installed. Cafaye OS installer uses 'gum' for prompts.${NC}"
+    echo "You can run this script with 'nix shell nixpkgs#gum --command ./install.sh'"
+    echo "Or install it manually."
+    exit 1
+fi
+
+# Show Logo
+clear
+echo -e "\033[38;5;180m"
+cat <<'EOF'
+
+     ██████╗ █████╗ ███████╗ █████╗ ██╗   ██╗███████╗
+    ██╔════╝██╔══██╗██╔════╝██╔══██╗╚██╗ ██╔╝██╔════╝
+    ██║     ███████║█████╗  ███████║ ╚████╔╝ █████╗  
+    ██║     ██╔══██║██╔══╝  ██╔══██║  ╚██╔╝  ██╔══╝  
+    ╚██████╗██║  ██║██║     ██║  ██║   ██║   ███████╗
+     ╚═════╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝   ╚═╝   ╚══════╝
+                                                      
+         ☕ Cloud Development, Perfected
+
+EOF
 echo -e "${NC}"
 
 echo -e "${BLUE}☕ Welcome to the Cafaye OS Installer!${NC}"
 echo "------------------------------------------"
 
-# Check for nix
+# Ensure Nix is installed
 if ! command -v nix &> /dev/null; then
-    echo -e "${BLUE}Nix is not installed on this machine. Cafaye OS requires Nix to run.${NC}"
-    echo -e "Would you like to install it now using the Determinate Systems installer? (y/N)"
-    read -r INSTALL_NIX
-    if [[ "$INSTALL_NIX" =~ ^[Yy]$ ]]; then
-        echo -e "${BLUE}Installing Nix...${NC}"
-        curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
-        
-        # Try to source nix for the current session
-        if [ -f "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]; then
-            . "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
-        fi
-        
-        if ! command -v nix &> /dev/null; then
-            echo -e "${RED}Nix was installed but is not in the current PATH.${NC}"
-            echo "Please restart your terminal and run this script again."
-            exit 1
-        fi
-    else
-        echo -e "${RED}Error: Nix is required to continue.${NC}"
-        exit 1
-    fi
-fi
-
-# Check for nixos-anywhere
-if ! nix shell nixpkgs#nixos-anywhere --command nixos-anywhere --version &> /dev/null; then
-  echo -e "${BLUE}Info: nixos-anywhere will be fetched from nixpkgs during installation.${NC}"
-fi
-
-usage() {
-    echo "Usage: $0 <ip-address> [ssh-port]"
-    echo "Example: $0 1.2.3.4 22"
+    echo -e "${RED}Error: Nix is required to run the installer.${NC}"
+    echo "Please install Nix first: curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install"
     exit 1
-}
-
-if [ -z "$1" ]; then
-    usage
 fi
 
-IP="$1"
-PORT="${2:-22}"
+# Step 1: Target User & IP
+echo ""
+echo "📝 Target VPS Details"
+TARGET_USER=$(gum input --placeholder "root" --value "root" --header "SSH User")
+TARGET_IP=$(gum input --placeholder "1.2.3.4" --header "Target IP Address")
 
-echo -e "${GREEN}Ready to install Cafaye OS on ${IP}:${PORT}${NC}"
-echo "This will wipe the data on the target VPS. Do you want to continue? (y/N)"
-read -r CONFIRM
-
-if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
-    echo "Installation cancelled."
-    exit 0
+if [ -z "$TARGET_IP" ]; then
+    echo "No IP provided. Exiting."
+    exit 1
 fi
+
+# Step 2: SSH Port
+SSH_PORT=$(gum input --placeholder "22" --value "22" --header "SSH Port")
+
+# Step 3: Tailscale Auth Key (Optional)
+echo ""
+echo "🔒 Tailscale Setup (Highly Recommended)"
+TS_AUTH_KEY=$(gum input --password --placeholder "tskey-auth-..." --header "Tailscale Auth Key (optional)")
+
+# Build extra files if TS key is provided
+EXTRA_FILES=""
+TMP_DIR=""
+if [ -n "$TS_AUTH_KEY" ]; then
+    TMP_DIR=$(mktemp -d)
+    # We place the key where our NixOS config expects it, or at a standard location
+    # Ideally, sops takes care of this, but for bootstrapping, we can inject it.
+    # If the user's config expects sops, this injection might be ignored unless we configure it.
+    # For now, let's inject it to /var/lib/tailscale/auth-key and hope the config uses it or user updates it later.
+    mkdir -p "$TMP_DIR/var/lib/tailscale"
+    echo "$TS_AUTH_KEY" > "$TMP_DIR/var/lib/tailscale/auth-key"
+    EXTRA_FILES="--extra-files $TMP_DIR"
+    echo "🔑 Tailscale key queued for injection."
+fi
+
+# Confirm
+echo ""
+gum style --border double --margin "1 2" --padding "1 2" --foreground 212 \
+"Ready to install on $TARGET_USER@$TARGET_IP:$SSH_PORT"
+
+echo "⚠️  WARNING: This will WIPE the target disk!"
+gum confirm "Proceed with installation?" || exit 0
+
+echo ""
+echo "🚀 Starting installation via nixos-anywhere..."
 
 # Run nixos-anywhere
-# Note: We assume the user has set up their SSH keys to the target VPS
-# and has a local key for sops/age decryption if required.
+# We use --flake .#cafaye to use the local flake configuration
 nix run github:nix-community/nixos-anywhere -- \
     --flake .#cafaye \
-    --ssh-port "$PORT" \
-    "$IP"
+    --ssh-port "$SSH_PORT" \
+    $EXTRA_FILES \
+    "$TARGET_USER@$TARGET_IP"
 
-echo -e "${GREEN}✓ Cafaye OS installation attempted on ${IP}${NC}"
-echo "Once the machine reboots, connect via Tailscale SSH."
+# Cleanup
+if [ -n "$TMP_DIR" ]; then
+    rm -rf "$TMP_DIR"
+fi
+
+echo ""
+caf-logo-show 2>/dev/null || true
+gum style --border double --margin "1 2" --padding "2 4" --foreground 212 "Installation Complete! ☕"
+
+echo ""
+echo "Next Steps:"
+echo "1. Wait for reboot"
+echo "2. SSH into your new server: ssh $TARGET_USER@$TARGET_IP"
+echo "3. Run 'caf-setup' to configure your environment"

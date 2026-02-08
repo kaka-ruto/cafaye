@@ -53,6 +53,8 @@
           cli-main = pkgs.testers.runNixOSTest (import ./tests/cli/main.nix { inherit pkgs inputs userState; });
           cli-debug = pkgs.testers.runNixOSTest (import ./tests/cli/debug.nix { inherit pkgs inputs userState; });
           cli-doctor = pkgs.testers.runNixOSTest (import ./tests/cli/doctor.nix { inherit pkgs inputs userState; });
+          integration-first-run-wizard = pkgs.testers.runNixOSTest (import ./tests/integration/first-run-wizard.nix { inherit pkgs inputs userState; });
+          integration-rails = pkgs.testers.runNixOSTest (import ./tests/integration/rails.nix { inherit pkgs inputs userState; });
         };
       }
     ) // {

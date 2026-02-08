@@ -3,6 +3,15 @@
 # Cafaye OS System Update
 # Update flake inputs and rebuild
 
+CONFIRM=true
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -y|--yes) CONFIRM=false ;;
+        *) echo "Unknown option: $1"; exit 1 ;;
+    esac
+    shift
+done
+
 echo "🔄 Cafaye OS System Update"
 echo "=========================="
 echo ""
@@ -29,10 +38,21 @@ echo "Changes to be applied:"
 sudo nixos-rebuild dry-run --flake .#cafaye 2>&1 | head -20
 
 echo ""
-gum confirm "Apply these changes?" || {
-  echo "Aborted."
-  exit 0
-}
+if [ "$CONFIRM" = true ]; then
+  if command -v gum &> /dev/null; then
+    gum confirm "Apply these changes?" || {
+      echo "Aborted."
+      exit 0
+    }
+  else
+    read -p "Apply these changes? [y/N] " -n 1 -r
+    echo ""
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+       echo "Aborted."
+       exit 0
+    fi
+  fi
+fi
 
 sudo nixos-rebuild switch --flake .#cafaye
 
@@ -55,4 +75,6 @@ else
   exit 1
 fi
 
-caf-task-done "System Update"
+if command -v caf-task-done &> /dev/null; then
+  caf-task-done "System Update"
+fi

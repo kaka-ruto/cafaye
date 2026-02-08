@@ -1,0 +1,207 @@
+#!/bin/bash
+
+# Cafaye OS First-Run Setup Wizard
+# Interactive setup for new installations
+
+# Default values
+EDITOR=""
+DISTRO=""
+LANGUAGES=""
+AI_ENABLE=""
+NON_INTERACTIVE=false
+
+# Usage function
+usage() {
+    echo "Usage: $0 [options]"
+    echo "Options:"
+    echo "  --editor <editor>       Set default editor (nvim, helix, vscode-server)"
+    echo "  --distro <distro>       Set editor distribution (lazyvim, astronvim, nvchad, lunarvim)"
+    echo "  --languages <langs>     Set enabled languages (comma-separated: python,ruby,go...)"
+    echo "  --ai <true|false>       Enable/Disable AI features"
+    echo "  --no-confirm            Skip confirmation prompts"
+    echo "  --help                  Show this help message"
+    exit 1
+}
+
+# Parse arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --editor) EDITOR="$2"; shift ;;
+        --distro) DISTRO="$2"; shift ;;
+        --languages) LANGUAGES="${2//,/ }"; shift ;; # Replace commas with spaces
+        --ai) AI_ENABLE="$2"; shift ;;
+        --no-confirm) NON_INTERACTIVE=true ;;
+        --help) usage ;;
+        *) echo "Unknown parameter passed: $1"; usage ;;
+    esac
+    shift
+done
+
+# Ensure we have the cafe logo available
+if command -v caf-logo-show &> /dev/null; then
+    caf-logo-show
+else
+    echo "☕ Cafaye OS Setup"
+fi
+
+echo ""
+echo "Welcome to Cafaye OS! Let's get your environment set up."
+echo ""
+
+# Check gum if interactive
+if [ "$NON_INTERACTIVE" = false ] && ! command -v gum &> /dev/null; then
+    echo "Error: 'gum' is required for interactive setup."
+    echo "Please install it or use non-interactive flags."
+    exit 1
+fi
+
+# Confirm start
+if [ "$NON_INTERACTIVE" = false ]; then
+    gum confirm "Ready to configure your system?" || exit 0
+fi
+
+# 1. Editor Selection
+if [ -z "$EDITOR" ]; then
+    echo ""
+    echo "📝 1. Choose your preferred Editor"
+    if [ "$NON_INTERACTIVE" = false ]; then
+        EDITOR=$(gum choose "nvim" "helix" "vscode-server" --header "Select default editor")
+    else
+        EDITOR="nvim" # Default fallback
+    fi
+fi
+echo "Selected Editor: $EDITOR"
+
+# 2. Distribution Selection (only for nvim)
+if [ "$EDITOR" == "nvim" ] && [ -z "$DISTRO" ]; then
+    echo ""
+    echo "🎨 2. Choose Neovim Distribution"
+    if [ "$NON_INTERACTIVE" = false ]; then
+        DISTRO=$(gum choose "lazyvim" "astronvim" "nvchad" "lunarvim" "none" --header "Select distribution")
+    else
+        DISTRO="lazyvim" # Default fallback
+    fi
+fi
+[ -n "$DISTRO" ] && echo "Selected Distro: $DISTRO"
+
+# 3. Language Selection
+if [ -z "$LANGUAGES" ]; then
+    echo ""
+    echo "💻 3. Select Language Support"
+    if [ "$NON_INTERACTIVE" = false ]; then
+        LANGUAGES=$(gum choose --no-limit "python" "ruby" "go" "rust" "nodejs" "php" "java" --header "Select languages to enable (Space to select)")
+    else
+        LANGUAGES="python ruby nodejs" # Default set
+    fi
+fi
+echo "Selected Languages: $LANGUAGES"
+
+# 4. AI Features
+if [ -z "$AI_ENABLE" ]; then
+    echo ""
+    echo "🤖 4. Enable AI Features?"
+    if [ "$NON_INTERACTIVE" = false ]; then
+        if gum confirm "Enable local AI features (Ollama)?"; then
+            AI_ENABLE="true"
+        else
+            AI_ENABLE="false"
+        fi
+    else
+        AI_ENABLE="false"
+    fi
+fi
+echo "AI Enabled: $AI_ENABLE"
+
+# Summary and Confirmation
+echo ""
+echo "✅ Configuration Summary:"
+echo "--------------------------------"
+echo "Editor:       $EDITOR"
+[ -n "$DISTRO" ] && echo "Distribution: $DISTRO"
+echo "Languages:    $LANGUAGES"
+echo "AI Features:  $AI_ENABLE"
+echo "--------------------------------"
+
+if [ "$NON_INTERACTIVE" = false ]; then
+    gum confirm "Apply these settings? (This will modify user-state.json and rebuild)" || exit 0
+fi
+
+echo ""
+echo "⚙️  Applying settings..."
+
+# Apply Editor
+if command -v caf-editor-set &> /dev/null; then
+    caf-editor-set "$EDITOR"
+fi
+
+# Apply Distribution
+if [ -n "$DISTRO" ] && [ "$DISTRO" != "none" ]; then
+    if command -v caf-editor-distribution-set &> /dev/null; then
+        caf-editor-distribution-set nvim "$DISTRO"
+    fi
+fi
+
+# Apply Languages & AI via direct JSON manipulation
+# Assumes repository is at ~/Code/Cafaye/cafaye
+REPO_DIR="$HOME/Code/Cafaye/cafaye"
+if [ ! -d "$REPO_DIR" ]; then
+    # Fallback to /etc/cafaye if repo not found (though rights might be issue)
+    REPO_DIR="/etc/cafaye"
+fi
+
+TARGET_STATE="$REPO_DIR/user/user-state.json"
+
+if [ -f "$TARGET_STATE" ] && command -v jq &> /dev/null; then
+    echo "Updating user state at $TARGET_STATE..."
+    
+    # Update Languages
+    for lang in $LANGUAGES; do
+        if [ -n "$lang" ]; then
+            echo "Enabling $lang..."
+            tmp=$(mktemp)
+            jq ".languages.$lang.enable = true" "$TARGET_STATE" > "$tmp" && mv "$tmp" "$TARGET_STATE"
+        fi
+    done
+
+    # Update AI
+    if [ "$AI_ENABLE" == "true" ]; then
+        echo "Enabling AI..."
+        tmp=$(mktemp)
+        jq ".ai.enable = true" "$TARGET_STATE" > "$tmp" && mv "$tmp" "$TARGET_STATE"
+    fi
+else
+    echo "⚠️  Warning: user-state.json not found or jq missing. Skipping state update."
+fi
+
+echo ""
+echo "🚀 Rebuilding system..."
+if command -v caf-system-update &> /dev/null; then
+    # In non-interactive mode, we might want to bypass confirmation in update too?
+    # caf-system-update doesn't support flags yet.
+    # Assuming user handles it or we update caf-system-update later.
+    echo "Running system update..."
+    # For now just call it.
+    if [ "$NON_INTERACTIVE" = true ]; then
+        caf-system-update -y
+    else
+        caf-system-update
+    fi
+else
+    echo "caf-system-update not found. Please rebuild manually."
+fi
+
+echo ""
+if command -v caf-task-done &> /dev/null; then
+    caf-task-done "First-Run Setup"
+else
+    echo "Setup Complete!"
+fi
+
+# Check for and run any first-run hooks
+if command -v caf-hook-run &> /dev/null; then
+    echo "Running post-setup hooks..."
+    caf-hook-run first-run
+fi
+
+echo ""
+echo "🎉 Setup Complete! Enjoy Cafaye OS."

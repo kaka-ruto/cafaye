@@ -5,6 +5,29 @@ All notable changes to Cafaye OS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-02-08
+
+### Added
+
+- **Installation & Setup**:
+  - `install.sh`: Interactive VPS bootstrap script with ASCII branding and Tailscale support.
+  - `caf-setup`: First-run wizard to configure editor, distro, languages, and AI.
+  - `caf-hook-run`: Hook system for custom actions (e.g., `first-run`, `post-update`).
+
+- **Documentation**:
+  - `docs/INSTALL.md`: Setup guide.
+  - `docs/FIRST_RUN.md`: Configuration guide.
+  - `CONTRIBUTING.md`: Developer guidelines.
+
+- **Testing**:
+  - `tests/integration/first-run-wizard.nix`
+  - `tests/integration/rails.nix` (Full Rails stack verification)
+
+### Changed
+
+- Renamed `tests/integration/full-rails-stack.nix` to `rails.nix`.
+- Improved `caf-system-update` with non-interactive flag (`-y`).
+
 ## [0.8.0] - 2026-02-08
 
 ### Added
