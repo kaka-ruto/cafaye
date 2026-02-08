@@ -182,6 +182,7 @@ fetch_failed_steps() {
 
 show_failed_steps() {
     local run_id="$1"
+    local compact="${2:-false}"
     
     if [[ -z "$run_id" ]]; then
         # Get the latest failed run
@@ -189,7 +190,9 @@ show_failed_steps() {
         latest_failed=$(gh run list -b master -L 1 --json databaseId,conclusion,displayTitle -q '[.[] | select(.conclusion=="failure")] | .[0]')
         
         if [[ -z "$latest_failed" ]] || [[ "$latest_failed" == "null" ]]; then
-            echo "✅ No failed runs found on master"
+            if [[ "$compact" != "true" ]]; then
+                echo "✅ No failed runs found on master"
+            fi
             return 0
         fi
         
@@ -197,17 +200,21 @@ show_failed_steps() {
         local run_title
         run_title=$(echo "$latest_failed" | jq -r '.displayTitle')
         
-        echo ""
-        echo "🏭 FAILED STEPS FOR LATEST RUN"
-        echo "═══════════════════════════════════════════"
-        echo "Run: $run_title"
-        echo "Run ID: $run_id"
-        echo ""
+        if [[ "$compact" != "true" ]]; then
+            echo ""
+            echo "🏭 FAILED STEPS FOR LATEST RUN"
+            echo "═══════════════════════════════════════════"
+            echo "Run: $run_title"
+            echo "Run ID: $run_id"
+            echo ""
+        fi
     else
-        echo ""
-        echo "🏭 FAILED STEPS FOR RUN ID: $run_id"
-        echo "═══════════════════════════════════════════"
-        echo ""
+        if [[ "$compact" != "true" ]]; then
+            echo ""
+            echo "🏭 FAILED STEPS FOR RUN ID: $run_id"
+            echo "═══════════════════════════════════════════"
+            echo ""
+        fi
     fi
     
     # Fetch and display failed steps
@@ -215,13 +222,20 @@ show_failed_steps() {
     failed_jobs=$(fetch_failed_steps "$run_id")
     
     if [[ "$failed_jobs" == "[]" ]] || [[ -z "$failed_jobs" ]]; then
-        echo "⚠️  No failed steps found for this run"
+        if [[ "$compact" != "true" ]]; then
+            echo "⚠️  No failed steps found for this run"
+        fi
         return 0
     fi
     
     local count
     count=$(echo "$failed_jobs" | jq 'length')
-    echo "Found $count failed job(s):"
+    
+    if [[ "$compact" == "true" ]]; then
+        echo "Run $run_id - $count failed job(s):"
+    else
+        echo "Found $count failed job(s):"
+    fi
     echo ""
     
     echo "$failed_jobs" | jq -r '.[] | "
@@ -232,10 +246,12 @@ show_failed_steps() {
    ────────────────────────────────────────
 "'
     
-    echo ""
-    echo "To view full logs for a specific job:"
-    echo "   gh run view $run_id --log-failed"
-    echo ""
+    if [[ "$compact" != "true" ]]; then
+        echo ""
+        echo "To view full logs for a specific job:"
+        echo "   gh run view $run_id --log-failed"
+        echo ""
+    fi
 }
 
 save_and_display() {
@@ -305,7 +321,22 @@ save_and_display() {
         echo "💾 Full details saved to: $FACTORY_LOG"
     fi
     echo ""
-    echo "To view logs for a specific run:"
+    
+    # Automatically show failed steps for failed runs
+    if [[ "$SHOW_IN_PROGRESS" != true ]] && [[ -z "$COMMIT_FILTER" ]] && [[ "$SHOW_LATEST" != true ]]; then
+        echo "📋 FAILED STEPS DETAILS:"
+        echo "═══════════════════════════════════════════"
+        echo ""
+        
+        # Show failed steps for each failed run (compact mode)
+        while IFS= read -r run_id; do
+            if [[ -n "$run_id" ]]; then
+                show_failed_steps "$run_id" "true" 2>/dev/null || echo "   (Could not fetch steps for run $run_id)"
+            fi
+        done < <(echo "$runs" | jq -r '.[].databaseId')
+    fi
+    
+    echo "To view full logs for a specific run:"
     echo "   gh run view <run-id> --log-failed"
     echo ""
     echo "To filter by current commit:"
