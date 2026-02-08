@@ -107,6 +107,24 @@ run_system_update() {
 }
 
 show_status_menu() {
+    choice=$(gum choose --header "Status Submenu" \
+        "🏥 System Health" \
+        "🏭 Factory CI/CD Status" \
+        "👁️  Watch Factory (Live)" \
+        "⬅️  Back")
+
+    case "$choice" in
+        *"System Health"*) show_system_health ;;
+        *"Factory CI/CD"*) caf-factory-check ;;
+        *"Watch Factory"*) caf-factory-check --watch ;;
+        "⬅️  Back") show_main_menu ;;
+    esac
+    
+    read -p "Press enter to return..."
+    show_status_menu
+}
+
+show_system_health() {
     clear
     echo "🏥 Cafaye System Health"
     echo "------------------------"
@@ -141,8 +159,6 @@ show_status_menu() {
     echo "📌 Current Generation: $gen"
     
     echo "------------------------"
-    read -p "Press enter to return..."
-    show_main_menu
 }
 
 show_style_menu() {

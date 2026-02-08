@@ -1,0 +1,140 @@
+#!/bin/bash
+
+# Cafaye Factory CI/CD Status Checker
+# Polls GitHub Actions for failed builds and displays them
+# Usage: caf-factory-check [--watch] [--since-hours N]
+
+set -e
+
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+FACTORY_DIR="$REPO_ROOT/.factory"
+FACTORY_LOG="$FACTORY_DIR/failures.json"
+
+# Parse arguments
+WATCH_MODE=false
+SINCE_HOURS=24
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --watch)
+            WATCH_MODE=true
+            shift
+            ;;
+        --since-hours)
+            SINCE_HOURS="$2"
+            shift 2
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Usage: caf-factory-check [--watch] [--since-hours N]"
+            exit 1
+            ;;
+    esac
+done
+
+# Ensure factory directory exists
+mkdir -p "$FACTORY_DIR"
+
+# Check if gh CLI is available
+if ! command -v gh &> /dev/null; then
+    echo "❌ GitHub CLI (gh) not found"
+    echo "   Install it: https://cli.github.com/"
+    exit 1
+fi
+
+# Check if we're in a repo with gh auth
+if ! gh auth status &> /dev/null; then
+    echo "❌ Not authenticated with GitHub"
+    echo "   Run: gh auth login"
+    exit 1
+fi
+
+fetch_failures() {
+    local since_date
+    since_date=$(date -u -v-${SINCE_HOURS}H +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u -d "${SINCE_HOURS} hours ago" +"%Y-%m-%dT%H:%M:%SZ")
+    
+    # Get failed workflow runs on master from the last N hours
+    gh run list \
+        -b master \
+        -L 50 \
+        --json databaseId,status,conclusion,headBranch,headSha,createdAt,url,event,displayTitle \
+        -q "[.[] | select(.status==\"completed\" and (.conclusion==\"failure\" or .conclusion==\"startup_failure\" or .conclusion==\"timed_out\")) | select(.createdAt >= \"$since_date\")]"
+}
+
+save_and_display() {
+    local failures
+    failures=$(fetch_failures)
+    
+    if [[ "$failures" == "[]" ]] || [[ -z "$failures" ]]; then
+        echo "✅ No failed builds on master in the last ${SINCE_HOURS}h"
+        echo "[]" > "$FACTORY_LOG"
+        return 0
+    fi
+    
+    # Save to log file
+    echo "$failures" > "$FACTORY_LOG"
+    
+    # Display results
+    local count
+    count=$(echo "$failures" | jq 'length')
+    echo ""
+    echo "🏭 FACTORY FAILURES (last ${SINCE_HOURS}h)"
+    echo "═══════════════════════════════════════════"
+    echo "Found $count failed run(s)"
+    echo ""
+    
+    echo "$failures" | jq -r '.[] | "
+📋 \(.displayTitle)
+   Run ID: \(.databaseId)
+   Commit: \(.headSha[:8])
+   When:   \(.createdAt)
+   URL:    \(.url)
+   ────────────────────────────────────────
+"'
+    
+    echo ""
+    echo "💾 Full details saved to: $FACTORY_LOG"
+    echo ""
+    echo "To view logs for a specific run:"
+    echo "   gh run view <run-id> --log-failed"
+    echo ""
+    echo "To share with AI assistant, run:"
+    echo "   cat $FACTORY_LOG"
+}
+
+show_last_check() {
+    if [[ -f "$FACTORY_LOG" ]]; then
+        local failures
+        failures=$(cat "$FACTORY_LOG")
+        
+        if [[ "$failures" != "[]" ]] && [[ -n "$failures" ]]; then
+            local count
+            count=$(echo "$failures" | jq 'length')
+            echo ""
+            echo "📊 LAST CHECK (saved results)"
+            echo "═══════════════════════════════════════════"
+            echo "$count failed run(s) on record"
+            echo ""
+            echo "$failures" | jq -r '.[] | "\(.displayTitle) - \(.conclusion)"'
+            echo ""
+            echo "Run 'caf-factory-check' to refresh"
+        fi
+    fi
+}
+
+# Main execution
+if [[ "$WATCH_MODE" == true ]]; then
+    echo "👁️  Watching for failures (Ctrl+C to stop)..."
+    while true; do
+        clear
+        date
+        echo ""
+        save_and_display
+        echo ""
+        echo "⏱️  Next check in 60 seconds..."
+        sleep 60
+    done
+else
+    save_and_display
+fi

@@ -50,9 +50,10 @@
           modules-frameworks = pkgs.testers.runNixOSTest (import ./tests/modules/frameworks.nix { inherit pkgs inputs userState; });
           modules-editors = pkgs.testers.runNixOSTest (import ./tests/modules/editors.nix { inherit pkgs inputs userState; });
           modules-editors-distributions = pkgs.testers.runNixOSTest (import ./tests/modules/editors-distributions.nix { inherit pkgs inputs userState; });
-          cli-main = pkgs.testers.runNixOSTest (import ./tests/cli/main.nix { inherit pkgs inputs userState; });
-          cli-debug = pkgs.testers.runNixOSTest (import ./tests/cli/debug.nix { inherit pkgs inputs userState; });
-          cli-doctor = pkgs.testers.runNixOSTest (import ./tests/cli/doctor.nix { inherit pkgs inputs userState; });
+           cli-main = pkgs.testers.runNixOSTest (import ./tests/cli/main.nix { inherit pkgs inputs userState; });
+           cli-debug = pkgs.testers.runNixOSTest (import ./tests/cli/debug.nix { inherit pkgs inputs userState; });
+           cli-doctor = pkgs.testers.runNixOSTest (import ./tests/cli/doctor.nix { inherit pkgs inputs userState; });
+           cli-factory = pkgs.testers.runNixOSTest (import ./tests/cli/factory.nix { inherit pkgs inputs userState; });
           integration-first-run-wizard = pkgs.testers.runNixOSTest (import ./tests/integration/first-run-wizard.nix { inherit pkgs inputs userState; });
           integration-rails = pkgs.testers.runNixOSTest (import ./tests/integration/rails.nix { inherit pkgs inputs userState; });
         };
