@@ -143,10 +143,19 @@ git clone https://github.com/kaka-ruto/cafaye
 cd cafaye
 devbox shell       # macOS/Linux dev environment
 nix flake check    # Run the test suite
+
+# Run full integration tests in Docker (Recommended before pushing)
+devbox run test-full
+# Or manually (force amd64 to match VPS architecture):
+# docker build --platform linux/amd64 -t cafaye-factory .
+# docker run --platform linux/amd64 --rm -it cafaye-factory
 ```
 
 ## 📖 Documentation
 
+- **[Installation Guide](docs/INSTALL.md)** - How to install on a VPS
+- **[First Run Guide](docs/FIRST_RUN.md)** - Configuration wizard details
+- **[Contributing](CONTRIBUTING.md)** - Development guidelines
 - **[DEVELOPMENT.md](DEVELOPMENT.md)** - Detailed roadmap with phase checklists
 - **[AGENTS.md](AGENTS.md)** - AI developer instructions
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history

@@ -668,10 +668,22 @@ Hooks are triggered via `caf-hook-run <name>`.
 ## 🧪 Testing Protocol
 
 Run `nix flake check` before every commit:
+ 
+ 1. Verify Nix syntax
+ 2. Boot VM for each test
+ 3. Execute test assertions
 
-1. Verify Nix syntax
-2. Boot VM for each test
-3. Execute test assertions
+### Full System Verification (Docker)
+
+To verify a clean build in an isolated environment (requires Docker on host):
+
+```bash
+# If on Apple Silicon (M1/M2/M3), ensure x86 emulation 
+docker build --platform linux/amd64 -t cafaye-factory .
+docker run --platform linux/amd64 --rm -it cafaye-factory
+```
+
+This runs `nix flake check` inside a Docker container, ensuring no local contamination.
 
 ### Test Naming Convention
 

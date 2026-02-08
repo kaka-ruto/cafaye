@@ -159,7 +159,7 @@ if [ -f "$TARGET_STATE" ] && command -v jq &> /dev/null; then
         if [ -n "$lang" ]; then
             echo "Enabling $lang..."
             tmp=$(mktemp)
-            jq ".languages.$lang.enable = true" "$TARGET_STATE" > "$tmp" && mv "$tmp" "$TARGET_STATE"
+            jq ".languages.$lang = true" "$TARGET_STATE" > "$tmp" && mv "$tmp" "$TARGET_STATE"
         fi
     done
 
