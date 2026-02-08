@@ -85,6 +85,13 @@
             };
           };
         };
+
+        apps = {
+          debug-vm = {
+            type = "app";
+            program = "${self.nixosConfigurations.cafaye.config.system.build.vm}/bin/run-cafaye-vm";
+          };
+        };
       }
     ) // {
       # NixOS configuration for the VPS (stays outside eachSystem)
