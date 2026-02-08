@@ -211,12 +211,24 @@ run_installer() {
 main() {
   local cafaye_dir
   
-  # Self-clone if needed
+  # Self-clone if needed (when running via curl|bash, $0 is "-")
   cafaye_dir=$(self_clone)
   
-  # Only re-exec if not running from stdin ($0 == "-")
-  if [[ "$0" != "-" && "$cafaye_dir" != "$(cd "$(dirname "$0")" && pwd)" ]]; then
-    exec "$cafaye_dir/install.sh" "$@"
+  # Check if we need to re-exec from the cloned directory
+  # When running via curl|bash, $0 is "-" and we already cd'd into cloned dir
+  # When running from a file, we need to exec if not already in the cloned dir
+  local current_script_path
+  if [[ "$0" == "-" ]]; then
+    # Already running from cloned directory via exec
+    current_script_path="$(pwd)/install.sh"
+  else
+    current_script_path="$0"
+  fi
+  
+  local expected_script="$cafaye_dir/install.sh"
+  
+  if [[ "$current_script_path" != "$expected_script" ]]; then
+    exec "$expected_script" "$@"
   fi
   
   # Run installer from repo

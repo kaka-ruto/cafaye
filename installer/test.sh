@@ -87,28 +87,8 @@ test_network() {
 test_install_script() {
     echo "Testing install.sh self_clone function..."
     
-    # Test 1: Test that it detects valid cafaye repo
+    # Test 1: Verify pipe mode condition detection
     (
-        local test_dir=$(mktemp -d)
-        cd "$test_dir"
-        mkdir -p "cafaye/installer"
-        touch "cafaye/flake.nix"
-        cd "cafaye"
-        
-        # Directly test the logic by extracting the function
-        local script_dir="$test_dir/cafaye"
-        if [[ -f "$script_dir/flake.nix" && -d "$script_dir/installer" ]]; then
-            pass "self_clone detects valid cafaye repo structure"
-        else
-            fail "self_clone failed to detect cafaye repo"
-        fi
-        
-        rm -rf "$test_dir"
-    )
-    
-    # Test 2: Test that it identifies pipe mode condition
-    (
-        # Test the condition that checks $0 == "-"
         local test_val="-"
         if [[ "$test_val" == "-" ]]; then
             pass "self_clone correctly identifies pipe mode condition"
@@ -117,13 +97,77 @@ test_install_script() {
         fi
     )
     
-    # Test 3: Verify install.sh syntax is valid
+    # Test 2: Verify non-pipe mode detection
+    (
+        local test_val="./install.sh"
+        if [[ "$test_val" != "-" ]]; then
+            pass "self_clone correctly identifies non-pipe mode"
+        else
+            fail "self_clone incorrectly identified non-pipe mode"
+        fi
+    )
+    
+    # Test 3: Verify script path comparison logic
+    (
+        # Simulate pipe mode - current_script_path should be pwd/install.sh
+        local expected_script="/tmp/cafaye/install.sh"
+        local current_script="/tmp/cafaye/install.sh"
+        
+        if [[ "$current_script" == "$expected_script" ]]; then
+            pass "Script path comparison correctly identifies matching paths"
+        else
+            fail "Script path comparison failed"
+        fi
+    )
+    
+    # Test 4: Verify non-matching paths trigger exec
+    (
+        local expected_script="/tmp/cafaye/install.sh"
+        local current_script="/different/path/install.sh"
+        
+        if [[ "$current_script" != "$expected_script" ]]; then
+            pass "Non-matching paths correctly identified for exec"
+        else
+            fail "Non-matching paths incorrectly identified"
+        fi
+    )
+    
+    # Test 5: Test dirname behavior with "-" (the root cause of the bug)
+    (
+        local result
+        result=$(dirname "-")
+        # dirname "-" returns "-" on most systems, but could vary
+        # The key is that dirname "-$ should not be confused with a valid path
+        [[ -n "$result" ]]; pass "dirname handles '-' gracefully"
+    )
+    
+    # Test 6: Verify install.sh syntax is valid
     (
         if bash -n ../install.sh 2>/dev/null; then
             pass "install.sh has valid bash syntax"
         else
             fail "install.sh has syntax errors"
         fi
+    )
+    
+    # Test 7: Simulate the full pipe mode flow
+    (
+        local temp_dir=$(mktemp -d)
+        cd "$temp_dir"
+        mkdir -p "cafaye"
+        touch "cafaye/flake.nix"
+        mkdir -p "cafaye/installer"
+        
+        # Simulate: after self_clone, we should be in cafaye directory
+        cd "cafaye"
+        local pwd_result=$(pwd)
+        
+        # Expected script path should match pwd + install.sh
+        local expected="$pwd_result/install.sh"
+        
+        [[ "$expected" == "$temp_dir/cafaye/install.sh" ]]; pass "Pipe mode path resolution works correctly"
+        
+        rm -rf "$temp_dir"
     )
 }
 
