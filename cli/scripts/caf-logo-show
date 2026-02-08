@@ -1,27 +1,19 @@
 #!/bin/bash
 
 # Cafaye OS Logo Display
-# Display the Cafaye coffee logo in the terminal
+# Display the Cafaye brand logo in the terminal
 
-clear
 echo -e "\033[38;5;180m"
 cat <<'EOF'
-                   )  )
-                  (  (
-                   )  )
-                  (  (
-                ________
-               /        \
-              |  ~~~~~~  |
-              |  ~~~~~~  |
-              |  ~~~~~~  |
-              |__________|____
-              \   CAFAYE     /|
-               \____________/ |
-                |          |  /
-                |__________|/
 
-  ☕ Cloud Development, Perfected
+     ██████╗ █████╗ ███████╗ █████╗ ██╗   ██╗███████╗
+    ██╔════╝██╔══██╗██╔════╝██╔══██╗╚██╗ ██╔╝██╔════╝
+    ██║     ███████║█████╗  ███████║ ╚████╔╝ █████╗  
+    ██║     ██╔══██║██╔══╝  ██╔══██║  ╚██╔╝  ██╔══╝  
+    ╚██████╗██║  ██║██║     ██║  ██║   ██║   ███████╗
+     ╚═════╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝   ╚═╝   ╚══════╝
+                                                      
+         ☕ Cloud Development, Perfected
+
 EOF
 echo -e "\033[0m"
-echo
