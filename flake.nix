@@ -51,10 +51,10 @@
             integration-rails = pkgs.testers.runNixOSTest (import ./tests/integration/rails.nix { inherit pkgs inputs userState; });
           };
           
-          # Legacy individual tests (for local debugging only)
-          # Run individually: nix build .#legacyChecks.x86_64-linux.<name>
-          # These are NOT run in CI by default - use unified tests instead
-          legacyChecks = lib.optionalAttrs (system == vpsSystem) {
+          # Individual tests for debugging (NOT run in default CI)
+          # Run individually: nix build .#individualChecks.x86_64-linux.<name>
+          # Useful for: debugging specific failures, faster iteration during development
+          individualChecks = lib.optionalAttrs (system == vpsSystem) {
             core-boot = pkgs.testers.runNixOSTest (import ./tests/core/boot.nix { inherit pkgs inputs userState; });
             core-network = pkgs.testers.runNixOSTest (import ./tests/core/network.nix { inherit pkgs inputs userState; });
             core-security = pkgs.testers.runNixOSTest (import ./tests/core/security.nix { inherit pkgs inputs userState; });
