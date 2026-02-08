@@ -132,11 +132,34 @@ When developing Cafaye, reference the local Omarchy repository (`../omarchy/`):
 4.  **Prompt Config**: Adapt `../omarchy/config/starship.toml`
 5.  **Mirror Testing**: Every module in `modules/` needs a test in `tests/`
 
-## 🏗 Getting Started
+## 🏗 Install on VPS
 
-```bash
-# Transform any VPS into a Cafaye Powerhouse
-curl -fsSL https://cafaye.com/install.sh | bash
+Turn any fresh VPS into a Cafaye Powerhouse in minutes.
+
+**Prerequisites:**
+- Fresh install of Ubuntu 24.04 or Debian 12
+- At least 2GB RAM (1GB works with ZRAM enabled)
+- Root SSH access
+
+**Steps:**
+
+1. **SSH into your VPS:**
+   ```bash
+   ssh root@<your-vps-ip>
+   ```
+
+2. **Run the installer:**
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
+   ```
+
+3. **Follow the prompts:**
+   The script will install Nix, configure files, and generate a secure root password.
+   
+4. **Reboot:**
+   The system will reboot into Cafaye OS.
+
+## 💻 Local Development
 
 # Or, for development
 # 1. Install Devbox (if not already installed)

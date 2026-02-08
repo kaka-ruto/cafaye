@@ -21,7 +21,7 @@
           userState = userState // {
             services = (userState.services or { }) // { postgresql = true; redis = true; };
             frameworks = (userState.frameworks or { }) // { rails = true; };
-            languages = (userState.languages or { }) // { ruby = true; };
+            languages = (userState.languages or { }) // { ruby = true; nodejs = true; };
           };
         };
 
