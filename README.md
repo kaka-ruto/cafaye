@@ -4,19 +4,29 @@
 
 ## 🚀 Quick Start
 
-**One command. That's it.**
+**Two simple steps:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash -- root@<your-vps-ip>
+# Step 1: SSH into your fresh VPS
+ssh root@<your-vps-ip>
+
+# Step 2: Run the installer
+curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
 ```
 
-That's it! The installer:
+That's it! The installer will:
 
-1. SSHs into your VPS
-2. Downloads and installs NixOS
-3. VPS reboots into Cafaye OS
+1. Install Nix (multi-user)
+2. Clone Cafaye
+3. Install NixOS
 
-Then SSH in and run `caf-setup`.
+**After installation:**
+```bash
+# Your VPS reboots into NixOS
+# SSH in again and configure:
+ssh root@<your-vps-ip>
+caf-setup
+```
 
 ---
 

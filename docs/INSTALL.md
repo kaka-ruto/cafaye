@@ -2,15 +2,22 @@
 
 Cafaye OS transforms any fresh VPS into a cloud development powerhouse using NixOS.
 
-## 🚀 Quick Start (Recommended)
+## 🚀 Quick Start
 
-**One command. That's it.**
+**Two simple steps:**
 
 ```bash
+# Step 1: SSH into your fresh VPS
+ssh root@<your-vps-ip>
+
+# Step 2: Run the installer
 curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
 ```
 
-The installer self-downloads if needed, checks dependencies, and runs the interactive installer.
+The installer will:
+1. Install Nix (multi-user)
+2. Clone Cafaye
+3. Install NixOS
 
 ---
 
@@ -36,17 +43,17 @@ The installer self-downloads if needed, checks dependencies, and runs the intera
 
 ---
 
-## 🔧 Disk Configuration
+## 🔧 After Installation
 
-Cafaye uses `nixos-anywhere` which automatically partitions and formats the target disk.
+After the VPS reboots into NixOS:
 
-### Auto-Detected Devices
+```bash
+# SSH into your new Cafaye OS
+ssh root@<your-vps-ip>
 
-| Device | Provider |
-|--------|----------|
-| `/dev/vda` | DigitalOcean, Vultr, Hetzner (KVM) |
-| `/dev/sda` | Hetzner (older), Xen |
-| `/dev/nvme0n1` | AWS, GCP, bare metal NVMe |
+# Configure your development environment
+caf-setup
+```
 
 The installer auto-detects your provider and sets the correct disk device.
 
