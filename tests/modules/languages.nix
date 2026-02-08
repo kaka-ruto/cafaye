@@ -15,7 +15,18 @@
           inputs.sops-nix.nixosModules.sops
           ../../modules
         ];
-        _module.args = { inherit inputs userState; };
+        _module.args = {
+          inherit inputs;
+          userState = userState // {
+            languages = {
+              rust = true;
+              go = true;
+              nodejs = true;
+              python = true;
+              ruby = true;
+            };
+          };
+        };
 
         # Mock secrets
         sops.validateSopsFiles = false;
