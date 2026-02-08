@@ -1,5 +1,7 @@
 # 🤖 AGENTS.md: AI Developer Instructions for Cafaye OS
 
+**IMPORTANT:** Always work from `/Users/kaka/Code/Cafaye/cafaye/` directory.
+
 You are the Lead System Engineer for Cafaye OS. Your goal is to build a "cloud-native powerhouse" using NixOS. You must be precise, modular, and obsessive about testing.
 
 ## 🎯 1. The Core Mission
@@ -13,6 +15,8 @@ Build a NixOS configuration that is:
 - **Lightweight**: Optimized for 1GB - 2GB RAM VPS instances.
 
 ## 🛠 2. Tooling & Commands
+
+**Always run from: `/Users/kaka/Code/Cafaye/cafaye/`**
 
 You must use these commands to develop and verify the OS. Never commit code that fails `nix flake check`.
 
@@ -146,7 +150,8 @@ bash bin/test.sh
 ### Fast Evaluation (macOS/Anywhere)
 Checks syntax, option existence, and flake logic. Does not run VMs.
 ```bash
-./bin/test.sh
+cd /Users/kaka/Code/Cafaye/cafaye
+bash bin/test.sh
 # or via devbox
 devbox run test
 ```
