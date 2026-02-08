@@ -49,10 +49,12 @@
             # Integration tests (kept separate as they test complex interactions)
             integration-first-run-wizard = pkgs.testers.runNixOSTest (import ./tests/integration/first-run-wizard.nix { inherit pkgs inputs userState; });
             integration-rails = pkgs.testers.runNixOSTest (import ./tests/integration/rails.nix { inherit pkgs inputs userState; });
-            
-            # Individual tests (for local debugging only)
-            # Run individually: nix build .#checks.x86_64-linux.<name>
-            # These are NOT run in CI - use unified tests instead
+          };
+          
+          # Legacy individual tests (for local debugging only)
+          # Run individually: nix build .#legacyChecks.x86_64-linux.<name>
+          # These are NOT run in CI by default - use unified tests instead
+          legacyChecks = lib.optionalAttrs (system == vpsSystem) {
             core-boot = pkgs.testers.runNixOSTest (import ./tests/core/boot.nix { inherit pkgs inputs userState; });
             core-network = pkgs.testers.runNixOSTest (import ./tests/core/network.nix { inherit pkgs inputs userState; });
             core-security = pkgs.testers.runNixOSTest (import ./tests/core/security.nix { inherit pkgs inputs userState; });

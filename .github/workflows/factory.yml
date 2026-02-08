@@ -7,23 +7,17 @@ on:
     branches: [ master ]
 
 jobs:
-  # Phase 1: Fast syntax and evaluation checks (no VMs)
+  # Phase 1: Fast syntax check (NO VM tests - just evaluation)
   check:
-    name: Syntax Check
+    name: Fast Syntax Check
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
       
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v9
 
-      - name: Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v2
-        continue-on-error: true
-        with:
-          use-nix-store-trust: true
-          
       - name: Cachix Cache
         uses: cachix/cachix-action@v14
         with:
@@ -31,10 +25,11 @@ jobs:
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
         continue-on-error: true
 
-      - name: Fast Evaluation Check
+      - name: Fast Nix Evaluation (No VM Tests)
         run: |
-          # Only evaluate, don't run VM tests
-          nix flake check --show-trace --option max-jobs 8
+          # Only evaluate the flake structure, don't build checks
+          nix eval --json .#nixosConfigurations.cafaye.config.system.build.toplevel > /dev/null
+          echo "✅ Flake evaluation successful"
 
   # Phase 2: Parallel VM Test Groups
   test-core:
@@ -45,10 +40,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v9
-      - uses: DeterminateSystems/magic-nix-cache-action@v2
-        continue-on-error: true
-        with:
-          use-nix-store-trust: true
       - uses: cachix/cachix-action@v14
         with:
           name: cafaye
@@ -56,7 +47,7 @@ jobs:
         continue-on-error: true
       
       - name: Run Core Unified Test
-        run: nix build --show-trace .#checks.x86_64-linux.core-unified
+        run: nix build --show-trace --option max-jobs 2 .#checks.x86_64-linux.core-unified
 
   test-cli:
     name: CLI Tests
@@ -66,10 +57,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v9
-      - uses: DeterminateSystems/magic-nix-cache-action@v2
-        continue-on-error: true
-        with:
-          use-nix-store-trust: true
       - uses: cachix/cachix-action@v14
         with:
           name: cafaye
@@ -77,7 +64,7 @@ jobs:
         continue-on-error: true
       
       - name: Run CLI Unified Test
-        run: nix build --show-trace .#checks.x86_64-linux.cli-unified
+        run: nix build --show-trace --option max-jobs 2 .#checks.x86_64-linux.cli-unified
 
   test-modules:
     name: Modules Tests
@@ -87,10 +74,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v9
-      - uses: DeterminateSystems/magic-nix-cache-action@v2
-        continue-on-error: true
-        with:
-          use-nix-store-trust: true
       - uses: cachix/cachix-action@v14
         with:
           name: cafaye
@@ -98,7 +81,7 @@ jobs:
         continue-on-error: true
       
       - name: Run Modules Unified Test
-        run: nix build --show-trace .#checks.x86_64-linux.modules-unified
+        run: nix build --show-trace --option max-jobs 2 .#checks.x86_64-linux.modules-unified
 
   # Phase 3: Integration Tests (parallel)
   test-integration:
@@ -113,10 +96,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v9
-      - uses: DeterminateSystems/magic-nix-cache-action@v2
-        continue-on-error: true
-        with:
-          use-nix-store-trust: true
       - uses: cachix/cachix-action@v14
         with:
           name: cafaye
@@ -124,9 +103,9 @@ jobs:
         continue-on-error: true
       
       - name: Run Integration Test - ${{ matrix.test }}
-        run: nix build --show-trace .#checks.x86_64-linux.integration-${{ matrix.test }}
+        run: nix build --show-trace --option max-jobs 2 .#checks.x86_64-linux.integration-${{ matrix.test }}
 
-  # Phase 4: Summary (only runs if all tests pass)
+  # Phase 4: Summary
   summary:
     name: Test Summary
     needs: [test-core, test-cli, test-modules, test-integration]
