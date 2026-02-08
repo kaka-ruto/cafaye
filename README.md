@@ -2,7 +2,35 @@
 
 > An AI-first developer OS that turns any cheap VPS into a secure, cloud-native powerhouse accessible from any device.
 
-Cafaye (pronounced _ca-fay_) brings the luxury, keyboard-driven experience of [Omarchy](../omarchy/) to the cloud. It's a modern, highly opinionated server operating system built on NixOS—designed to be easy to use, easy to extend, beautiful, safe, secure, fast, powerful, and accessible from anywhere.
+## 🚀 Quick Start
+
+**One command. That's it.**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
+```
+
+That's it! The installer:
+1. Self-downloads (if needed)
+2. Checks/installs dependencies
+3. Runs the interactive installer
+4. Installs NixOS on your VPS
+
+---
+
+## 🆚 Why Cafaye Over Omarchy?
+
+| Aspect | Omarchy | Cafaye |
+|--------|---------|--------|
+| **One-liner install** | ❌ Clone manually | ✅ `curl \| bash` |
+| **Pre-requisites** | Git + existing Arch | Auto-installs Nix |
+| **Target** | Desktop | VPS/Server |
+| **Access** | Local machine | SSH + Browser anywhere |
+| **Graphics** | GPU required | Headless |
+| **Security** | Local firewall | Zero-trust (Tailscale) |
+| **Cost** | Your hardware | $5/month VPS |
+
+---
 
 ## 💎 The Philosophy
 
@@ -20,18 +48,6 @@ Cafaye (pronounced _ca-fay_) brings the luxury, keyboard-driven experience of [O
 
 5.  **Accessible From Anywhere**
     A browser and Tailscale are all you need. Full VS Code in your browser, persistent terminal sessions that survive disconnects, and mobile-friendly workflows.
-
-## 🆚 Cafaye vs Omarchy
-
-| Aspect       | Omarchy              | Cafaye                      |
-| :----------- | :------------------- | :-------------------------- |
-| **Target**   | Desktop (Arch Linux) | Server (Any VPS)            |
-| **Display**  | Hyprland (Wayland)   | Zellij (Terminal)           |
-| **Access**   | Local keyboard/mouse | SSH + Browser anywhere      |
-| **Graphics** | Full GPU support     | Headless, no GPU needed     |
-| **Base**     | `pacman` + AUR       | Nix Flakes                  |
-| **Security** | Local firewall       | Zero-trust (Tailscale-only) |
-| **Cost**     | Your hardware        | $5/month VPS                |
 
 ## 📂 Project Structure
 
@@ -134,30 +150,33 @@ When developing Cafaye, reference the local Omarchy repository (`../omarchy/`):
 
 ## 🏗 Install on VPS
 
-Turn any fresh VPS into a Cafaye Powerhouse in minutes.
+**One command. That's it.**
 
-**Prerequisites:**
-- Fresh install of Ubuntu 24.04 or Debian 12
-- At least 2GB RAM (1GB works with ZRAM enabled)
+```bash
+curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/bootstrap.sh | bash
+```
+
+The bootstrap script will:
+1. Install dependencies (curl, git, nix) if needed
+2. Download Cafaye
+3. Run the interactive installer
+4. Install NixOS on your VPS
+
+---
+
+**What you'll need:**
+- A fresh VPS (Ubuntu 24.04 or Debian 12)
+- At least 2GB RAM (1GB works with ZRAM)
 - Root SSH access
 
-**Steps:**
+**The installer will ask you:**
+1. VPS IP address and SSH credentials
+2. SSH keys (from agent, file, or paste)
+3. Tailscale (optional, for secure access)
+4. Development preset (Rails, Django, Node.js, Go, Rust, or Custom)
+5. Code editor preference (Neovim, Helix, VS Code)
 
-1. **SSH into your VPS:**
-   ```bash
-   ssh root@<your-vps-ip>
-   ```
-
-2. **Run the installer:**
-   ```bash
-   curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
-   ```
-
-3. **Follow the prompts:**
-   The script will install Nix, configure files, and generate a secure root password.
-   
-4. **Reboot:**
-   The system will reboot into Cafaye OS.
+---
 
 ## 💻 Local Development
 

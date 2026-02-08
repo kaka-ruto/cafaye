@@ -1,0 +1,95 @@
+#!/bin/bash
+# Cafaye OS: Tailscale Setup Command
+# Usage: caf-tailscale-setup
+
+set -e
+
+# Source helpers
+export CAFAYE_INSTALL_DIR="${CAFAYE_INSTALL_DIR:-/etc/cafaye}"
+
+# Check if running as root
+check_root() {
+  if [[ $EUID -ne 0 ]]; then
+    echo "This command requires root privileges."
+    echo "Run with: sudo $0"
+    exit 1
+  fi
+}
+
+show_logo() {
+  clear
+  if command -v caf-logo-show &> /dev/null; then
+    caf-logo-show
+  else
+    echo -e "\033[38;5;180m"
+    cat <<'EOF'
+     ██████╗ █████╗ ███████╗ █████╗ ██╗   ██╗███████╗
+    ██╔════╝██╔══██╗██╔════╝██╔══██╗╚██╗ ██╔╝██╔════╝
+    ██║     ███████║█████╗  ███████║ ╚████╔╝ █████╗  
+    ██║     ██╔══██║██╔══╝  ██╔══██║  ╚██╔╝  ██╔══╝  
+    ╚██████╗██║  ██║██║     ██║  ██║   ██║   ███████╗
+     ╚═════╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝   ╚═╝   ╚══════╝
+EOF
+    echo -e "${NC}"
+  fi
+}
+
+main() {
+  check_root
+  
+  show_logo
+  
+  echo -e "${BLUE}☕ Cafaye OS: TailScale Setup${NC}"
+  echo ""
+  
+  # Source tailscale helpers
+  if [[ -f /etc/cafaye/installer/tailscale.sh ]]; then
+    source /etc/cafaye/installer/tailscale.sh
+  else
+    echo "Error: TailScale helpers not found"
+    exit 1
+  fi
+  
+  # Check current status
+  local status=$(get_tailscale_status)
+  
+  case "$status" in
+    "connected")
+      local ts_ip=$(get_tailscale_ip)
+      echo -e "${GREEN}✓ TailScale is connected${NC}"
+      echo "IP: $ts_ip"
+      echo ""
+      if gum confirm --affirmative="Re-configure" --negative="Done" "TailScale is already set up. Re-configure?"; then
+        setup_tailscale
+      fi
+      ;;
+    "not-connected")
+      echo -e "${YELLOW}TailScale is installed but not connected${NC}"
+      echo ""
+      setup_tailscale
+      ;;
+    "not-installed")
+      echo -e "${YELLOW}TailScale is not installed${NC}"
+      echo ""
+      if gum confirm --affirmative="Install" --negative="Cancel" "Install TailScale now?"; then
+        # Install TailScale via NixOS
+        echo "Adding TailScale to system configuration..."
+        if [[ -f /etc/cafaye/user-state.json ]]; then
+          jq '.core.tailscale_enabled = true' /etc/cafaye/user-state.json > /tmp/user-state.json.tmp
+          mv /tmp/user-state.json.tmp /etc/cafaye/user-state.json
+          echo -e "${GREEN}✓ TailScale enabled in configuration${NC}"
+          echo ""
+          echo "Run 'caf-system-rebuild' to apply changes, or"
+          echo "run 'caf-setup' to configure TailScale with an auth key."
+        else
+          echo "Error: /etc/cafaye/user-state.json not found"
+        fi
+      fi
+      ;;
+  esac
+  
+  echo ""
+  echo -e "${GREEN}✓ TailScale setup complete!${NC}"
+}
+
+main "$@"

@@ -1,220 +1,232 @@
 # Installing Cafaye OS
 
-Cafaye OS is designed to be installed on a fresh VPS (Virtual Private Server) or bare metal server. We use `nixos-anywhere` to perform the installation over SSH.
+Cafaye OS transforms any fresh VPS into a cloud development powerhouse using NixOS.
 
-## Prerequisites
+## 🚀 Quick Start (Recommended)
 
-1. **A Target Machine**: A VPS (e.g., DigitalOcean, Hetzner, AWS, Vultr) or physical server accessible via SSH.
-   - Requires root access
-   - Recommended: 2+ vCPUs, 4GB+ RAM
-   - Must have a supported disk device (see Disk Configuration below)
-2. **Nix Installed Locally**: Your local machine must have Nix installed
-3. **SSH Key Access**: You need SSH key authentication to the target VPS
-4. **Tailscale Auth Key** (Optional but Recommended): For secure access post-installation
-
-## Disk Configuration
-
-Cafaye uses `nixos-anywhere` which automatically partitions and formats the target disk. The disk is:
-- **Wiped completely** during installation
-- Formatted with a single ext4 partition labeled `nixos`
-- GRUB bootloader installed to the device specified in your configuration
-
-### Supported Disk Devices
-
-The installer defaults to `/dev/vda` (common for KVM VPS providers). If your VPS uses a different device, update `user/user-state.json` before running the installer:
-
-```json
-{
-  "core": {
-    "boot": {
-      "grub_device": "/dev/sda"
-    }
-  }
-}
-```
-
-Common device names:
-- `/dev/vda` - KVM/QEMU virtual machines (DigitalOcean, Hetzner Cloud)
-- `/dev/sda` - Xen, VMware, or older KVM instances
-- `/dev/nvme0n1` - NVMe SSDs on bare metal or modern VPS
-
-**To check your disk device before installing:**
-```bash
-ssh root@<your-vps-ip> lsblk
-```
-
-## Installation Steps
-
-### 1. Prepare Your Configuration
-
-Before running the installer, customize your `user/user-state.json`:
+**One command. That's it.**
 
 ```bash
-# Copy the example configuration
+curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
+```
+
+The installer self-downloads if needed, checks dependencies, and runs the interactive installer.
+
+---
+
+## 📋 Prerequisites
+
+| Requirement | Details |
+|------------|---------|
+| **VPS** | Ubuntu 24.04 or Debian 12 (fresh install) |
+| **RAM** | 2GB+ recommended (1GB works with ZRAM) |
+| **SSH** | Root access with SSH key authentication |
+| **Disk** | Any supported disk device |
+
+---
+
+## ☁️ Supported VPS Providers
+
+| Provider | Plan | RAM | Price/mo |
+|----------|------|-----|----------|
+| Hetzner | CAX11 | 4GB | €4.38 |
+| Hetzner | CPX11 | 2GB | €3.29 |
+| DigitalOcean | Basic | 2GB | $4.00 |
+| Vultr | Basic | 1GB | $3.50 |
+
+---
+
+## 🔧 Disk Configuration
+
+Cafaye uses `nixos-anywhere` which automatically partitions and formats the target disk.
+
+### Auto-Detected Devices
+
+| Device | Provider |
+|--------|----------|
+| `/dev/vda` | DigitalOcean, Vultr, Hetzner (KVM) |
+| `/dev/sda` | Hetzner (older), Xen |
+| `/dev/nvme0n1` | AWS, GCP, bare metal NVMe |
+
+The installer auto-detects your provider and sets the correct disk device.
+
+---
+
+## 📦 What the Installer Asks
+
+1. **VPS Connection**
+   - IP address
+   - SSH user (usually `root`)
+   - SSH port (usually `22`)
+
+2. **SSH Keys**
+   - Add from SSH agent
+   - Add from file
+   - Paste manually
+
+3. **Tailscale** (optional but recommended)
+   - Configure during installation with auth key
+   - Or skip and configure later
+   - See TailScale section below for details
+
+4. **Development Preset**
+   - Ruby on Rails Developer
+   - Python Django Developer
+   - Node.js/React Developer
+   - Go Backend Developer
+   - Rust Systems Developer
+   - Full-Stack Developer
+   - Custom Configuration
+
+5. **Code Editor**
+   - Neovim (LazyVim, AstroNvim, NvChad)
+   - Helix
+   - VS Code Server
+
+---
+
+## ☁️ TailScale Setup
+
+TailScale is **optional but recommended** for secure, zero-trust access.
+
+### During Installation
+
+The installer asks if you want to configure TailScale:
+
+1. **Have an account?** → Enter your auth key
+2. **Need an account?** → Opens TailScale signup in browser
+3. **Skip** → Configure later manually
+
+**Auth key format:** `tskey-auth-xxxxx...`
+
+Get a reusable auth key at:
+- https://login.tailscale.com/admin/settings/keys
+
+### After Installation
+
+**If you skipped TailScale during install:**
+
+```bash
+# SSH into your server
+ssh root@<your-vps-ip>
+
+# Configure TailScale
+sudo tailscale up --auth-key=tskey-auth-xxxxx
+```
+
+**If you already have a TailScale account:**
+```bash
+# Generate auth key (web UI)
+# https://login.tailscale.com/admin/settings/keys
+
+# Connect
+sudo tailscale up --auth-key=tskey-auth-xxxxx
+```
+
+### Benefits of TailScale
+
+| Benefit | Description |
+|--------|-------------|
+| **Zero open ports** | SSH only via TailScale VPN |
+| **Access from anywhere** | Phone, laptop, tablet |
+| **End-to-end encryption** | All traffic encrypted |
+| **Easy file sharing** | Truebit integration |
+| **No firewall rules** | TailScale handles access control |
+
+### Without TailScale
+
+If you don't use TailScale, Cafaye still works:
+- SSH accessible from any IP (bootstrap mode can be disabled)
+- All features work normally
+- Less secure by default
+
+---
+
+## 🔐 Security
+
+By default, Cafaye uses **bootstrap mode** during installation to allow SSH from any IP. After setup:
+
+1. Run `caf-setup` to configure your system
+2. The installer will ask to disable bootstrap mode
+3. **Bootstrap mode is automatically disabled** for security
+
+After that, SSH is only accessible via Tailscale.
+
+---
+
+## 📖 Post-Installation
+
+After the installer completes:
+
+```bash
+# SSH into your new server
+ssh root@<your-vps-ip>
+
+# Run first-run setup
+caf-setup
+
+# Your system is ready!
+nvim        # Start coding
+zellij      # Tiling terminal
+caf         # Main menu
+```
+
+---
+
+## 🛠 Manual Installation (Advanced)
+
+If you need more control:
+
+```bash
+# Clone the repository
+git clone https://github.com/kaka-ruto/cafaye
+cd cafaye
+
+# Edit configuration
 cp user/user-state.json.example user/user-state.json
-
-# Edit to add your SSH public key and choose your stack
 nano user/user-state.json
-```
 
-Key settings to update:
-- `core.authorized_keys`: Add your SSH public key(s)
-- `core.boot.grub_device`: Set to match your VPS disk (see above)
-- `core.security.bootstrap_mode`: Set to `true` for initial setup (see Bootstrap Mode)
-- `languages`, `services`, `frameworks`: Enable what you need
-
-### 2. Run the Installer
-
-From the root of the Cafaye repository:
-```bash
+# Run installer
 ./install.sh
 ```
 
-### 3. Follow the Prompts
+---
 
-- **Target IP**: The IP address of your VPS
-- **SSH User**: Usually `root`, but depends on your provider
-- **SSH Port**: Default is 22
-- **Tailscale Key**: Paste a reusable auth key (starts with `tskey-auth-...`)
+## 🔧 Troubleshooting
 
-### 4. Wait for Completion
+### Installation Fails
 
-The installer will:
-- Build the system configuration locally
-- Push the closure to the target
-- Install NixOS to the target disk (**wiping all existing data**)
-- Reboot the machine
+```bash
+# Check SSH connectivity
+ssh root@<your-vps-ip>
 
-This typically takes 5-10 minutes depending on your connection and VPS performance.
+# Verify disk device
+ssh root@<your-vps-ip> lsblk
 
-## Bootstrap Mode (Important!)
-
-For initial setup, we recommend enabling **bootstrap mode** in your `user-state.json`:
-
-```json
-{
-  "core": {
-    "security": {
-      "bootstrap_mode": true
-    }
-  }
-}
+# Check logs
+cat /tmp/cafaye-install.log
 ```
 
-**What bootstrap mode does:**
-- Opens SSH on all network interfaces (not just Tailscale)
-- Disables fail2ban temporarily
-- Allows you to connect directly if Tailscale has issues
+### Can't Connect After Reboot
 
-**After confirming Tailscale works:**
-1. SSH into your server
-2. Run `caf-setup` to complete configuration
-3. Edit `user-state.json` and set `bootstrap_mode: false`
-4. Run `caf-system-rebuild` to apply secure settings
+1. Wait 2 minutes for the system to reboot
+2. Check with your VPS provider's console
+3. Verify Tailscale status: `tailscale status`
 
-**⚠️  Security Warning**: Always disable bootstrap mode after initial setup!
+### Need to Reconfigure
 
-## Post-Installation
-
-Once the machine reboots:
-
-### 1. Connect
-
-If using bootstrap mode:
 ```bash
-ssh root@<TARGET_IP>
-```
-
-If Tailscale is configured:
-```bash
-ssh root@<TARGET_IP>  # Or via Tailscale: ssh root@cafaye
-```
-
-### 2. First Run Setup
-
-Log in and run the setup wizard:
-```bash
-caf-setup
-```
-
-This interactive wizard will help you:
-- Verify your configuration
-- Set up your preferred editor and distribution
-- Configure languages and frameworks
-- Run initial system updates
-
-### 3. Disable Bootstrap Mode
-
-After confirming everything works:
-```bash
-# Edit the state file
+# Edit configuration
 sudo nano /etc/cafaye/user-state.json
-# Set bootstrap_mode to false, then rebuild
-sudo caf-system-rebuild
+
+# Rebuild system
+caf-system-rebuild
 ```
 
-## Troubleshooting
+---
 
-### "Permission denied (publickey)"
-Ensure you have an SSH key added to your local agent that is authorized on the target VPS. Add your key to `user/user-state.json` before installing.
+## 📚 More Information
 
-### "Nix not found"
-The installer script requires Nix on your local machine. Install it first:
-```bash
-curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
-```
-
-### "Device not found" or GRUB installation fails
-Your VPS may use a different disk device. Check with `lsblk` on the target and update `core.boot.grub_device` in your configuration.
-
-### Locked out after installation
-If you can't connect after the reboot:
-1. Use your VPS provider's console/VNC access
-2. Log in as root (password is shown during install)
-3. Check Tailscale status: `tailscale status`
-4. Verify SSH is running: `systemctl status sshd`
-5. If needed, manually enable bootstrap mode by editing `/etc/cafaye/user-state.json`
-
-### Tailscale not connecting
-- Verify your auth key is valid and not expired
-- Check that the key is in `secrets/secrets.yaml` (encrypted with sops)
-- Try running `sudo tailscale up` manually to see errors
-
-## Advanced: Manual Installation
-
-If the automated installer doesn't work for your use case, you can use `nixos-anywhere` directly:
-
-```bash
-# Install nixos-anywhere
-nix run github:nix-community/nixos-anywhere -- \
-  --flake .#cafaye \
-  --ssh-port 22 \
-  root@<your-vps-ip>
-```
-
-For disks other than `/dev/vda`, you'll need to create a custom disk configuration module.
-
-## Provider-Specific Notes
-
-### DigitalOcean
-- Default disk: `/dev/vda`
-- Requires SSH key in DO control panel for initial access
-
-### Hetzner Cloud
-- Default disk: `/dev/sda`
-- Update `grub_device` before installing
-
-### AWS EC2
-- Disk varies by instance type: `/dev/xvda` or `/dev/nvme0n1`
-- Check with `lsblk` first
-
-### Vultr
-- Default disk: `/dev/vda`
-- Works out of the box
-
-## Getting Help
-
-- Run `caf-system-doctor` on the VPS for health checks
-- Run `caf-debug-collect` to gather system information
-- Check the [Cafaye documentation](../README.md) for more details
-- Review the [CHANGELOG](../CHANGELOG.md) for recent changes
+- [First Run Guide](FIRST_RUN.md)
+- [Documentation](../README.md)
+- [GitHub](https://github.com/kaka-ruto/cafaye)

@@ -1,115 +1,213 @@
 #!/bin/bash
-# Cafaye OS: VPS Bootstrap Script
-# This is a wrapper around nixos-anywhere for easy installation.
+# Cafaye OS: One-Line VPS Installer
+# Usage:
+#   curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
+#   OR
+#   ./install.sh (from within the repo)
 
-# Exit on error
 set -e
 
 # Colors
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
 RED='\033[0;31m'
-NC='\033[0m' # No Color
+GREEN='\\033[0;32m'
+BLUE='\\033[0;34m'
+YELLOW='\\033[1;33m'
+NC='\\033[0m'
 
-# Check for gum
-if ! command -v gum &> /dev/null; then
-    echo -e "${BLUE}Gum is not installed. Cafaye OS installer uses 'gum' for prompts.${NC}"
-    echo "You can run this script with 'nix shell nixpkgs#gum --command ./install.sh'"
-    echo "Or install it manually."
-    exit 1
-fi
-
-# Show Logo
-clear
-echo -e "\033[38;5;180m"
-cat <<'EOF'
-
+show_logo() {
+  clear
+  echo -e "\\033[38;5;180m"
+  cat <<'EOF'
      ██████╗ █████╗ ███████╗ █████╗ ██╗   ██╗███████╗
     ██╔════╝██╔══██╗██╔════╝██╔══██╗╚██╗ ██╔╝██╔════╝
     ██║     ███████║█████╗  ███████║ ╚████╔╝ █████╗  
     ██║     ██╔══██║██╔══╝  ██╔══██║  ╚██╔╝  ██╔══╝  
     ╚██████╗██║  ██║██║     ██║  ██║   ██║   ███████╗
      ╚═════╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝   ╚═╝   ╚══════╝
-                                                      
+                                                       
          ☕ Cloud Development, Perfected
-
 EOF
-echo -e "${NC}"
+  echo -e "${NC}"
+}
 
-echo -e "${BLUE}☕ Welcome to the Cafaye OS Installer!${NC}"
-echo "------------------------------------------"
+# Check if running from repo or need to self-clone
+self_clone() {
+  local script_dir="$(cd "$(dirname "$0")" && pwd)"
+  
+  # Check if we're in a valid cafaye repo
+  if [[ -f "$script_dir/flake.nix" && -d "$script_dir/installer" ]]; then
+    echo "$script_dir"
+    return 0
+  fi
+  
+  # We need to clone
+  echo -e "${BLUE}Downloading Cafaye OS...${NC}"
+  
+  local temp_dir=$(mktemp -d)
+  cd "$temp_dir"
+  
+  git clone --depth 1 https://github.com/kaka-ruto/cafaye
+  cd cafaye
+  
+  echo -e "${GREEN}✓ Downloaded Cafaye to $temp_dir/cafaye${NC}"
+  echo "$temp_dir/cafaye"
+}
 
-# Ensure Nix is installed
-if ! command -v nix &> /dev/null; then
-    echo -e "${RED}Error: Nix is required to run the installer.${NC}"
-    echo "Please install Nix first: curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install"
+# Install gum/jq if missing
+install_deps() {
+  echo -e "${BLUE}Checking dependencies...${NC}"
+  
+  # Check curl (required for curl-based install)
+  if ! command -v curl &> /dev/null; then
+    echo -e "${RED}Error: curl is required${NC}"
+    echo "Install curl and try again."
     exit 1
-fi
-
-# Step 1: Target User & IP
-echo ""
-echo "📝 Target VPS Details"
-TARGET_USER=$(gum input --placeholder "root" --value "root" --header "SSH User")
-TARGET_IP=$(gum input --placeholder "1.2.3.4" --header "Target IP Address")
-
-if [ -z "$TARGET_IP" ]; then
-    echo "No IP provided. Exiting."
+  fi
+  
+  # Check git (required for clone)
+  if ! command -v git &> /dev/null; then
+    echo -e "${RED}Error: git is required${NC}"
+    echo "Install git and try again."
     exit 1
-fi
+  fi
+  
+  # Try to install gum/jq if missing
+  if ! command -v gum &> /dev/null || ! command -v jq &> /dev/null; then
+    echo -e "${YELLOW}Installing gum and jq...${NC}"
+    
+    if command -v brew &> /dev/null; then
+      brew install gum jq 2>/dev/null || true
+    elif command -v apt-get &> /dev/null; then
+      sudo apt-get update && sudo apt-get install -y jq 2>/dev/null || true
+      if ! command -v gum &> /dev/null; then
+        nix shell nixpkgs#gum --command true 2>/dev/null || echo -e "${YELLOW}Note: gum not found. Some UI features may be limited.${NC}"
+      fi
+    elif command -v nix &> /dev/null; then
+      nix shell nixpkgs#gum nixpkgs#jq --command true 2>/dev/null || true
+    fi
+    
+    if ! command -v gum &> /dev/null || ! command -v jq &> /dev/null; then
+      nix shell nixpkgs#gum nixpkgs#jq --command true 2>/dev/null || echo -e "${YELLOW}Could not install gum/jq automatically. Interactive UI may be limited.${NC}"
+    fi
+  fi
+  
+  echo -e "${GREEN}✓ Dependencies ready${NC}"
+}
 
-# Step 2: SSH Port
-SSH_PORT=$(gum input --placeholder "22" --value "22" --header "SSH Port")
+# Auto SSH and run caf-setup after installation
+post_install() {
+  local target_ip="$1"
+  local target_user="$2"
+  local ssh_port="${3:-22}"
+  
+  echo ""
+  echo -e "${BLUE}Connecting to your new server...${NC}"
+  echo "This may take a minute..."
+  echo ""
+  
+  # Wait for server to reboot
+  echo "Waiting for server to reboot (60 seconds)..."
+  sleep 60
+  
+  # SSH and run caf-setup
+  echo "Running first-run setup on $target_user@$target_ip..."
+  echo ""
+  
+  # SSH with timeout and retry
+  local retries=3
+  local connected=false
+  
+  for i in $(seq 1 $retries); do
+    echo "Attempt $i of $retries..."
+    
+    if ssh -o BatchMode=yes \
+           -o ConnectTimeout=30 \
+           -o StrictHostKeyChecking=accept-new \
+           -p "$ssh_port" \
+           "$target_user@$target_ip" \
+           "echo 'SSH connected successfully' && caf-setup" 2>/dev/null; then
+      connected=true
+      break
+    else
+      echo "Connection failed, retrying in 30 seconds..."
+      sleep 30
+    fi
+  done
+  
+  if [[ "$connected" == "false" ]]; then
+    echo ""
+    echo -e "${YELLOW}⚠️  Could not automatically connect to your server.${NC}"
+    echo ""
+    echo "Please connect manually:"
+    echo "  ssh $target_user@$target_ip"
+    echo "  caf-setup"
+    echo ""
+  fi
+}
 
-# Step 3: Tailscale Auth Key (Optional)
-echo ""
-echo "🔒 Tailscale Setup (Highly Recommended)"
-TS_AUTH_KEY=$(gum input --password --placeholder "tskey-auth-..." --header "Tailscale Auth Key (optional)")
+# Source helpers and run installation
+run_installer() {
+  local cafaye_dir="$1"
+  
+  cd "$cafaye_dir"
+  
+  # Source helpers
+  export CAFAYE_INSTALL_DIR="$cafaye_dir"
+  source "$cafaye_dir/installer/all.sh"
+  
+  show_logo
+  
+  echo -e "${BLUE}Welcome to the Cafaye OS Installer!${NC}"
+  echo -e "${YELLOW}Transform any VPS into your cloud development powerhouse.${NC}"
+  echo ""
+  
+  # Install dependencies
+  install_deps
+  
+  # Gather details
+  gather_vps_details
+  validate_connectivity
+  setup_ssh_keys
+  setup_tailscale
+  generate_user_state
+  show_summary
+  
+  gum confirm --affirmative="Install Now" --negative="Cancel" "Proceed with installation?" || exit 0
+  
+  run_installation
+  
+  echo ""
+  gum style --border double --margin "1 2" --padding "2 4" --foreground 212 "✅ Installation Complete!"
+  echo ""
+  echo "Your server is rebooting..."
+  echo ""
+  
+  # Auto-connect and run caf-setup
+  post_install "$TARGET_IP" "$TARGET_USER" "$SSH_PORT"
+  
+  echo ""
+  echo -e "${GREEN}✓ Your Cafaye OS is ready!${NC}"
+  echo ""
+  echo "If not automatically connected, manually:"
+  echo "  ssh $TARGET_USER@$TARGET_IP"
+  echo "  caf-setup"
+  echo ""
+  echo -e "${YELLOW}⚠️  Remember to disable bootstrap_mode for security!${NC}"
+}
 
-# Build extra files if TS key is provided
-EXTRA_FILES=""
-TMP_DIR=""
-if [ -n "$TS_AUTH_KEY" ]; then
-    TMP_DIR=$(mktemp -d)
-    # We place the key where our NixOS config expects it, or at a standard location
-    # Ideally, sops takes care of this, but for bootstrapping, we can inject it.
-    # If the user's config expects sops, this injection might be ignored unless we configure it.
-    # For now, let's inject it to /var/lib/tailscale/auth-key and hope the config uses it or user updates it later.
-    mkdir -p "$TMP_DIR/var/lib/tailscale"
-    echo "$TS_AUTH_KEY" > "$TMP_DIR/var/lib/tailscale/auth-key"
-    EXTRA_FILES="--extra-files $TMP_DIR"
-    echo "🔑 Tailscale key queued for injection."
-fi
+main() {
+  local cafaye_dir
+  
+  # Self-clone if needed
+  cafaye_dir=$(self_clone)
+  
+  # If we cloned, re-execute this script from the cloned repo
+  if [[ "$cafaye_dir" != "$(cd "$(dirname "$0")" && pwd)" ]]; then
+    exec "$cafaye_dir/install.sh" "$@"
+  fi
+  
+  # Run installer from repo
+  run_installer "$cafaye_dir"
+}
 
-# Confirm
-echo ""
-gum style --border double --margin "1 2" --padding "1 2" --foreground 212 \
-"Ready to install on $TARGET_USER@$TARGET_IP:$SSH_PORT"
-
-echo "⚠️  WARNING: This will WIPE the target disk!"
-gum confirm "Proceed with installation?" || exit 0
-
-echo ""
-echo "🚀 Starting installation via nixos-anywhere..."
-
-# Run nixos-anywhere
-# We use --flake .#cafaye to use the local flake configuration
-nix run github:nix-community/nixos-anywhere -- \
-    --flake .#cafaye \
-    --ssh-port "$SSH_PORT" \
-    $EXTRA_FILES \
-    "$TARGET_USER@$TARGET_IP"
-
-# Cleanup
-if [ -n "$TMP_DIR" ]; then
-    rm -rf "$TMP_DIR"
-fi
-
-echo ""
-caf-logo-show 2>/dev/null || true
-gum style --border double --margin "1 2" --padding "2 4" --foreground 212 "Installation Complete! ☕"
-
-echo ""
-echo "Next Steps:"
-echo "1. Wait for reboot"
-echo "2. SSH into your new server: ssh $TARGET_USER@$TARGET_IP"
-echo "3. Run 'caf-setup' to configure your environment"
+main "$@"

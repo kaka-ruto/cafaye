@@ -651,9 +651,12 @@ Hooks are triggered via `caf-hook-run <name>`.
   - [x] Validate sops-nix encryption (tests pass)
   - [x] Review firewall rules (default block all except Tailscale)
 
-- [x] **Integration Tests**
-  - [x] `tests/integration/rails.nix`
-  - [x] `tests/integration/first-run-wizard.nix`
+ - [x] **Integration Tests**
+   - [x] `tests/integration/rails.nix`
+   - [x] `tests/integration/caf-setup.nix`
+
+ - [x] **Local Testing**
+   - [x] `bin/test.sh` - Validates install.sh and CLI scripts
 
 ### Success Criteria
 
@@ -677,11 +680,11 @@ Before pushing to CI, run the local test script for fast validation:
 ```
 
 This checks:
+- install.sh syntax
+- CLI scripts syntax
 - Nix flake evaluation
-- Script syntax (bash)
 - User state JSON validation
 - Module imports
-- Documentation completeness
 
 ### Testing Strategy
 

@@ -11,7 +11,7 @@ show_main_menu() {
     caf-logo-show
     echo ""
     
-    choice=$(gum choose --header "Main Menu" \
+    choice=$(gum choose --cursor "👉 " --header "Main Menu" \
         "📦 Install (Languages & Frameworks)" \
         "⚙️  Services (Postgres, Redis)" \
         "🎨 Style (Themes & UI)" \
@@ -32,7 +32,7 @@ show_main_menu() {
 }
 
 show_install_menu() {
-    choice=$(gum choose --header "Install Submenu" \
+    choice=$(gum choose --cursor "👉 " --header "Install Submenu" \
         "🛤️  Ruby on Rails" \
         "🐎 Django" \
         "⚛️  Next.js" \
@@ -61,7 +61,7 @@ show_install_menu() {
 }
 
 show_services_menu() {
-    choice=$(gum choose --header "Backend Services" \
+    choice=$(gum choose --cursor "👉 " --header "Backend Services" \
         "🐘 PostgreSQL" \
         "🧠 Redis" \
         "⬅️  Back")
@@ -107,7 +107,7 @@ run_system_update() {
 }
 
 show_status_menu() {
-    choice=$(gum choose --header "Status Submenu" \
+    choice=$(gum choose --cursor "👉 " --header "Status Submenu" \
         "🏥 System Health" \
         "🏭 Factory CI/CD Status" \
         "👁️  Watch Factory (Live)" \
@@ -178,7 +178,7 @@ show_system_health() {
 }
 
 show_style_menu() {
-    choice=$(gum choose --header "Style Submenu" \
+    choice=$(gum choose --cursor "👉 " --header "Style Submenu" \
         "🌙 Catppuccin Mocha" \
         "☀️  Light Mode (Coming Soon)" \
         "⬅️  Back")

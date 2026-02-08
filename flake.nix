@@ -47,7 +47,7 @@
             modules-unified = pkgs.testers.runNixOSTest (import ./tests/modules/unified.nix { inherit pkgs inputs userState; });
             
             # Integration tests (kept separate as they test complex interactions)
-            integration-first-run-wizard = pkgs.testers.runNixOSTest (import ./tests/integration/first-run-wizard.nix { inherit pkgs inputs userState; });
+            integration-caf-setup = pkgs.testers.runNixOSTest (import ./tests/integration/caf-setup.nix { inherit pkgs inputs userState; });
             integration-rails = pkgs.testers.runNixOSTest (import ./tests/integration/rails.nix { inherit pkgs inputs userState; });
           };
           

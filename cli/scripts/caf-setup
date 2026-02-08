@@ -1,207 +1,450 @@
 #!/bin/bash
+# Cafaye OS First-Run Setup Wizard - Premium Edition
+# Comprehensive setup for new installations with guided configuration
 
-# Cafaye OS First-Run Setup Wizard
-# Interactive setup for new installations
+set -e
 
-# Default values
-EDITOR=""
-DISTRO=""
-LANGUAGES=""
-AI_ENABLE=""
-NON_INTERACTIVE=false
+# Colors
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
 
-# Usage function
-usage() {
-    echo "Usage: $0 [options]"
-    echo "Options:"
-    echo "  --editor <editor>       Set default editor (nvim, helix, vscode-server)"
-    echo "  --distro <distro>       Set editor distribution (lazyvim, astronvim, nvchad, lunarvim)"
-    echo "  --languages <langs>     Set enabled languages (comma-separated: python,ruby,go...)"
-    echo "  --ai <true|false>       Enable/Disable AI features"
-    echo "  --no-confirm            Skip confirmation prompts"
-    echo "  --help                  Show this help message"
+# Check dependencies
+if ! command -v gum &> /dev/null; then
+    echo -e "${RED}Error: gum is required for the setup wizard.${NC}"
+    echo "Install with: nix shell nixpkgs#gum --command caf-setup"
     exit 1
+fi
+
+if ! command -v jq &> /dev/null; then
+    echo -e "${RED}Error: jq is required for configuration.${NC}"
+    echo "Install with: nix shell nixpkgs#jq --command caf-setup"
+    exit 1
+fi
+
+# Show welcome screen
+show_welcome() {
+    clear
+    if command -v caf-logo-show &> /dev/null; then
+        caf-logo-show
+    else
+        echo -e "\033[38;5;180m"
+        cat <<'EOF'
+     ██████╗ █████╗ ███████╗ █████╗ ██╗   ██╗███████╗
+    ██╔════╝██╔══██╗██╔════╝██╔══██╗╚██╗ ██╔╝██╔════╝
+    ██║     ███████║█████╗  ███████║ ╚████╔╝ █████╗  
+    ██║     ██╔══██║██╔══╝  ██╔══██║  ╚██╔╝  ██╔══╝  
+    ╚██████╗██║  ██║██║     ██║  ██║   ██║   ███████╗
+     ╚═════╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝   ╚═╝   ╚══════╝
+                                                      
+         ☕ First-Run Setup Wizard
+EOF
+        echo -e "${NC}"
+    fi
+    
+    echo -e "${BLUE}Welcome to Cafaye OS!${NC}"
+    echo "Let's get your cloud development environment perfectly configured."
+    echo ""
+    
+    # Show system status
+    echo -e "${YELLOW}System Status:${NC}"
+    gum style --foreground 212 "✅ Cafaye OS installed"
+    if systemctl is-active --quiet tailscaled 2>/dev/null; then
+        gum style --foreground 212 "✅ Tailscale connected"
+    else
+        gum style --foreground 11 "⚠️  Tailscale not connected"
+    fi
+    if systemctl is-active --quiet docker 2>/dev/null; then
+        gum style --foreground 212 "✅ Docker running"
+    else
+        gum style --foreground 11 "⚠️  Docker not running"
+    fi
+    echo ""
 }
 
-# Parse arguments
-while [[ "$#" -gt 0 ]]; do
-    case $1 in
-        --editor) EDITOR="$2"; shift ;;
-        --distro) DISTRO="$2"; shift ;;
-        --languages) LANGUAGES="${2//,/ }"; shift ;; # Replace commas with spaces
-        --ai) AI_ENABLE="$2"; shift ;;
-        --no-confirm) NON_INTERACTIVE=true ;;
-        --help) usage ;;
-        *) echo "Unknown parameter passed: $1"; usage ;;
-    esac
-    shift
-done
-
-# Ensure we have the cafe logo available
-if command -v caf-logo-show &> /dev/null; then
-    caf-logo-show
-else
-    echo "☕ Cafaye OS Setup"
-fi
-
-echo ""
-echo "Welcome to Cafaye OS! Let's get your environment set up."
-echo ""
-
-# Check gum if interactive
-if [ "$NON_INTERACTIVE" = false ] && ! command -v gum &> /dev/null; then
-    echo "Error: 'gum' is required for interactive setup."
-    echo "Please install it or use non-interactive flags."
-    exit 1
-fi
-
-# Confirm start
-if [ "$NON_INTERACTIVE" = false ]; then
-    gum confirm "Ready to configure your system?" || exit 0
-fi
-
-# 1. Editor Selection
-if [ -z "$EDITOR" ]; then
+# Quick configuration presets
+show_presets() {
+    echo -e "${BLUE}🚀 Quick Start Presets${NC}"
+    echo "Choose a preset configuration for instant setup:"
     echo ""
-    echo "📝 1. Choose your preferred Editor"
-    if [ "$NON_INTERACTIVE" = false ]; then
-        EDITOR=$(gum choose "nvim" "helix" "vscode-server" --header "Select default editor")
-    else
-        EDITOR="nvim" # Default fallback
-    fi
-fi
-echo "Selected Editor: $EDITOR"
-
-# 2. Distribution Selection (only for nvim)
-if [ "$EDITOR" == "nvim" ] && [ -z "$DISTRO" ]; then
-    echo ""
-    echo "🎨 2. Choose Neovim Distribution"
-    if [ "$NON_INTERACTIVE" = false ]; then
-        DISTRO=$(gum choose "lazyvim" "astronvim" "nvchad" "lunarvim" "none" --header "Select distribution")
-    else
-        DISTRO="lazyvim" # Default fallback
-    fi
-fi
-[ -n "$DISTRO" ] && echo "Selected Distro: $DISTRO"
-
-# 3. Language Selection
-if [ -z "$LANGUAGES" ]; then
-    echo ""
-    echo "💻 3. Select Language Support"
-    if [ "$NON_INTERACTIVE" = false ]; then
-        LANGUAGES=$(gum choose --no-limit "python" "ruby" "go" "rust" "nodejs" "php" "java" --header "Select languages to enable (Space to select)")
-    else
-        LANGUAGES="python ruby nodejs" # Default set
-    fi
-fi
-echo "Selected Languages: $LANGUAGES"
-
-# 4. AI Features
-if [ -z "$AI_ENABLE" ]; then
-    echo ""
-    echo "🤖 4. Enable AI Features?"
-    if [ "$NON_INTERACTIVE" = false ]; then
-        if gum confirm "Enable local AI features (Ollama)?"; then
-            AI_ENABLE="true"
-        else
-            AI_ENABLE="false"
-        fi
-    else
-        AI_ENABLE="false"
-    fi
-fi
-echo "AI Enabled: $AI_ENABLE"
-
-# Summary and Confirmation
-echo ""
-echo "✅ Configuration Summary:"
-echo "--------------------------------"
-echo "Editor:       $EDITOR"
-[ -n "$DISTRO" ] && echo "Distribution: $DISTRO"
-echo "Languages:    $LANGUAGES"
-echo "AI Features:  $AI_ENABLE"
-echo "--------------------------------"
-
-if [ "$NON_INTERACTIVE" = false ]; then
-    gum confirm "Apply these settings? (This will modify user-state.json and rebuild)" || exit 0
-fi
-
-echo ""
-echo "⚙️  Applying settings..."
-
-# Apply Editor
-if command -v caf-editor-set &> /dev/null; then
-    caf-editor-set "$EDITOR"
-fi
-
-# Apply Distribution
-if [ -n "$DISTRO" ] && [ "$DISTRO" != "none" ]; then
-    if command -v caf-editor-distribution-set &> /dev/null; then
-        caf-editor-distribution-set nvim "$DISTRO"
-    fi
-fi
-
-# Apply Languages & AI via direct JSON manipulation
-# Assumes repository is at ~/Code/Cafaye/cafaye
-REPO_DIR="$HOME/Code/Cafaye/cafaye"
-if [ ! -d "$REPO_DIR" ]; then
-    # Fallback to /etc/cafaye if repo not found (though rights might be issue)
-    REPO_DIR="/etc/cafaye"
-fi
-
-TARGET_STATE="$REPO_DIR/user/user-state.json"
-
-if [ -f "$TARGET_STATE" ] && command -v jq &> /dev/null; then
-    echo "Updating user state at $TARGET_STATE..."
     
-    # Update Languages
-    for lang in $LANGUAGES; do
-        if [ -n "$lang" ]; then
-            echo "Enabling $lang..."
-            tmp=$(mktemp)
-            jq ".languages.$lang = true" "$TARGET_STATE" > "$tmp" && mv "$tmp" "$TARGET_STATE"
-        fi
-    done
+    local preset=$(gum choose --cursor "👉 " \
+        "Ruby on Rails Developer" \
+        "Python Django Developer" \
+        "Node.js/React Developer" \
+        "Go Backend Developer" \
+        "Rust Systems Developer" \
+        "Full-Stack Developer" \
+        "Custom Configuration" \
+        --header "Select your development style")
+    
+    case "$preset" in
+        "Ruby on Rails Developer")
+            echo "Setting up Ruby on Rails development environment..."
+            return 1
+            ;;
+        "Python Django Developer")
+            echo "Setting up Python Django development environment..."
+            return 2
+            ;;
+        "Node.js/React Developer")
+            echo "Setting up Node.js/React development environment..."
+            return 3
+            ;;
+        "Go Backend Developer")
+            echo "Setting up Go backend development environment..."
+            return 4
+            ;;
+        "Rust Systems Developer")
+            echo "Setting up Rust systems development environment..."
+            return 5
+            ;;
+        "Full-Stack Developer")
+            echo "Setting up full-stack development environment..."
+            return 6
+            ;;
+        "Custom Configuration")
+            return 0
+            ;;
+    esac
+}
 
-    # Update AI
-    if [ "$AI_ENABLE" == "true" ]; then
-        echo "Enabling AI..."
-        tmp=$(mktemp)
-        jq ".ai.enable = true" "$TARGET_STATE" > "$tmp" && mv "$tmp" "$TARGET_STATE"
+# Configure editor
+configure_editor() {
+    echo -e "${BLUE}📝 Code Editor Configuration${NC}"
+    echo "Choose your preferred code editor:"
+    echo ""
+    
+    local editor_choice=$(gum choose --cursor "👉 " \
+        "Neovim (LazyVim)" \
+        "Neovim (AstroNvim)" \
+        "Neovim (NvChad)" \
+        "Helix" \
+        "VS Code Server" \
+        --header "Select your code editor")
+    
+    local editor_config='{"neovim": false, "helix": false, "vscode_server": false, "default": "neovim", "distributions": {"nvim": {"lazyvim": false, "astronvim": false, "nvchad": false, "lunarvim": false}}}'
+    
+    case "$editor_choice" in
+        "Neovim (LazyVim)")
+            editor_config=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.lazyvim = true' <<< '{}')
+            ;;
+        "Neovim (AstroNvim)")
+            editor_config=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.astronvim = true' <<< '{}')
+            ;;
+        "Neovim (NvChad)")
+            editor_config=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.nvchad = true' <<< '{}')
+            ;;
+        "Helix")
+            editor_config=$(jq '.helix = true | .default = "helix"' <<< '{}')
+            ;;
+        "VS Code Server")
+            editor_config=$(jq '.vscode_server = true | .default = "vscode"' <<< '{}')
+            gum confirm --affirmative="Yes" --negative="No" "Bind VS Code to localhost only?" && {
+                echo "🔒 VS Code will be accessible only via Tailscale/SSH tunnel"
+            }
+            ;;
+    esac
+    
+    echo "$editor_config"
+}
+
+# Configure development stack
+configure_development_stack() {
+    echo -e "${BLUE}⚙️ Development Stack${NC}"
+    echo "Configure your development environment:"
+    echo ""
+    
+    # Languages
+    echo "Programming Languages:"
+    local selected_languages=$(gum choose --cursor "👉 " --no-limit \
+        "Ruby" \
+        "Python" \
+        "Node.js" \
+        "Go" \
+        "Rust" \
+        "PHP" \
+        "Java" \
+        --header "Select programming languages (Space to select)")
+    
+    # Convert to JSON
+    local languages='{}'
+    if [[ -n "$selected_languages" ]]; then
+        languages=$(echo "$selected_languages" | jq -R -s 'split("\n") | map(select(length > 0)) | map(. | ascii_downcase) | reduce .[] as $lang ({}; .[$lang] = true)')
     fi
-else
-    echo "⚠️  Warning: user-state.json not found or jq missing. Skipping state update."
-fi
+    
+    # Frameworks
+    echo ""
+    echo "Web Frameworks:"
+    local available_frameworks=("Rails" "Django" "Next.js" "Laravel" "Express" "Spring Boot" "Phoenix")
+    local selected_frameworks=$(gum choose --cursor "👉 " --no-limit "${available_frameworks[@]}" --header "Select frameworks (optional)")
+    
+    local frameworks='{}'
+    if [[ -n "$selected_frameworks" ]]; then
+        frameworks=$(echo "$selected_frameworks" | jq -R -s 'split("\n") | map(select(length > 0)) | map(. | ascii_downcase | if . == "next.js" then "nextjs" elif . == "spring boot" then "spring" else . end) | reduce .[] as $framework ({}; .[$framework] = true)')
+    fi
+    
+    # Services
+    echo ""
+    echo "Development Services:"
+    local available_services=("PostgreSQL" "Redis" "MySQL" "MongoDB" "Elasticsearch")
+    local selected_services=$(gum choose --cursor "👉 " --no-limit "${available_services[@]}" --header "Select database services")
+    
+    local services='{"docker": true}'
+    if [[ -n "$selected_services" ]]; then
+        services=$(echo "$selected_services" | jq -R -s 'split("\n") | map(select(length > 0)) | map(. | ascii_downcase) | reduce .[] as $service ({}; .[$service] = true) | . + {"docker": true}')
+    fi
+    
+    echo "\"languages\": $languages, \"frameworks\": $frameworks, \"services\": $services"
+}
 
-echo ""
-echo "🚀 Rebuilding system..."
-if command -v caf-system-update &> /dev/null; then
-    # In non-interactive mode, we might want to bypass confirmation in update too?
-    # caf-system-update doesn't support flags yet.
-    # Assuming user handles it or we update caf-system-update later.
-    echo "Running system update..."
-    # For now just call it.
-    if [ "$NON_INTERACTIVE" = true ]; then
-        caf-system-update -y
+# Additional configuration options
+configure_additional() {
+    echo -e "${BLUE}🎨 Additional Configuration${NC}"
+    echo ""
+    
+    # Theme selection
+    local theme=$(gum choose --cursor "👉 " \
+        "Catppuccin Mocha" \
+        "Catppuccin Latte" \
+        "Tokyo Night" \
+        "Gruvbox" \
+        "Nord" \
+        --header "Terminal theme")
+    
+    # ZRAM configuration
+    local zram_enabled=false
+    if gum confirm --affirmative="Enable" --negative="Disable" "Enable ZRAM for memory compression?"; then
+        zram_enabled=true
+    fi
+    
+    # Tailscale check
+    local ts_connected=false
+    if systemctl is-active --quiet tailscaled 2>/dev/null; then
+        ts_connected=true
+        gum style --foreground 212 "✅ Tailscale is connected"
     else
-        caf-system-update
+        if gum confirm "Configure Tailscale now?"; then
+            echo "Please provide your Tailscale auth key:"
+            local ts_key=$(gum input --password --placeholder "tskey-auth-..." --header "Tailscale Auth Key")
+            if [[ -n "$ts_key" ]]; then
+                sudo tailscale up --auth-key "$ts_key" && ts_connected=true
+            fi
+        fi
     fi
-else
-    echo "caf-system-update not found. Please rebuild manually."
-fi
+    
+    echo "\"interface\": {\"terminal\": {\"shell\": \"zsh\", \"multiplexer\": \"zellij\"}, \"theme\": \"$(echo "$theme" | tr '[:upper:]' '[:lower:]' | sed 's/ /-/g')\"}, \"core\": {\"tailscale_enabled\": $ts_connected, \"zram_enabled\": $zram_enabled}"
+}
 
-echo ""
-if command -v caf-task-done &> /dev/null; then
-    caf-task-done "First-Run Setup"
-else
-    echo "Setup Complete!"
-fi
+# Security check
+security_check() {
+    echo -e "${BLUE}🔒 Security Settings${NC}"
+    echo ""
+    
+    if [[ -f "/etc/cafaye/user-state.json" ]]; then
+        local bootstrap_mode=$(jq -r '.core.security.bootstrap_mode // false' /etc/cafaye/user-state.json)
+        
+        if [[ "$bootstrap_mode" == "true" ]]; then
+            gum style --foreground 11 "⚠️  Bootstrap mode is currently enabled"
+            echo "This allows SSH from any IP address for initial setup."
+            echo ""
+            if gum confirm --affirmative="Secure Now" --negative="Keep Open" "Disable bootstrap mode for security?"; then
+                return 0  # Disable bootstrap mode
+            fi
+        else
+            gum style --foreground 212 "✅ System is in secure mode"
+        fi
+    fi
+    
+    return 1
+}
 
-# Check for and run any first-run hooks
-if command -v caf-hook-run &> /dev/null; then
-    echo "Running post-setup hooks..."
-    caf-hook-run first-run
-fi
+# Apply configuration
+apply_configuration() {
+    echo -e "${BLUE}💾 Applying Configuration${NC}"
+    echo ""
+    
+    # Get state file location
+    local state_file="/etc/cafaye/user-state.json"
+    if [[ ! -f "$state_file" ]]; then
+        state_file="$HOME/Code/Cafaye/cafaye/user/user-state.json"
+    fi
+    
+    if [[ ! -f "$state_file" ]]; then
+        echo "Error: Could not find user-state.json"
+        exit 1
+    fi
+    
+    # Create backup
+    sudo cp "$state_file" "$state_file.backup.$(date +%Y%m%d_%H%M%S)"
+    echo "📋 Configuration backed up"
+    
+    # Apply changes
+    local tmp_file=$(mktemp)
+    
+    # Start with existing config
+    cp "$state_file" "$tmp_file"
+    
+    # Update based on user selections
+    if [[ -n "$EDITOR_CONFIG" ]]; then
+        tmp=$(mktemp)
+        jq ".editors = $EDITOR_CONFIG" "$tmp_file" > "$tmp" && mv "$tmp" "$tmp_file"
+    fi
+    
+    if [[ -n "$STACK_CONFIG" ]]; then
+        # Extract and merge individual components
+        local languages=$(echo "$STACK_CONFIG" | jq -r '.languages // {}')
+        local frameworks=$(echo "$STACK_CONFIG" | jq -r '.frameworks // {}')
+        local services=$(echo "$STACK_CONFIG" | jq -r '.services // {}')
+        
+        tmp=$(mktemp)
+        jq ".languages = $languages | .frameworks = $frameworks | .services = $services" "$tmp_file" > "$tmp" && mv "$tmp" "$tmp_file"
+    fi
+    
+    if [[ -n "$ADDITIONAL_CONFIG" ]]; then
+        tmp=$(mktemp)
+        jq ".interface = ($ADDITIONAL_CONFIG | .interface) | .core.tailscale_enabled = ($ADDITIONAL_CONFIG | .core.tailscale_enabled) | .core.zram_enabled = ($ADDITIONAL_CONFIG | .core.zram_enabled)" "$tmp_file" > "$tmp" && mv "$tmp" "$tmp_file"
+    fi
+    
+    # Update bootstrap mode
+    if [[ "$DISABLE_BOOTSTRAP" == "true" ]]; then
+        tmp=$(mktemp)
+        jq '.core.security.bootstrap_mode = false' "$tmp_file" > "$tmp" && mv "$tmp" "$tmp_file"
+        echo "🔒 Bootstrap mode disabled"
+    fi
+    
+    # Apply the changes
+    sudo cp "$tmp_file" "$state_file"
+    rm "$tmp_file"
+    
+    echo "✅ Configuration updated"
+}
 
-echo ""
-echo "🎉 Setup Complete! Enjoy Cafaye OS."
+# Rebuild system
+rebuild_system() {
+    echo -e "${BLUE}🔨 Building System${NC}"
+    echo ""
+    
+    gum style --foreground 212 "Rebuilding NixOS configuration..."
+    echo "This may take a few minutes..."
+    echo ""
+    
+    if command -v caf-system-rebuild &> /dev/null; then
+        caf-system-rebuild
+    else
+        sudo nixos-rebuild switch
+    fi
+}
+
+# Final setup steps
+finalize_setup() {
+    echo -e "${BLUE}🎉 Finalizing Setup${NC}"
+    echo ""
+    
+    # Run post-setup hooks
+    if command -v caf-hook-run &> /dev/null; then
+        echo "Running post-setup hooks..."
+        caf-hook-run first-run 2>/dev/null || true
+    fi
+    
+    # Show completion message
+    if command -v caf-task-done &> /dev/null; then
+        caf-task-done "First-Run Setup Complete!"
+    else
+        gum style --border double --margin "1 2" --padding "2 4" --foreground 212 "✅ Setup Complete!"
+    fi
+    
+    echo ""
+    echo -e "${GREEN}Your Cafaye OS is ready to use!${NC}"
+    echo ""
+    echo "Quick Start:"
+    echo "• caf - Open the main menu"
+    echo "• nvim - Launch your editor"
+    echo "• zellij - Start terminal multiplexer"
+    echo "• docker - Use Docker containers"
+    echo ""
+    
+    if systemctl is-active --quiet tailscaled 2>/dev/null; then
+        local ts_ip=$(tailscale ip -4 2>/dev/null || echo "check with 'tailscale ip'")
+        echo "Tailscale IP: $ts_ip"
+    fi
+    
+    echo ""
+    echo -e "${YELLOW}💡 Pro tip: Run 'caf-keys-show' to see helpful shortcuts${NC}"
+}
+
+# Main setup flow
+main() {
+    show_welcome
+    
+    # Check if running as root
+    if [[ $EUID -eq 0 ]]; then
+        echo "Please run as a regular user, not root."
+        exit 1
+    fi
+    
+    # Get initial preset
+    local preset_choice=$(show_presets)
+    
+    # Configure based on preset or custom
+    if [[ $preset_choice -gt 0 ]]; then
+        case $preset_choice in
+            1) # Ruby on Rails
+                EDITOR_CONFIG=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.lazyvim = true' <<< '{}')
+                STACK_CONFIG='{"languages": {"ruby": true}, "frameworks": {"rails": true}, "services": {"postgresql": true, "docker": true}}'
+                ;;
+            2) # Python Django
+                EDITOR_CONFIG=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.lazyvim = true' <<< '{}')
+                STACK_CONFIG='{"languages": {"python": true}, "frameworks": {"django": true}, "services": {"postgresql": true, "docker": true}}'
+                ;;
+            3) # Node.js/React
+                EDITOR_CONFIG=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.lazyvim = true' <<< '{}')
+                STACK_CONFIG='{"languages": {"nodejs": true}, "frameworks": {"nextjs": true}, "services": {"docker": true}}'
+                ;;
+            4) # Go
+                EDITOR_CONFIG=$(jq '.helix = true | .default = "helix"' <<< '{}')
+                STACK_CONFIG='{"languages": {"go": true}, "frameworks": {}, "services": {"docker": true}}'
+                ;;
+            5) # Rust
+                EDITOR_CONFIG=$(jq '.helix = true | .default = "helix"' <<< '{}')
+                STACK_CONFIG='{"languages": {"rust": true}, "frameworks": {}, "services": {"docker": true}}'
+                ;;
+            6) # Full-Stack
+                EDITOR_CONFIG=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.lazyvim = true' <<< '{}')
+                STACK_CONFIG='{"languages": {"nodejs": true, "python": true}, "frameworks": {"nextjs": true, "django": true}, "services": {"postgresql": true, "redis": true, "docker": true}}'
+                ;;
+        esac
+    else
+        # Custom configuration
+        EDITOR_CONFIG=$(configure_editor)
+        STACK_CONFIG=$(configure_development_stack)
+        ADDITIONAL_CONFIG=$(configure_additional)
+    fi
+    
+    # Security check
+    DISABLE_BOOTSTRAP=false
+    if security_check; then
+        DISABLE_BOOTSTRAP=true
+    fi
+    
+    # Show summary
+    echo ""
+    gum style --border double --margin "1 2" --padding "2 4" --foreground 212 "Configuration Summary"
+    echo "Editor: $(echo "$EDITOR_CONFIG" | jq -r '.default // "not set"')"
+    echo "Languages: $(echo "$STACK_CONFIG" | jq -r '.languages | keys[]' 2>/dev/null | tr '\n' ', ' | sed 's/,$//')"
+    echo "Frameworks: $(echo "$STACK_CONFIG" | jq -r '.frameworks | keys[]' 2>/dev/null | tr '\n' ', ' | sed 's/,$//')"
+    echo "Services: $(echo "$STACK_CONFIG" | jq -r '.services | keys[]' 2>/dev/null | tr '\n' ', ' | sed 's/,$//')"
+    echo ""
+    
+    # Confirmation
+    gum confirm "Apply this configuration?" || exit 0
+    
+    # Apply everything
+    apply_configuration
+    rebuild_system
+    finalize_setup
+}
+
+main "$@"

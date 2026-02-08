@@ -14,7 +14,7 @@ jobs:
     timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
-      
+       
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v9
 
@@ -30,6 +30,9 @@ jobs:
           # Only evaluate the flake structure, don't build checks
           nix eval --json .#nixosConfigurations.cafaye.config.system.build.toplevel > /dev/null
           echo "✅ Flake evaluation successful"
+
+      - name: Run Installer Tests
+        run: bash installer/test.sh
 
   # Phase 2: Parallel VM Test Groups
   test-core:
