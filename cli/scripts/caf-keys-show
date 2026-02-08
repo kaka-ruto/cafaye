@@ -1,0 +1,118 @@
+#!/bin/bash
+
+# Cafaye OS Keybindings Cheatsheet (inspired by omarchy-menu-keybindings)
+# Interactive keybindings reference
+
+show_zellij_keys() {
+  cat <<'EOF'
+╔════════════════════════════════════════════════════════════╗
+║                    ZELLIJ KEYBINDINGS                      ║
+╠════════════════════════════════════════════════════════════╣
+║  Ctrl+P,N       New pane (down)                           ║
+║  Ctrl+P,R       New pane (right)                          ║
+║  Ctrl+P,X       Close pane                                ║
+║  Alt+Arrow      Navigate panes                             ║
+║  Ctrl+T,C       New tab                                    ║
+║  Ctrl+T,X       Close tab                                  ║
+║  Alt+1-9        Switch to tab N                            ║
+║  Ctrl+S         Enter scroll mode                          ║
+║  Ctrl+O         Session manager                            ║
+║  Ctrl+Q         Quit Zellij                                ║
+╚════════════════════════════════════════════════════════════╝
+EOF
+}
+
+show_neovim_keys() {
+  cat <<'EOF'
+╔════════════════════════════════════════════════════════════╗
+║                    NEOVIM KEYBINDINGS                      ║
+╠════════════════════════════════════════════════════════════╣
+║  Space          Leader key                                 ║
+║  Space+W        Save file                                  ║
+║  Space+Q        Quit                                       ║
+║  Space+F        Find files (Telescope)                     ║
+║  Space+G        Live grep                                  ║
+║  Space+B        Buffer list                                ║
+║  Ctrl+H/J/K/L   Window navigation                          ║
+║  Space+E        File explorer (NeoTree)                    ║
+║  gd             Go to definition                           ║
+║  gr             Find references                            ║
+║  K              Hover documentation                        ║
+╚════════════════════════════════════════════════════════════╝
+EOF
+}
+
+show_helix_keys() {
+  cat <<'EOF'
+╔════════════════════════════════════════════════════════════╗
+║                    HELIX KEYBINDINGS                       ║
+╠════════════════════════════════════════════════════════════╣
+║  Space          Open command palette                       ║
+║  Space+F        File picker                                ║
+║  Space+B        Buffer picker                              ║
+║  Space+S        Symbol picker                              ║
+║  Ctrl+S         Save                                       ║
+║  Ctrl+Q         Quit                                       ║
+║  g+d            Go to definition                           ║
+║  g+r            Go to references                           ║
+║  K              Hover info                                 ║
+║  %              Jump to matching bracket                   ║
+╚════════════════════════════════════════════════════════════╝
+EOF
+}
+
+show_cli_keys() {
+  cat <<'EOF'
+╔════════════════════════════════════════════════════════════╗
+║                    CLI TOOL SHORTCUTS                      ║
+╠════════════════════════════════════════════════════════════╣
+║  caf            Open Cafaye main menu                      ║
+║  caf install    Install languages/frameworks               ║
+║  caf services   Manage backend services                    ║
+║  caf-editor-launch      Open default editor                ║
+║  caf-system-doctor      Check system health                ║
+║  caf-system-update      Update system                      ║
+║  caf-debug-collect      Gather debug info                  ║
+║  caf-config-refresh     Reset configs                      ║
+╚════════════════════════════════════════════════════════════╝
+EOF
+}
+
+while true; do
+  choice=$(gum choose --header "📖 Cafaye OS Keybindings" \
+    "Zellij Shortcuts" \
+    "Neovim Shortcuts" \
+    "Helix Shortcuts" \
+    "CLI Tool Commands" \
+    "Exit")
+
+  case "$choice" in
+    "Zellij Shortcuts")
+      clear
+      show_zellij_keys
+      echo ""
+      read -n 1 -s -r -p "Press any key to continue..."
+      ;;
+    "Neovim Shortcuts")
+      clear
+      show_neovim_keys
+      echo ""
+      read -n 1 -s -r -p "Press any key to continue..."
+      ;;
+    "Helix Shortcuts")
+      clear
+      show_helix_keys
+      echo ""
+      read -n 1 -s -r -p "Press any key to continue..."
+      ;;
+    "CLI Tool Commands")
+      clear
+      show_cli_keys
+      echo ""
+      read -n 1 -s -r -p "Press any key to continue..."
+      ;;
+    "Exit"|*)
+      break
+      ;;
+  esac
+done

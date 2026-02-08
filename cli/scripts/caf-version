@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Cafaye OS Version Display
+# Show current Cafaye version
+
+cat /etc/cafaye/version 2>/dev/null || cat "$(dirname "$0")/../../version" 2>/dev/null || echo "unknown"

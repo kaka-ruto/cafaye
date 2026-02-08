@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Cafaye OS Version Packages (inspired by omarchy-version-pkgs)
+# Show when packages were last updated
+
+# For NixOS, we check the system profile modification time
+PROFILE="/nix/var/nix/profiles/system"
+
+if [ -L "$PROFILE" ]; then
+  MTIME=$(stat -c %Y "$PROFILE" 2>/dev/null || stat -f %m "$PROFILE" 2>/dev/null)
+  if [ -n "$MTIME" ]; then
+    date -d "@$MTIME" "+%A, %B %d %Y at %H:%M" 2>/dev/null || \
+    date -r "$MTIME" "+%A, %B %d %Y at %H:%M" 2>/dev/null || \
+    echo "Unknown"
+  else
+    echo "Unable to determine last update time"
+  fi
+else
+  echo "No system profile found"
+fi

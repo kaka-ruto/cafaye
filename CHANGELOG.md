@@ -5,6 +5,35 @@ All notable changes to Cafaye OS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-02-08
+
+### Added
+- **Debug & Diagnostics Suite** (inspired by omarchy):
+  - `caf-debug-collect` - Comprehensive system info, journalctl, dmesg gathering
+  - `caf-debug-upload` - Upload logs to 0x0.st (this-boot, last-boot, installed-packages)
+  - `caf-debug-view` - View collected logs locally
+- **System Doctor**:
+  - `caf-system-doctor` - Health checks for NixOS generation, Tailscale, disk space, failed units, services
+  - Actionable suggestions for common issues
+- **Update Wrapper**:
+  - `caf-system-update` - Flake update with dry-run preview and rollback reminder
+  - Post-update hook support
+- **Release Channels**:
+  - `caf-channel-set` - Switch between stable, rc, edge, and dev channels
+- **Timezone Selection**:
+  - `caf-tz-select` - Interactive timezone picker with gum filter
+- **Keybindings Cheatsheet**:
+  - `caf-keys-show` - Interactive reference for Zellij, Neovim, Helix, and CLI shortcuts
+- **Branding & Polish**:
+  - `caf-about-show` - System info display with fastfetch
+  - `caf-show-logo` - Cafaye ASCII logo display
+  - `caf-show-done` - Completion indicator with spinner
+  - `caf-version` - Display current version
+  - `caf-version-pkgs` - Show last system update time
+- **VM Tests**: `tests/cli/debug.nix`, `tests/cli/doctor.nix`
+
+---
+
 ## [0.7.0] - 2026-02-08
 
 ### Added

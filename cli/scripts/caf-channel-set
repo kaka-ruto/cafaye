@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# Cafaye OS Channel Set (inspired by omarchy-channel-set)
+# Set the Cafaye channel, which dictates what git branch is used.
+
+if (($# == 0)); then
+  channel=$(gum choose --header "Select Channel" \
+    "stable" \
+    "rc" \
+    "edge" \
+    "dev")
+else
+  channel="$1"
+fi
+
+CAFAYE_PATH="${CAFAYE_PATH:-/etc/cafaye}"
+
+if [ ! -d "$CAFAYE_PATH/.git" ]; then
+  echo "❌ Cafaye repository not found at $CAFAYE_PATH"
+  exit 1
+fi
+
+cd "$CAFAYE_PATH" || exit 1
+
+case "$channel" in
+  "stable")
+    echo "Switching to stable channel (master branch)..."
+    sudo git checkout master
+    sudo git pull origin master
+    ;;
+  "rc")
+    echo "Switching to release candidate channel..."
+    sudo git checkout rc
+    sudo git pull origin rc
+    ;;
+  "edge")
+    echo "Switching to edge channel (latest commits on master)..."
+    sudo git checkout master
+    sudo git pull origin master
+    ;;
+  "dev")
+    echo "Switching to development channel..."
+    echo "⚠️  Warning: This channel may contain unstable changes!"
+    gum confirm "Continue?" || exit 0
+    sudo git checkout dev
+    sudo git pull origin dev
+    ;;
+  *)
+    echo "Unknown channel: $channel"
+    echo "Usage: caf-channel-set [stable|rc|edge|dev]"
+    exit 1
+    ;;
+esac
+
+echo ""
+echo "✅ Channel set to: $channel"
+echo ""
+echo "💡 Run 'caf-system-update' to apply changes."
+
+caf-task-done "Channel Set"

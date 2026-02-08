@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Cafaye OS Debug Viewer
+# View the debug log locally
+
+LOG_FILE="/tmp/cafaye-debug.log"
+
+if [ ! -f "$LOG_FILE" ]; then
+  echo "No debug log found. Run 'caf-debug-collect' first."
+  exit 1
+fi
+
+less "$LOG_FILE"
