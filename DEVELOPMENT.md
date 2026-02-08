@@ -398,12 +398,11 @@ Hooks are triggered via `caf-hook-run <name>`.
 
 - [x] **Utility Commands**
   - [x] `caf-cmd-present <cmd>` - Check if command exists
-  - [x] `caf-show-logo` - Display ASCII logo
-  - [x] `caf-show-done` - Completion indicator with gum
+  - [x] `caf-logo-show` - Display ASCII logo
+  - [x] `caf-task-done` - Completion indicator with gum
 
 - [x] **Testing**
-  - [x] `tests/cli/main.nix`
-  - [x] `tests/cli/hooks.nix`
+  - [x] `tests/cli/main.nix` (Includes Hook tests)
 
 ### Success Criteria
 - [x] `caf` shows beautiful TUI menu

@@ -1,0 +1,8 @@
+#!/bin/bash
+# Cafaye OS Theme Set Hook Sample
+# Copy this to ~/.config/cafaye/hooks/theme-set and make it executable.
+
+echo "🎨 Theme changed! Refreshing terminal colors..."
+
+# Example: Reload starship or Zellij theme
+# zellij action theme catppuccin-mocha

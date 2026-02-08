@@ -1,0 +1,8 @@
+#!/bin/bash
+# Cafaye OS Rebuild Complete Hook Sample
+# Copy this to ~/.config/cafaye/hooks/rebuild-complete and make it executable.
+
+echo "🚀 Rebuild successful! System is up to date."
+
+# Example: Send a notification
+# notify-send "Cafaye OS" "Rebuild finished successfully"
