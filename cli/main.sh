@@ -111,17 +111,33 @@ show_status_menu() {
         "🏥 System Health" \
         "🏭 Factory CI/CD Status" \
         "👁️  Watch Factory (Live)" \
+        "🔍 Check Current Commit" \
         "⬅️  Back")
 
     case "$choice" in
         *"System Health"*) show_system_health ;;
         *"Factory CI/CD"*) caf-factory-check ;;
         *"Watch Factory"*) caf-factory-check --watch ;;
+        *"Current Commit"*) check_current_commit ;;
         "⬅️  Back") show_main_menu ;;
     esac
     
     read -p "Press enter to return..."
     show_status_menu
+}
+
+check_current_commit() {
+    local current_commit
+    current_commit=$(git rev-parse HEAD 2>/dev/null | cut -c1-7)
+    
+    if [[ -z "$current_commit" ]]; then
+        echo "❌ Not in a git repository"
+        return 1
+    fi
+    
+    echo "🔍 Checking CI status for current commit: $current_commit"
+    echo ""
+    caf-factory-check --commit "$current_commit"
 }
 
 show_system_health() {
