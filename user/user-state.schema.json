@@ -63,6 +63,20 @@
                 }
             }
         },
+        "frameworks": {
+            "type": "object",
+            "properties": {
+                "rails": {
+                    "type": "boolean"
+                },
+                "django": {
+                    "type": "boolean"
+                },
+                "nextjs": {
+                    "type": "boolean"
+                }
+            }
+        },
         "dev_tools": {
             "type": "object",
             "additionalProperties": {

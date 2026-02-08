@@ -26,5 +26,10 @@
   "services": {
     "postgresql": false,
     "redis": false
+  },
+  "frameworks": {
+    "rails": false,
+    "django": false,
+    "nextjs": false
   }
 }

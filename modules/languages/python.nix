@@ -1,7 +1,7 @@
 { config, pkgs, userState, ... }:
 
 let
-  enabled = userState.languages.python or false;
+  enabled = (userState.languages.python or false) || (userState.frameworks.django or false);
 in
 {
   environment.systemPackages = pkgs.lib.optionals enabled (

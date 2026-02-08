@@ -4,6 +4,7 @@
   imports = [
     ./languages
     ./services
+    ./frameworks
     ./dev-tools/docker.nix
   ];
 }

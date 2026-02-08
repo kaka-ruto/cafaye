@@ -5,6 +5,19 @@ All notable changes to Cafaye OS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-02-08
+
+### Added
+- **Framework Modules**: Initial support for high-level application frameworks:
+  - **Ruby on Rails**: Full system dependencies (libyaml, vips, pkg-config, etc.)
+  - **Django**: Support for Python-based web applications with PostgreSQL and SQLite
+  - **Next.js**: Optimized runtime for React-based fullstack developments
+- **Auto-Dependency Wiring**: Intelligent logic that automatically enables required languages and services when a framework is selected (e.g., Rails → Ruby + PostgreSQL)
+- **Enhanced CLI**: Interactive dependency alerts in the `caf` installer, informing users about the full stack being enabled
+- **Integrated Framework Tests**: Comprehensive VM tests verifying cross-module dependency resolution
+
+---
+
 ## [0.4.0] - 2026-02-08
 
 ### Added

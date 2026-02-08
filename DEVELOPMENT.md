@@ -457,27 +457,25 @@ Hooks are triggered via `caf-hook-run <name>`.
 
 ### Checklist
 
-- [ ] **Framework Modules (`modules/frameworks/`)**
-  - [ ] `modules/frameworks/rails.nix` - Auto-enables Ruby + PostgreSQL
-  - [ ] `modules/frameworks/django.nix` - Auto-enables Python + PostgreSQL
-  - [ ] `modules/frameworks/nextjs.nix` - Auto-enables Node
+- [x] **Framework Modules (`modules/frameworks/`)**
+  - [x] `modules/frameworks/rails.nix` - Auto-enables Ruby + PostgreSQL
+  - [x] `modules/frameworks/django.nix` - Auto-enables Python + PostgreSQL
+  - [x] `modules/frameworks/nextjs.nix` - Auto-enables Node
 
-- [ ] **Dependency Resolution**
-  - [ ] Framework enables required languages
-  - [ ] Framework enables required services
+- [x] **Dependency Resolution**
+  - [x] Framework enables required languages
+  - [x] Framework enables required services
 
-- [ ] **CLI Integration**
-  - [ ] `caf install rails` shows dependency info
-  - [ ] Confirm before installing dependencies
+- [x] **CLI Integration**
+  - [x] `caf install rails` shows dependency info
+  - [x] Confirm before installing dependencies
 
-- [ ] **Testing**
-  - [ ] `tests/modules/frameworks/rails.nix`
-  - [ ] `tests/modules/frameworks/django.nix`
-  - [ ] `tests/modules/frameworks/nextjs.nix`
+- [x] **Testing**
+  - [x] `tests/modules/frameworks.nix` (Includes Rails, Django, Next.js)
 
 ### Success Criteria
-- [ ] `caf install rails` installs Ruby + PostgreSQL + Rails
-- [ ] New Rails app can be created and runs
+- [x] `caf install rails` installs Ruby + PostgreSQL + Rails
+- [x] New Rails app can be created and runs
 
 ---
 

@@ -1,14 +1,17 @@
 { config, pkgs, userState, ... }:
 
 let
-  enabled = (userState.languages.ruby or false) || (userState.frameworks.rails or false);
+  enabled = userState.frameworks.rails or false;
 in
 {
   environment.systemPackages = pkgs.lib.optionals enabled (
     with pkgs; [
-      ruby
-      bundler
-      rake
+      libyaml
+      vips
+      pkg-config
+      libxml2
+      libxslt
+      readline
     ]
   );
 }

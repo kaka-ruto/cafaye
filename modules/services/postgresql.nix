@@ -1,7 +1,7 @@
 { config, pkgs, userState, ... }:
 
 let
-  enabled = userState.services.postgresql or false;
+  enabled = (userState.services.postgresql or false) || (userState.frameworks.rails or false) || (userState.frameworks.django or false);
 in
 {
   services.postgresql = {

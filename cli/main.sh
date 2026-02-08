@@ -33,6 +33,9 @@ show_main_menu() {
 
 show_install_menu() {
     choice=$(gum choose --header "Install Submenu" \
+        "🛤️  Ruby on Rails" \
+        "🐎 Django" \
+        "⚛️  Next.js" \
         "🦀 Rust" \
         "Hamster Go" \
         "🟢 Node.js" \
@@ -43,6 +46,9 @@ show_install_menu() {
         "⬅️  Back")
 
     case "$choice" in
+        *"Rails"*) toggle_framework "rails" "Ruby & PostgreSQL" ;;
+        *"Django"*) toggle_framework "django" "Python & PostgreSQL" ;;
+        *"Next.js"*) toggle_framework "nextjs" "Node.js" ;;
         "🦀 Rust") toggle_language "rust" ;;
         "Hamster Go") toggle_language "go" ;;
         "🟢 Node.js") toggle_language "nodejs" ;;
@@ -181,6 +187,24 @@ toggle_service() {
         gum confirm "Disable $service?" && caf-state-write "dev_tools.$service" "false"
     else
         gum confirm "Enable $service?" && caf-state-write "dev_tools.$service" "true"
+    fi
+    
+    if gum confirm "Apply changes now? (Rebuild)"; then
+        caf-system-rebuild
+    fi
+    show_install_menu
+}
+
+toggle_framework() {
+    framework=$1
+    deps=$2
+    current=$(caf-state-read "frameworks.$framework")
+    
+    if [[ "$current" == "true" ]]; then
+        gum confirm "Uninstall $framework stack?" && caf-state-write "frameworks.$framework" "false"
+    else
+        echo "💡 Note: Installing $framework will also enable: $deps"
+        gum confirm "Install $framework stack?" && caf-state-write "frameworks.$framework" "true"
     fi
     
     if gum confirm "Apply changes now? (Rebuild)"; then

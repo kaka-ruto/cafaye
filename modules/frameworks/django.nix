@@ -1,14 +1,14 @@
 { config, pkgs, userState, ... }:
 
 let
-  enabled = (userState.languages.ruby or false) || (userState.frameworks.rails or false);
+  enabled = userState.frameworks.django or false;
 in
 {
   environment.systemPackages = pkgs.lib.optionals enabled (
     with pkgs; [
-      ruby
-      bundler
-      rake
+      sqlite
+      pkg-config
+      gcc
     ]
   );
 }
