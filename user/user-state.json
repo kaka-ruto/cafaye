@@ -2,9 +2,7 @@
   "core": {
     "tailscale_enabled": true,
     "zram_enabled": true,
-    "authorized_keys": [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI..."
-    ],
+    "authorized_keys": [],
     "boot": {
       "grub_device": "/dev/vda"
     },
