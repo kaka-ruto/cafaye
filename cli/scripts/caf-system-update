@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Cafaye OS System Update
+# Update flake inputs and rebuild
+
+echo "🔄 Cafaye OS System Update"
+echo "=========================="
+echo ""
+
+CAFAYE_PATH="${CAFAYE_PATH:-/etc/cafaye}"
+
+# Check if we're in the cafaye directory
+if [ ! -f "$CAFAYE_PATH/flake.nix" ]; then
+  echo "❌ Cafaye flake not found at $CAFAYE_PATH"
+  exit 1
+fi
+
+cd "$CAFAYE_PATH" || exit 1
+
+echo "📥 Updating flake inputs..."
+sudo nix flake update
+
+echo ""
+echo "🔨 Rebuilding system..."
+echo ""
+
+# Show what will change
+echo "Changes to be applied:"
+sudo nixos-rebuild dry-run --flake .#cafaye 2>&1 | head -20
+
+echo ""
+gum confirm "Apply these changes?" || {
+  echo "Aborted."
+  exit 0
+}
+
+sudo nixos-rebuild switch --flake .#cafaye
+
+if [ $? -eq 0 ]; then
+  echo ""
+  echo "✅ Update complete!"
+  echo ""
+  echo "💡 Note: If something goes wrong, you can rollback with:"
+  echo "   sudo nixos-rebuild switch --rollback"
+  
+  # Run post-update hook if it exists
+  if [ -x "$HOME/.config/cafaye/hooks/post-update" ]; then
+    echo ""
+    echo "🪝 Running post-update hook..."
+    "$HOME/.config/cafaye/hooks/post-update"
+  fi
+else
+  echo ""
+  echo "❌ Update failed. Check the output above for errors."
+  exit 1
+fi
+
+caf-task-done "System Update"

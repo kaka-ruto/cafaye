@@ -1,0 +1,121 @@
+#!/bin/bash
+
+# Cafaye OS System Doctor
+# Check system health and suggest fixes
+
+echo "🩺 Cafaye OS System Doctor"
+echo "=========================="
+echo ""
+
+ISSUES=0
+
+# Check NixOS generation
+echo -n "Checking NixOS generation... "
+if [ -L /nix/var/nix/profiles/system ]; then
+  GEN=$(readlink /nix/var/nix/profiles/system | grep -oP 'system-\K[0-9]+')
+  echo "✓ Generation $GEN"
+else
+  echo "⚠ Unable to determine generation"
+  ((ISSUES++))
+fi
+
+# Check Tailscale
+echo -n "Checking Tailscale... "
+if systemctl is-active --quiet tailscaled; then
+  TS_STATUS=$(tailscale status --json 2>/dev/null | jq -r '.BackendState' 2>/dev/null || echo "unknown")
+  if [ "$TS_STATUS" = "Running" ]; then
+    echo "✓ Connected"
+  else
+    echo "⚠ Not connected (state: $TS_STATUS)"
+    ((ISSUES++))
+  fi
+else
+  echo "⚠ Service not running"
+  ((ISSUES++))
+fi
+
+# Check disk space
+echo -n "Checking disk space... "
+ROOT_USAGE=$(df / | awk 'NR==2 {print $5}' | tr -d '%')
+if [ "$ROOT_USAGE" -lt 80 ]; then
+  echo "✓ ${ROOT_USAGE}% used"
+elif [ "$ROOT_USAGE" -lt 90 ]; then
+  echo "⚠ ${ROOT_USAGE}% used (getting full)"
+  ((ISSUES++))
+else
+  echo "❌ ${ROOT_USAGE}% used (critical!)"
+  ((ISSUES++))
+fi
+
+# Check Nix store
+echo -n "Checking Nix store... "
+STORE_COUNT=$(ls /nix/store 2>/dev/null | wc -l)
+if [ "$STORE_COUNT" -lt 50000 ]; then
+  echo "✓ $STORE_COUNT paths"
+else
+  echo "⚠ $STORE_COUNT paths (consider running nix-collect-garbage)"
+  ((ISSUES++))
+fi
+
+# Check failed systemd units
+echo -n "Checking systemd units... "
+FAILED_UNITS=$(systemctl --failed --no-pager --no-legend 2>/dev/null | wc -l)
+if [ "$FAILED_UNITS" -eq 0 ]; then
+  echo "✓ No failed units"
+else
+  echo "⚠ $FAILED_UNITS failed unit(s)"
+  systemctl --failed --no-pager --no-legend 2>/dev/null | head -5
+  ((ISSUES++))
+fi
+
+# Check PostgreSQL (if enabled)
+echo -n "Checking PostgreSQL... "
+if systemctl is-enabled --quiet postgresql 2>/dev/null; then
+  if systemctl is-active --quiet postgresql; then
+    echo "✓ Running"
+  else
+    echo "❌ Enabled but not running"
+    ((ISSUES++))
+  fi
+else
+  echo "○ Not enabled"
+fi
+
+# Check Redis (if enabled)
+echo -n "Checking Redis... "
+if systemctl is-enabled --quiet redis-default 2>/dev/null; then
+  if systemctl is-active --quiet redis-default; then
+    echo "✓ Running"
+  else
+    echo "❌ Enabled but not running"
+    ((ISSUES++))
+  fi
+else
+  echo "○ Not enabled"
+fi
+
+# Check Docker (if enabled)
+echo -n "Checking Docker... "
+if systemctl is-enabled --quiet docker 2>/dev/null; then
+  if systemctl is-active --quiet docker; then
+    echo "✓ Running"
+  else
+    echo "❌ Enabled but not running"
+    ((ISSUES++))
+  fi
+else
+  echo "○ Not enabled"
+fi
+
+echo ""
+echo "=========================="
+if [ $ISSUES -eq 0 ]; then
+  echo "✅ All checks passed! System is healthy."
+else
+  echo "⚠️  Found $ISSUES issue(s). Review above for details."
+  echo ""
+  echo "💡 Suggestions:"
+  [ "$ROOT_USAGE" -ge 80 ] && echo "   - Run: sudo nix-collect-garbage -d"
+  [ "$FAILED_UNITS" -gt 0 ] && echo "   - Run: systemctl status <unit> to investigate"
+  [ "$STORE_COUNT" -ge 50000 ] && echo "   - Run: sudo nix-collect-garbage -d"
+fi

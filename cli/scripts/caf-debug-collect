@@ -1,0 +1,126 @@
+#!/bin/bash
+
+# Cafaye OS Debug Collector (inspired by omarchy-debug)
+# Return exhaustive debugging information about the system to help diagnose problems.
+
+NO_SUDO=false
+PRINT_ONLY=false
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --no-sudo)
+      NO_SUDO=true
+      shift
+      ;;
+    --print)
+      PRINT_ONLY=true
+      shift
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Usage: caf-debug-collect [--no-sudo] [--print]"
+      exit 1
+      ;;
+  esac
+done
+
+LOG_FILE="/tmp/cafaye-debug.log"
+
+if [ "$NO_SUDO" = true ]; then
+  DMESG_OUTPUT="(skipped - --no-sudo flag used)"
+else
+  DMESG_OUTPUT="$(sudo dmesg 2>/dev/null || echo 'Permission denied')"
+fi
+
+# Get NixOS generation info
+NIXOS_GENERATION="$(readlink /nix/var/nix/profiles/system 2>/dev/null || echo 'unknown')"
+NIXOS_VERSION="$(nixos-version 2>/dev/null || echo 'unknown')"
+
+cat > "$LOG_FILE" <<EOF
+=========================================
+CAFAYE OS DEBUG LOG
+=========================================
+Date: $(date)
+Hostname: $(hostname)
+Cafaye Version: $(cat /etc/cafaye/version 2>/dev/null || echo 'unknown')
+NixOS Version: $NIXOS_VERSION
+Current Generation: $NIXOS_GENERATION
+
+=========================================
+SYSTEM INFORMATION
+=========================================
+$(fastfetch --pipe 2>/dev/null || echo "fastfetch not available")
+
+=========================================
+TAILSCALE STATUS
+=========================================
+$(tailscale status 2>/dev/null || echo "Tailscale not running")
+
+=========================================
+SYSTEMD FAILED UNITS
+=========================================
+$(systemctl --failed 2>/dev/null || echo "Unable to query systemd")
+
+=========================================
+DMESG (Last 100 lines)
+=========================================
+$(echo "$DMESG_OUTPUT" | tail -100)
+
+=========================================
+JOURNALCTL (CURRENT BOOT, ERRORS ONLY)
+=========================================
+$(journalctl -b -p 4..1 --no-pager 2>/dev/null | tail -200 || echo "Unable to query journal")
+
+=========================================
+DISK USAGE
+=========================================
+$(df -h 2>/dev/null)
+
+=========================================
+MEMORY USAGE
+=========================================
+$(free -h 2>/dev/null)
+
+=========================================
+NIX STORE STATUS
+=========================================
+Store path count: $(ls /nix/store 2>/dev/null | wc -l)
+$(nix-store --gc --print-dead 2>/dev/null | wc -l) dead paths
+EOF
+
+if [ "$PRINT_ONLY" = true ]; then
+  cat "$LOG_FILE"
+  exit 0
+fi
+
+OPTIONS=("View log" "Save in current directory")
+if ping -c 1 8.8.8.8 >/dev/null 2>&1; then
+  OPTIONS=("Upload log" "${OPTIONS[@]}")
+fi
+
+ACTION=$(gum choose "${OPTIONS[@]}")
+
+case "$ACTION" in
+  "Upload log")
+    echo "Uploading debug log to 0x0.st..."
+    URL=$(curl -sF "file=@$LOG_FILE" -Fexpires=24 https://0x0.st)
+    if [ $? -eq 0 ] && [ -n "$URL" ]; then
+      echo "✓ Log uploaded successfully!"
+      echo "Share this URL:"
+      echo ""
+      echo "  $URL"
+      echo ""
+      echo "This link will expire in 24 hours."
+    else
+      echo "Error: Failed to upload log file"
+      exit 1
+    fi
+    ;;
+  "View log")
+    less "$LOG_FILE"
+    ;;
+  "Save in current directory")
+    cp "$LOG_FILE" "./cafaye-debug.log"
+    echo "✓ Log saved to $(pwd)/cafaye-debug.log"
+    ;;
+esac

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Cafaye OS About/System Info (inspired by fastfetch wrapper)
+# Display system info with Cafaye branding
+
+# Show Cafaye logo first
+caf-show-logo 2>/dev/null
+
+# Then show system info
+if command -v fastfetch >/dev/null 2>&1; then
+  fastfetch
+else
+  echo "Cafaye OS"
+  echo "========="
+  echo "Version: $(cat /etc/cafaye/version 2>/dev/null || echo 'unknown')"
+  echo "NixOS: $(nixos-version 2>/dev/null || echo 'unknown')"
+  echo "Kernel: $(uname -r)"
+  echo "Hostname: $(hostname)"
+  echo ""
+  echo "Install fastfetch for better system info display."
+fi

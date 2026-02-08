@@ -552,102 +552,68 @@ Hooks are triggered via `caf-hook-run <name>`.
 
 ---
 
-## 📍 Phase 8: v0.8.0 - AI Integration
-
-**Goal**: Local AI inference and coding assistants.
-
-### Checklist
-
-- [ ] **AI Modules (`modules/ai/`)**
-  - [ ] `modules/ai/ollama.nix` - Systemd service, localhost only
-  - [ ] `modules/ai/aider.nix` - AI pair programming
-  - [ ] `modules/ai/continue.nix` - IDE extension support
-
-- [ ] **Ollama Configuration**
-  - [ ] Pre-download default model (codellama:7b)
-  - [ ] ZRAM optimization
-
-- [ ] **Secrets for External APIs**
-  - [ ] Add API keys to `secrets/secrets.yaml`
-  - [ ] `caf-ai-keys-manage`
-
-- [ ] **Starship Integration**
-  - [ ] Show active Ollama model in prompt
-  - [ ] AI status indicator
-
-- [ ] **Testing**
-  - [ ] `tests/modules/ai/ollama.nix`
-  - [ ] `tests/modules/ai/aider.nix`
-
-### Success Criteria
-- [ ] Ollama API responds
-- [ ] Aider works with local models
-- [ ] Starship shows AI model
-
----
-
-## 📍 Phase 9: v0.9.0 - Operations & Polish
+## 📍 Phase 8: v0.8.0 - Operations & Polish
 
 **Goal**: System diagnostics, help, and quality-of-life features.
 
 ### Checklist
 
-- [ ] **Debug & Diagnostics (inspired by `omarchy-debug`, `omarchy-upload-log`)**
-  - [ ] `caf-debug-collect` - Gather system info, journalctl, dmesg
-  - [ ] `caf-debug-upload` - Upload to paste service (0x0.st)
-  - [ ] `caf-debug-view` - View locally
-  - [ ] Log upload options: `this-boot`, `last-boot`, `installed-packages`
+- [x] **Debug & Diagnostics (inspired by `omarchy-debug`, `omarchy-upload-log`)**
+  - [x] `caf-debug-collect` - Gather system info, journalctl, dmesg
+  - [x] `caf-debug-upload` - Upload to paste service (0x0.st)
+  - [x] `caf-debug-view` - View locally
+  - [x] Log upload options: `this-boot`, `last-boot`, `installed-packages`
 
-- [ ] **System Doctor**
-  - [ ] `caf-system-doctor` - Check health, suggest fixes
-  - [ ] Verify services running
-  - [ ] Check disk space
-  - [ ] Verify Tailscale connected
-  - [ ] Check NixOS generation health
+- [x] **System Doctor**
+  - [x] `caf-system-doctor` - Check health, suggest fixes
+  - [x] Verify services running
+  - [x] Check disk space
+  - [x] Verify Tailscale connected
+  - [x] Check NixOS generation health
 
-- [ ] **Update Wrapper**
-  - [ ] `caf-system-update` - `nix flake update && rebuild`
-  - [ ] Show what will change
-  - [ ] Remind about rollback
-  - [ ] Run `caf-hook-run post-update`
+- [x] **Update Wrapper**
+  - [x] `caf-system-update` - `nix flake update && rebuild`
+  - [x] Show what will change
+  - [x] Remind about rollback
+  - [x] Run post-update hook if exists
 
-- [ ] **Release Channels (inspired by `omarchy-channel-set`)**
-  - [ ] `caf-channel-set [stable|rc|edge|dev]`
-  - [ ] Channels use different git refs in flake inputs
-  - [ ] Stable = master branch, Edge = latest, Dev = development
+- [x] **Release Channels (inspired by `omarchy-channel-set`)**
+  - [x] `caf-channel-set [stable|rc|edge|dev]`
+  - [x] Channels use different git branches
+  - [x] Stable = master branch, Edge = latest, Dev = development
 
-- [ ] **Timezone Selection (inspired by `omarchy-tz-select`)**
-  - [ ] `caf-tz-select` - Interactive timezone picker with gum filter
-  - [ ] NixOS declarative approach for persistence
+- [x] **Timezone Selection (inspired by `omarchy-tz-select`)**
+  - [x] `caf-tz-select` - Interactive timezone picker with gum filter
+  - [x] Guidance for NixOS declarative persistence
 
-- [ ] **Keybindings Cheatsheet (inspired by `omarchy-menu-keybindings`)**
-  - [ ] `caf-keys-show` - Interactive keybindings reference
-  - [ ] Zellij shortcuts
-  - [ ] Neovim/editor shortcuts
-  - [ ] CLI tool shortcuts
+- [x] **Keybindings Cheatsheet (inspired by `omarchy-menu-keybindings`)**
+  - [x] `caf-keys-show` - Interactive keybindings reference
+  - [x] Zellij shortcuts
+  - [x] Neovim/editor shortcuts
+  - [x] CLI tool shortcuts
 
-- [ ] **Branding Polish**
-  - [ ] `caf-about-show` - System info display (fastfetch wrapper)
-  - [ ] Polish ASCII logo
-  - [ ] `caf-show-done` - Completion indicator
-  - [ ] `caf-version` - Display current version
-  - [ ] `caf-version-pkgs` - Show last update time
+- [x] **Branding Polish**
+  - [x] `caf-about-show` - System info display (fastfetch wrapper)
+  - [x] `caf-show-logo` - ASCII logo display
+  - [x] `caf-show-done` - Completion indicator
+  - [x] `caf-version` - Display current version
+  - [x] `caf-version-pkgs` - Show last update time
 
-- [ ] **Testing**
-  - [ ] `tests/cli/debug.nix`
-  - [ ] `tests/cli/doctor.nix`
+- [x] **Testing**
+  - [x] `tests/cli/debug.nix`
+  - [x] `tests/cli/doctor.nix`
 
 ### Success Criteria
-- [ ] `caf-debug-collect` generates useful log
-- [ ] `caf-debug-upload` successfully uploads to 0x0.st
-- [ ] `caf-system-doctor` reports health status
-- [ ] `caf-keys-show` displays cheatsheet
-- [ ] `caf-channel-set stable` switches channels
-- [ ] `caf-system-update` runs smoothly with hooks
+- [x] `caf-debug-collect` generates useful log
+- [x] `caf-debug-upload` successfully uploads to 0x0.st
+- [x] `caf-system-doctor` reports health status
+- [x] `caf-keys-show` displays cheatsheet
+- [x] `caf-channel-set stable` switches channels
+- [x] `caf-system-update` runs smoothly with hooks
 
 ---
 
-## 📍 Phase 10: v1.0.0 - Production Ready
+## 📍 Phase 9: v0.9.0 - Production Ready
 
 **Goal**: First-run experience, install script, and documentation.
 
@@ -662,7 +628,7 @@ Hooks are triggered via `caf-hook-run <name>`.
 - [ ] **First-Run Wizard**
   - [ ] ASCII logo welcome
   - [ ] `caf setup` wizard
-  - [ ] Choose editor, distribution, languages, AI
+  - [ ] Choose editor, distribution, languages
   - [ ] Apply and rebuild
   - [ ] Run `caf-hook-run first-run`
 

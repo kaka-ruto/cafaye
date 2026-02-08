@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Cafaye OS Logo Display (inspired by omarchy-show-logo)
+# Display the Cafaye logo in the terminal
+
+clear
+echo -e "\033[38;5;180m"
+cat <<'EOF'
+   ____        __                     
+  / __ \ ___  / /  ___ _ ___  ___    
+ / /_/ // _ \/ _ \/ _ `/  _ \/ -_)   
+ \____/ \___/_//_/\_,_/_//_/\__/    
+                                      
+   ☕ Cafaye OS - Cloud Development, Perfected
+EOF
+echo -e "\033[0m"
+echo
