@@ -21,6 +21,7 @@
 
         sops.validateSopsFiles = false;
         systemd.services.tailscale-autoconnect.enable = false;
+        security.sudo.wheelNeedsPassword = false;
         
         # Mock git for the test
         environment.systemPackages = [ pkgs.git ];
@@ -32,9 +33,9 @@
     machine.wait_for_unit("multi-user.target")
 
     # Setup mock repository structure
-    machine.succeed("mkdir -p /home/kaka/Code/Cafaye/cafaye/user")
-    machine.succeed("echo '{}' > /home/kaka/Code/Cafaye/cafaye/user/user-state.json")
-    machine.succeed("chown -R kaka:users /home/kaka/Code")
+    machine.succeed("mkdir -p /home/cafaye/Code/Cafaye/cafaye/user")
+    machine.succeed("echo '{}' > /home/cafaye/Code/Cafaye/cafaye/user/user-state.json")
+    machine.succeed("chown -R cafaye:cafaye /home/cafaye/Code")
 
     # Create mock bin directory
     machine.succeed("mkdir -p /tmp/bin")
@@ -43,11 +44,10 @@
     machine.succeed("chmod +x /tmp/bin/caf-system-update")
 
     # Run caf-setup non-interactively with modified PATH
-    # We su to kaka to test user permissions
-    machine.succeed("su - kaka -c 'export PATH=/tmp/bin:$PATH; caf-setup --no-confirm --editor nvim --distro lazyvim --languages ruby,python'")
+    # Run caf-setup non-interactively with modified PATH as cafaye user
+    machine.succeed("su - cafaye -c 'export PATH=/tmp/bin:$PATH; caf-setup --no-confirm --editor nvim --distro lazyvim --languages ruby,python'")
 
     # Verify user-state.json was updated
-    # We check if ruby was enabled
-    machine.succeed("grep 'ruby' /home/kaka/Code/Cafaye/cafaye/user/user-state.json")
+    machine.succeed("grep 'ruby' /home/cafaye/Code/Cafaye/cafaye/user/user-state.json")
   '';
 }
