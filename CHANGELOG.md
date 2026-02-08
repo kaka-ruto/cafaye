@@ -5,6 +5,21 @@ All notable changes to Cafaye OS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-02-08
+
+### Added
+- **Core Services**: Native NixOS modules for PostgreSQL 16 and Redis, pre-configured for security and local access
+- **Docker DB Installer**: New `caf-docker-db-install` utility for one-click deployment of MySQL, MariaDB, MongoDB, and PostgreSQL containers
+- **Language Modules**: Fully verified support for Ruby (with Bundler/Rake), Python (with Pip/Poetry), Node.js (with NPM/Yarn/PNPM), and Rust
+- **CLI Submenu**: Dedicated `⚙️ Services` menu in the `caf` CLI for managing backend dependencies
+- **Quality**: New VM test suites for service connectivity (`modules-services`) and application stacks
+
+### Fixed
+- Syntax error in `modules-services` test import paths
+- Out-of-scope test references in `flake.nix`
+
+---
+
 ## [0.3.0] - 2026-02-08
 
 ### Added

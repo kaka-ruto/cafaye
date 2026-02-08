@@ -418,36 +418,36 @@ Hooks are triggered via `caf-hook-run <name>`.
 
 ### Checklist
 
-- [ ] **Language Modules (`modules/languages/`)**
-  - [ ] `modules/languages/ruby.nix`
-  - [ ] `modules/languages/python.nix`
-  - [ ] `modules/languages/node.nix`
-  - [ ] `modules/languages/rust.nix`
+- [x] **Language Modules (`modules/languages/`)**
+  - [x] `modules/languages/ruby.nix`
+  - [x] `modules/languages/python.nix`
+  - [x] `modules/languages/node.nix`
+  - [x] `modules/languages/rust.nix`
 
-- [ ] **Service Modules (`modules/services/`)**
-  - [ ] `modules/services/postgresql.nix`
-  - [ ] `modules/services/redis.nix`
-  - [ ] `modules/services/docker.nix`
+- [x] **Service Modules (`modules/services/`)**
+  - [x] `modules/services/postgresql.nix`
+  - [x] `modules/services/redis.nix`
+  - [x] `modules/services/docker.nix`
 
-- [ ] **Docker Database Containers (inspired by `omarchy-install-docker-dbs`)**
-  - [ ] `caf-docker-db-install` - Interactive DB selection
-  - [ ] Support: MySQL, PostgreSQL, Redis, MongoDB, MariaDB
-  - [ ] Bound to localhost only
-  - [ ] Auto-restart on reboot
+- [x] **Docker Database Containers (inspired by `omarchy-install-docker-dbs`)**
+  - [x] `caf-docker-db-install` - Interactive DB selection
+  - [x] Support: MySQL, PostgreSQL, Redis, MongoDB, MariaDB
+  - [x] Bound to localhost only
+  - [x] Auto-restart on reboot
 
-- [ ] **CLI Integration**
-  - [ ] `caf install ruby` updates state and rebuilds
-  - [ ] `caf install postgresql` updates state and rebuilds
+- [x] **CLI Integration**
+  - [x] `caf install ruby` updates state and rebuilds
+  - [x] `caf install postgresql` updates state and rebuilds
 
-- [ ] **Testing**
-  - [ ] `tests/modules/languages/*.nix`
-  - [ ] `tests/modules/services/*.nix`
+- [x] **Testing**
+  - [x] `tests/modules/languages.nix`
+  - [x] `tests/modules/services.nix`
 
 ### Success Criteria
-- [ ] `caf install ruby` → `ruby --version` works
-- [ ] PostgreSQL accepts connections
-- [ ] Docker daemon runs
-- [ ] `caf-docker-db-install` launches containers
+- [x] `caf install ruby` → `ruby --version` works
+- [x] PostgreSQL accepts connections
+- [x] Docker daemon runs
+- [x] `caf-docker-db-install` launches containers
 
 ---
 
