@@ -86,11 +86,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Documentation**:
   - `docs/INSTALL.md`: Setup guide.
-  - `docs/FIRST_RUN.md`: Configuration guide.
+  - `docs/SETUP.md`: Configuration guide.
   - `CONTRIBUTING.md`: Developer guidelines.
 
 - **Testing**:
-  - `tests/integration/first-run-wizard.nix`
+  - `tests/integration/setup.nix`
   - `tests/integration/rails.nix` (Full Rails stack verification)
 
 ### Changed

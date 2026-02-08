@@ -641,10 +641,10 @@ Hooks are triggered via `caf-hook-run <name>`.
   - [x] Run `caf-hook-run first-run`
 
 - [x] **Documentation**
-  - [x] Comprehensive README with GIFs (referenced in docs)
-  - [x] `docs/` folder with guides (`INSTALL.md`, `FIRST_RUN.md`)
-  - [x] `CONTRIBUTING.md`
-  - [x] Keybindings reference doc (`caf-keys-show`)
+   - [x] Comprehensive README with GIFs (referenced in docs)
+   - [x] `docs/` folder with guides (`INSTALL.md`, `SETUP.md`)
+   - [x] `CONTRIBUTING.md`
+   - [x] Keybindings reference doc (`caf-keys-show`)
 
 - [x] **Security Audit**
   - [x] Zero exposed ports (Tailscale only - checked manually)
@@ -698,7 +698,7 @@ Fast tests that run multiple scenarios in single VM boots:
 nix build .#checks.x86_64-linux.core-unified
 nix build .#checks.x86_64-linux.cli-unified
 nix build .#checks.x86_64-linux.modules-unified
-nix build .#checks.x86_64-linux.integration-first-run-wizard
+nix build .#checks.x86_64-linux.integration-setup
 nix build .#checks.x86_64-linux.integration-rails
 ```
 
