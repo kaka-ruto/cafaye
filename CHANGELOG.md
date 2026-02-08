@@ -5,7 +5,55 @@ All notable changes to Cafaye OS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.9.2] - 2026-02-08
+## [0.9.3] - 2026-02-08
+
+### Added
+
+- **Factory CI/CD Status Checker**: New `caf-factory-check` CLI command for monitoring CI/CD:
+  - `--latest` - Show status of latest CI run
+  - `--commit SHA` - Check specific commit status
+  - `--logs` - Display actual error logs inline (no separate `gh` command needed)
+  - `--watch` - Live monitoring mode (refreshes every 60 seconds)
+  - `--in-progress` - Include currently running builds
+  - `--failed-steps` - Show failed job details
+  - `--run-id ID` - Check specific run by ID
+  - Stores results in `.factory/` directory for local tracking
+
+- **Local Testing Script**: New `./bin/test-local.sh` for fast pre-CI validation:
+  - Nix flake evaluation check (~10 seconds)
+  - Script syntax validation (bash)
+  - User state JSON verification
+  - Module import checks
+  - Documentation completeness check
+  - No VM boot required
+
+- **Unified Test Suite**: Optimized testing with merged VM tests:
+  - `core-unified.nix` - Tests boot, network, security in one VM
+  - `cli-unified.nix` - Tests all CLI functionality in one VM
+  - `modules-unified.nix` - Tests languages, services, editors, frameworks in one VM
+  - Maintains individual tests in `individualChecks` for debugging
+
+### Changed
+
+- **CI/CD Optimization**: Faster, cleaner GitHub Actions workflow:
+  - Removed Magic Nix Cache (was causing HTTP 418/500 errors)
+  - Parallel test execution (core, cli, modules, integration)
+  - Fast syntax check (~30 seconds vs 5 minutes previously)
+  - Added timeout limits (3-15 minutes per job)
+  - Matrix strategy for integration tests
+  - Reduced VM boots from 14 to 4 per CI run (~70% faster)
+
+- **Test Organization**: Clear separation of test types:
+  - `checks` output: Unified tests for CI (fast)
+  - `individualChecks` output: Individual tests for debugging
+  - Flake check now evaluates in ~10 seconds
+
+### Fixed
+
+- Syntax errors in test files with proper conditional string closures
+- GitHub Actions cache configuration errors
+- Test file import paths for individual tests
+- `.factory/` directory added to `.gitignore` for local CI tracking
 
 ### Changed
 - **Tests**: Module and integration tests now respect user configuration.

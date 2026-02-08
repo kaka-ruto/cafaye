@@ -667,11 +667,89 @@ Hooks are triggered via `caf-hook-run <name>`.
 
 ## 🧪 Testing Protocol
 
-Run `nix flake check` before every commit:
- 
- 1. Verify Nix syntax
- 2. Boot VM for each test
- 3. Execute test assertions
+### Quick Local Testing (No VMs)
+
+Before pushing to CI, run the local test script for fast validation:
+
+```bash
+# Fast syntax and structure validation (~10 seconds)
+./bin/test-local.sh
+```
+
+This checks:
+- Nix flake evaluation
+- Script syntax (bash)
+- User state JSON validation
+- Module imports
+- Documentation completeness
+
+### Testing Strategy
+
+We use a **two-tier testing approach**:
+
+#### Tier 1: Unified Tests (CI Default)
+Fast tests that run multiple scenarios in single VM boots:
+
+```bash
+# Run unified tests (what CI runs)
+nix build .#checks.x86_64-linux.core-unified
+nix build .#checks.x86_64-linux.cli-unified
+nix build .#checks.x86_64-linux.modules-unified
+nix build .#checks.x86_64-linux.integration-first-run-wizard
+nix build .#checks.x86_64-linux.integration-rails
+```
+
+**Benefits:**
+- **~70% faster** than individual tests (4 VMs vs 14 VMs)
+- **Parallel execution** in CI
+- Tests **behavior interactions** between modules
+
+#### Tier 2: Individual Tests (Debugging)
+Run specific tests when debugging a particular component:
+
+```bash
+# Run individual test for focused debugging
+nix build .#individualChecks.x86_64-linux.core-boot
+nix build .#individualChecks.x86_64-linux.cli-main
+nix build .#individualChecks.x86_64-linux.modules-languages
+```
+
+**Use when:**
+- Debugging a specific failure
+- Developing a new module
+- Isolating a problem
+
+### CI/CD Testing (The Factory)
+
+Our GitHub Actions workflow runs in phases:
+
+1. **Syntax Check** (~30 seconds) - Fast nix evaluation
+2. **Parallel VM Tests** (~1-2 minutes total):
+   - Core Tests (boot, network, security)
+   - CLI Tests (all CLI scripts)
+   - Module Tests (languages, services, editors)
+3. **Integration Tests** (parallel) - Complex scenarios
+
+### Using caf-factory-check CLI
+
+Monitor CI status locally:
+
+```bash
+# Check latest CI run
+caf-factory-check --latest
+
+# Check specific commit
+caf-factory-check --commit abc1234
+
+# Watch CI continuously
+caf-factory-check --watch
+
+# View failed logs inline
+caf-factory-check --logs
+
+# Check your current commit's CI status
+caf-factory-check --commit $(git rev-parse --short HEAD)
+```
 
 ### Full System Verification (Docker)
 
@@ -694,7 +772,7 @@ To verify a clean build in an isolated environment (requires Docker on host):
    docker run --platform linux/amd64 --rm -it cafaye-factory
    ```
 
-This runs `nix flake check` inside a Docker container, ensuring no local contamination.
+This runs the full test suite inside a Docker container.
 
 ### Test Naming Convention
 

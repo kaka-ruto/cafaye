@@ -190,12 +190,76 @@ Turn any fresh VPS into a Cafaye Powerhouse in minutes.
    docker run --platform linux/amd64 --rm -it cafaye-factory
    ```
 
-## 📖 Documentation
-
-- **[Installation Guide](docs/INSTALL.md)** - How to install on a VPS
-- **[First Run Guide](docs/FIRST_RUN.md)** - Configuration wizard details
-- **[Contributing](CONTRIBUTING.md)** - Development guidelines
-- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Detailed roadmap with phase checklists
-- **[AGENTS.md](AGENTS.md)** - AI developer instructions
-- **[CHANGELOG.md](CHANGELOG.md)** - Version history
-- **[RELEASING.md](RELEASING.md)** - How to cut a release
+ ## 🧪 Testing
+ 
+ Cafaye has comprehensive testing built in. Tests run in CI on every push, and you can run them locally too.
+ 
+ ### Quick Local Testing (No VMs, ~10 seconds)
+ 
+ Run the local test script before pushing to CI:
+ 
+ ```bash
+ ./bin/test-local.sh
+ ```
+ 
+ This validates Nix syntax, script syntax, JSON state, and module imports without booting VMs.
+ 
+ ### Monitor CI Status
+ 
+ Use the `caf-factory-check` CLI to monitor your CI/CD builds:
+ 
+ ```bash
+ # Check latest CI run
+ caf-factory-check --latest
+ 
+ # Check specific commit
+ caf-factory-check --commit abc1234
+ 
+ # View error logs inline
+ caf-factory-check --logs
+ 
+ # Watch CI continuously
+ caf-factory-check --watch
+ 
+ # Check current commit status
+ caf-factory-check --commit $(git rev-parse --short HEAD)
+ ```
+ 
+ ### Run Individual Tests
+ 
+ For focused debugging, run specific tests:
+ 
+ ```bash
+ # Unified tests (what CI runs - fast)
+ nix build .#checks.x86_64-linux.core-unified
+ nix build .#checks.x86_64-linux.cli-unified
+ nix build .#checks.x86_64-linux.modules-unified
+ 
+ # Individual tests (for debugging specific components)
+ nix build .#individualChecks.x86_64-linux.core-boot
+ nix build .#individualChecks.x86_64-linux.cli-main
+ nix build .#individualChecks.x86_64-linux.modules-languages
+ ```
+ 
+ ### Full Integration Tests (Docker)
+ 
+ Run complete VM tests in isolation:
+ 
+ ```bash
+ # Using devbox (recommended)
+ devbox run test-full
+ 
+ # Or manually with Docker
+ docker build --platform linux/amd64 -t cafaye-factory .
+ docker run --platform linux/amd64 --rm -it cafaye-factory
+ ```
+ 
+ ## 📖 Documentation
+ 
+ - **[Installation Guide](docs/INSTALL.md)** - How to install on a VPS
+ - **[First Run Guide](docs/FIRST_RUN.md)** - Configuration wizard details
+ - **[Contributing](CONTRIBUTING.md)** - Development guidelines
+ - **[DEVELOPMENT.md](DEVELOPMENT.md)** - Detailed roadmap with phase checklists
+ - **[AGENTS.md](AGENTS.md)** - AI developer instructions
+ - **[CHANGELOG.md](CHANGELOG.md)** - Version history
+ - **[RELEASING.md](RELEASING.md)** - How to cut a release
