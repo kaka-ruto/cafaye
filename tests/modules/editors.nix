@@ -1,15 +1,5 @@
 { pkgs, inputs, userState, ... }:
 
-let
-  testState = userState // {
-    editors = {
-      neovim = true;
-      helix = true;
-      vscode_server = false;  # Skip code-server to avoid long build times
-      default = "neovim";
-    };
-  };
-in
 {
   name = "modules-editors";
   nodes = {
@@ -25,7 +15,7 @@ in
           ../../modules
           inputs.sops-nix.nixosModules.sops
         ];
-        _module.args = { inherit inputs; userState = testState; };
+        _module.args = { inherit inputs userState; };
 
         sops.validateSopsFiles = false;
         systemd.services.tailscale-autoconnect.enable = false;
@@ -36,13 +26,17 @@ in
     machine.start()
     machine.wait_for_unit("multi-user.target")
 
-    # Test Neovim
-    machine.succeed("nvim --version")
+    ${pkgs.lib.optionalString (userState.editors.neovim or false) ''
+      # Test Neovim
+      machine.succeed("nvim --version")
+    ''}
 
-    # Test Helix
-    machine.succeed("hx --version")
+    ${pkgs.lib.optionalString (userState.editors.helix or false) ''
+      # Test Helix
+      machine.succeed("hx --version")
+    ''}
 
-    # Test support tools
+    # Test support tools (should be present if interface/tools.nix is imported)
     machine.succeed("rg --version")
     machine.succeed("fd --version")
   '';

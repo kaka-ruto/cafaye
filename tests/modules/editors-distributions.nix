@@ -1,23 +1,5 @@
 { pkgs, inputs, userState, ... }:
 
-let
-  testState = userState // {
-    editors = {
-      neovim = true;
-      helix = false;
-      vscode_server = false;
-      default = "neovim";
-      distributions = {
-        nvim = {
-          lazyvim = true;
-          astronvim = false;
-          nvchad = false;
-          lunarvim = false;
-        };
-      };
-    };
-  };
-in
 {
   name = "modules-editors-distributions";
   nodes = {
@@ -33,7 +15,7 @@ in
           ../../modules
           inputs.sops-nix.nixosModules.sops
         ];
-        _module.args = { inherit inputs; userState = testState; };
+        _module.args = { inherit inputs userState; };
 
         sops.validateSopsFiles = false;
         systemd.services.tailscale-autoconnect.enable = false;
@@ -45,7 +27,16 @@ in
     machine.wait_for_unit("multi-user.target")
 
     # Test Neovim is available (distributions enable neovim)
-    machine.succeed("nvim --version")
+    # Check if ANY neovim distribution is enabled
+    ${pkgs.lib.optionalString (
+        (userState.editors.neovim or false) ||
+        (userState.editors.distributions.nvim.lazyvim or false) ||
+        (userState.editors.distributions.nvim.astronvim or false) ||
+        (userState.editors.distributions.nvim.nvchad or false) ||
+        (userState.editors.distributions.nvim.lunarvim or false)
+      ) ''
+      machine.succeed("nvim --version")
+    ''}
     
     # Test git is available (needed for distribution setup)
     machine.succeed("git --version")

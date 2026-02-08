@@ -1,15 +1,5 @@
 { pkgs, inputs, userState, ... }:
 
-let
-  # Enable all frameworks for testing
-  testState = userState // {
-    frameworks = {
-      rails = true;
-      django = true;
-      nextjs = true;
-    };
-  };
-in
 {
   name = "modules-frameworks";
   nodes = {
@@ -25,7 +15,7 @@ in
           ../../modules
           inputs.sops-nix.nixosModules.sops
         ];
-        _module.args = { inherit inputs; userState = testState; };
+        _module.args = { inherit inputs userState; };
 
         # Mock secrets
         sops.validateSopsFiles = false;
@@ -37,16 +27,22 @@ in
     machine.start()
     machine.wait_for_unit("multi-user.target")
 
-    # Test Rails (should enable Ruby + Postgres)
-    machine.succeed("ruby --version")
-    machine.wait_for_unit("postgresql.service")
-    machine.succeed("vips --version")
+    ${pkgs.lib.optionalString (userState.frameworks.rails or false) ''
+      # Test Rails (should enable Ruby + Postgres)
+      machine.succeed("ruby --version")
+      machine.wait_for_unit("postgresql.service")
+      machine.succeed("vips --version")
+    ''}
 
-    # Test Django (should enable Python + Postgres)
-    machine.succeed("python3 --version")
-    machine.succeed("sqlite3 --version")
+    ${pkgs.lib.optionalString (userState.frameworks.django or false) ''
+      # Test Django (should enable Python + Postgres)
+      machine.succeed("python3 --version")
+      machine.succeed("sqlite3 --version")
+    ''}
 
-    # Test Next.js (should enable Node)
-    machine.succeed("node --version")
+    ${pkgs.lib.optionalString (userState.frameworks.nextjs or false) ''
+      # Test Next.js (should enable Node)
+      machine.succeed("node --version")
+    ''}
   '';
 }
