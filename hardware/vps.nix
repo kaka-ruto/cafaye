@@ -17,6 +17,11 @@
         content = {
           type = "gpt";
           partitions = {
+            # BIOS boot partition for legacy GRUB on GPT
+            biosboot = {
+              size = "1M";
+              type = "EF02"; # BIOS boot partition
+            };
             # EFI boot partition
             ESP = {
               size = "500M";
