@@ -34,6 +34,17 @@
     flake-utils.lib.eachSystem supportedSystems (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        
+        # Helper to run tests without requiring KVM (Using software emulation TCG)
+        # This allows tests to run on standard VPS instances without nested virt.
+        runTest = testFile: pkgs.testers.runNixOSTest {
+          imports = [ (import testFile { inherit pkgs inputs userState; }) ];
+          # Force software emulation if KVM is not available (detected or enforced)
+          # We remove the "kvm" requirement from the derivation meta
+          meta.requiredSystemFeatures = lib.filter (f: f != "kvm") pkgs.testers.runNixOSTest.meta.requiredSystemFeatures or [];
+          # Configure QEMU to use TCG
+          defaults.virtualisation.qemu.options = [ "-accel tcg" ];
+        };
       in
       {
         devShells.default = pkgs.mkShell {
@@ -50,33 +61,29 @@
         # Evaluation checks for the dev systems
         # Note: runNixOSTest only works on Linux, so we only add it there
          checks = lib.optionalAttrs pkgs.stdenv.isLinux {
-            # Unified tests (FAST) - Run multiple scenarios in ONE VM boot
-            core-unified = pkgs.testers.runNixOSTest (import ./tests/core/unified.nix { inherit pkgs inputs userState; });
-            cli-unified = pkgs.testers.runNixOSTest (import ./tests/cli/unified.nix { inherit pkgs inputs userState; });
-            modules-unified = pkgs.testers.runNixOSTest (import ./tests/modules/unified.nix { inherit pkgs inputs userState; });
+            core-unified = runTest ./tests/core/unified.nix;
+            cli-unified = runTest ./tests/cli/unified.nix;
+            modules-unified = runTest ./tests/modules/unified.nix;
             
-            # Integration tests (kept separate as they test complex interactions)
-            integration-setup = pkgs.testers.runNixOSTest (import ./tests/integration/setup.nix { inherit pkgs inputs userState; });
-            integration-rails = pkgs.testers.runNixOSTest (import ./tests/integration/rails.nix { inherit pkgs inputs userState; });
+            integration-setup = runTest ./tests/integration/setup.nix;
+            integration-rails = runTest ./tests/integration/rails.nix;
           };
           
-          # Individual tests for debugging (NOT run in default CI)
-          # Run individually: nix build .#individualChecks.x86_64-linux.<name>
-          # Useful for: debugging specific failures, faster iteration during development
+          # Individual tests
           individualChecks = lib.optionalAttrs pkgs.stdenv.isLinux {
-            core-boot = pkgs.testers.runNixOSTest (import ./tests/core/boot.nix { inherit pkgs inputs userState; });
-            core-network = pkgs.testers.runNixOSTest (import ./tests/core/network.nix { inherit pkgs inputs userState; });
-            core-security = pkgs.testers.runNixOSTest (import ./tests/core/security.nix { inherit pkgs inputs userState; });
-            cli-main = pkgs.testers.runNixOSTest (import ./tests/cli/main.nix { inherit pkgs inputs userState; });
-            cli-debug = pkgs.testers.runNixOSTest (import ./tests/cli/debug.nix { inherit pkgs inputs userState; });
-            cli-doctor = pkgs.testers.runNixOSTest (import ./tests/cli/doctor.nix { inherit pkgs inputs userState; });
-            cli-factory = pkgs.testers.runNixOSTest (import ./tests/cli/factory.nix { inherit pkgs inputs userState; });
-            interface-terminal = pkgs.testers.runNixOSTest (import ./tests/interface/terminal.nix { inherit pkgs inputs userState; });
-            modules-languages = pkgs.testers.runNixOSTest (import ./tests/modules/languages.nix { inherit pkgs inputs userState; });
-            modules-services = pkgs.testers.runNixOSTest (import ./tests/modules/services.nix { inherit pkgs inputs userState; });
-            modules-frameworks = pkgs.testers.runNixOSTest (import ./tests/modules/frameworks.nix { inherit pkgs inputs userState; });
-            modules-editors = pkgs.testers.runNixOSTest (import ./tests/modules/editors.nix { inherit pkgs inputs userState; });
-            modules-editors-distributions = pkgs.testers.runNixOSTest (import ./tests/modules/editors-distributions.nix { inherit pkgs inputs userState; });
+            core-boot = runTest ./tests/core/boot.nix;
+            core-network = runTest ./tests/core/network.nix;
+            core-security = runTest ./tests/core/security.nix;
+            cli-main = runTest ./tests/cli/main.nix;
+            cli-debug = runTest ./tests/cli/debug.nix;
+            cli-doctor = runTest ./tests/cli/doctor.nix;
+            cli-factory = runTest ./tests/cli/factory.nix;
+            interface-terminal = runTest ./tests/interface/terminal.nix;
+            modules-languages = runTest ./tests/modules/languages.nix;
+            modules-services = runTest ./tests/modules/services.nix;
+            modules-frameworks = runTest ./tests/modules/frameworks.nix;
+            modules-editors = runTest ./tests/modules/editors.nix;
+            modules-editors-distributions = runTest ./tests/modules/editors-distributions.nix;
           };
 
         packages = {
