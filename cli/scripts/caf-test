@@ -18,6 +18,17 @@ ensure_bats() {
     export PATH="$CACHE_DIR/bats-core/bin:$PATH"
 }
 
+# --- Helper: Check Nix ---
+check_nix() {
+    if ! command -v nix &> /dev/null; then
+        echo "❌ Error: Nix is not installed."
+        echo "   Layer 2+ tests require the Nix package manager."
+        echo "   Please run the bootstrap script or install Nix manually:"
+        echo "   curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install"
+        exit 1
+    fi
+}
+
 # --- Runners ---
 run_unit() {
     ensure_bats
@@ -47,18 +58,22 @@ case "$1" in
         ;;
     # Valid shortcuts for specific integration tests
     core)
+        check_nix
         echo "🚜 Running Core Integration Tests..."
         nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).core-unified" --print-build-logs
         ;;
-    cli-integration) # Renamed to avoid confusion with unit/cli
+    cli-integration)
+        check_nix
         echo "🚜 Running CLI Integration Tests..."
         nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).cli-unified" --print-build-logs
         ;;
     modules)
+        check_nix
         echo "🚜 Running Modules Integration Tests..."
         nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).modules-unified" --print-build-logs
         ;;
     integration)
+        check_nix
         run_integration_tests
         ;;
     *)
