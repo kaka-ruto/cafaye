@@ -8,14 +8,21 @@ set -e
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# Ensure gum is available (should be installed by bootstrap)
-if ! command -v gum &> /dev/null; then
-    if [[ -f /tmp/gum ]]; then
-        export PATH="/tmp:$PATH"
+# Helper to run jq via Nix if missing
+run_jq() {
+    if command -v jq &> /dev/null; then
+        jq "$@"
+    elif command -v nix &> /dev/null; then
+        nix --extra-experimental-features "nix-command flakes" run "nixpkgs#jq" -- "$@"
     else
-        echo "Error: gum not found. Please run this via install.sh"
+        echo "Error: jq not found and nix not available."
         exit 1
     fi
+}
+
+# Ensure gum is available
+if ! command -v gum &> /dev/null; then
+    [[ -f /tmp/gum ]] && export PATH="/tmp:$PATH"
 fi
 
 cat << "EOF"
@@ -73,20 +80,20 @@ if gum confirm "Start the background installation? (You can disconnect after thi
     cp user/user-state.json.example "$STATE_FILE"
     
     # Update disk
-    jq ".core.boot.grub_device = \"$disk\"" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
+    run_jq ".core.boot.grub_device = \"$disk\"" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
     
     # Update keys
     if [[ "$import_keys" == "true" ]]; then
-       keys_json=$(cat /root/.ssh/authorized_keys | jq -R . | jq -s .)
-       jq ".core.authorized_keys = $keys_json" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
+       keys_json=$(cat /root/.ssh/authorized_keys | run_jq -R . | run_jq -s .)
+       run_jq ".core.authorized_keys = $keys_json" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
     fi
     
     # Update modules
-    [[ "$choice" == *"Docker"* ]] && jq ".dev_tools.docker = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
-    [[ "$choice" == *"PostgreSQL"* ]] && jq ".services.postgresql = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
-    [[ "$choice" == *"Rails"* ]] && jq ".frameworks.rails = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
-    [[ "$choice" == *"Next.js"* ]] && jq ".frameworks.nextjs = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
-    [[ "$choice" == *"Rust"* ]] && jq ".languages.rust = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
+    [[ "$choice" == *"Docker"* ]] && run_jq ".dev_tools.docker = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
+    [[ "$choice" == *"PostgreSQL"* ]] && run_jq ".services.postgresql = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
+    [[ "$choice" == *"Rails"* ]] && run_jq ".frameworks.rails = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
+    [[ "$choice" == *"Next.js"* ]] && run_jq ".frameworks.nextjs = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
+    [[ "$choice" == *"Rust"* ]] && run_jq ".languages.rust = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
 
     echo "✅ Configuration generated at $STATE_FILE"
     exit 0
