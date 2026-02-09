@@ -24,6 +24,11 @@ ensure_tool() {
 
     # Try Nix
     local nix_bin=$(nix build "nixpkgs#$name" --no-link --print-out-paths --extra-experimental-features "nix-command flakes" 2>/dev/null || echo "")
+    # Try Nix logic result
+    if [[ -n "$nix_bin" ]]; then
+        ln -sf "$nix_bin/bin/$name" "$mock_path"
+        return 0
+    fi
     
     # Try downloading standalone if possible (gum only)
     if [[ "$name" == "gum" ]]; then
@@ -33,6 +38,9 @@ ensure_tool() {
         chmod +x "$mock_path"
         return 0
     fi
+
+    return 1
+}
 
 # Setup Mocks
 setup_mocks() {
