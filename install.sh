@@ -310,6 +310,20 @@ auto_install() {
   install_nix
   setup_ssh_for_localhost
   clone_cafaye
+  
+  # Initialize state with detected hardware
+  local disk=$(detect_primary_disk)
+  log_info "Detected primary disk: $disk"
+  
+  if [[ ! -f user/user-state.json ]]; then
+    log_info "Initializing user-state.json..."
+    cp user/user-state.json.example user/user-state.json
+    
+    # Update disk and architecture in the local state for the installer
+    sed -i "s|/dev/vda|$disk|" user/user-state.json
+    sed -i "s|/dev/sda|$disk|" user/user-state.json
+  fi
+  
   install_nixos
 }
 
