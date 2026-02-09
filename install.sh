@@ -33,261 +33,9 @@ is_nixos_installer() {
   [[ -f /etc/NIXOS_LUSTRATION ]] || grep -q "nixos" /proc/version 2>/dev/null
 }
 
-# Get installer directory (either from repo or temp clone)
-get_installer_dir() {
-  if [[ -f /root/cafaye/install.sh ]]; then
-    echo "/root/cafaye"
-  else
-    # Clone to temp dir
-    local temp_dir="/tmp/cafaye-install-$$"
-    log_info "Cloning installer files..."
-    git clone https://github.com/kaka-ruto/cafaye "$temp_dir" >/dev/null 2>&1
-    echo "$temp_dir"
-  fi
-}
-
-# Clone installer repo and run from there
-run_from_repo() {
-  local temp_dir="/tmp/cafaye-install-$$"
-
-  log_info "Preparing installer..."
-
-  if [[ -d /root/cafaye ]]; then
-    cd /root/cafaye
-  else
-    git clone https://github.com/kaka-ruto/cafaye "$temp_dir"
-    cd "$temp_dir"
-  fi
-
-  # Source the modules
-  source installer/cleanup.sh
-  source installer/nix.sh
-  source installer/cafaye.sh
-  source installer/nixos.sh
-  source installer/menu.sh
-
-  # Run the actual installation
-  run_installer
-}
-
-# Full NixOS installation
-full_install() {
-  log_info "Installing NixOS..."
-
-  clone_or_update_cafaye
-  cd_cafaye
-
-  enable_experimental_features
-  install_nixos
-
-  echo ""
-  log "Installation complete!"
-  echo ""
-  echo "After reboot:"
-  echo "  ssh root@<your-vps-ip>"
-  echo "  caf-setup"
-}
-
-# Automated installation (non-interactive)
-auto_install() {
-  check_existing
-
-  if has_nix || has_dir /root/cafaye || has_dir /nix; then
-    show_deletion_preview
-
-    if [[ "$auto_yes" == true ]]; then
-      log_info "Auto-confirming (--yes flag set)..."
-      cleanup_existing
-    else
-      ask_proceed_deletion
-      cleanup_existing
-    fi
-  fi
-
-  install_nix
-  full_install
-}
-
-# Show welcome screen
-show_welcome() {
-  echo -e "${CYAN}☕ Cafaye OS Installer${NC}"
-  echo -e "${CYAN}========================${NC}"
-  echo ""
-  echo "Welcome! This installer will set up NixOS on your VPS with:"
-  echo "  • Nix package manager"
-  echo "  • Cafaye OS configuration"
-  echo "  • AI-first development environment"
-  echo ""
-}
-
-# Show main menu
-show_main_menu() {
-  echo -e "${CYAN}☕ Cafaye OS Installer${NC}"
-  echo -e "${CYAN}========================${NC}"
-  echo ""
-  echo "What would you like to do?"
-  echo ""
-  echo "  1. Install NixOS (full system)"
-  echo "  2. Install Nix only"
-  echo "  3. Clone Cafaye repository"
-  echo "  4. Run caf-setup"
-  echo "  5. Exit"
-  echo ""
-}
-
-# Handle menu choice
-handle_menu() {
-  local choice=$1
-
-  case "$choice" in
-    1)
-      echo ""
-      log_info "Selected: Install NixOS (full system)"
-      echo ""
-      check_existing
-
-      if has_nix || has_dir /root/cafaye || has_dir /nix; then
-        show_deletion_preview
-        ask_proceed_deletion
-        cleanup_existing
-      fi
-
-      show_summary
-      ask_confirm
-
-      install_nix
-      full_install
-      ;;
-    2)
-      install_nix
-      ;;
-    3)
-      clone_or_update_cafaye
-      ;;
-    4)
-      if [[ -d /root/cafaye ]]; then
-        cd_cafaye
-        if command -v nix &> /dev/null; then
-          source "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" 2>/dev/null || true
-        fi
-        ./caf-setup
-      else
-        echo "Cafaye not found. Run option 3 first."
-      fi
-      ;;
-    5)
-      echo "Exiting..."
-      exit 0
-      ;;
-    *)
-      echo "Invalid choice: $choice"
-      ;;
-  esac
-}
-
-# Show installation summary
-show_summary() {
-  echo ""
-  echo -e "${CYAN}📋 Installation Summary${NC}"
-  echo "====================="
-  echo ""
-  echo "This will:"
-  echo "  1. Install Nix (multi-user)"
-  echo "  2. Clone Cafaye repository"
-  echo "  3. Run nixos-anywhere to install NixOS"
-  echo "  4. Reboot into NixOS"
-  echo ""
-  echo -e "${YELLOW}⚠️  WARNING: This will REPLACE your current OS with NixOS!${NC}"
-  echo ""
-}
-
-# Ask for final confirmation
-ask_confirm() {
-  echo -e "${CYAN}Ready to proceed?${NC}"
-  echo ""
-  echo "  1. Yes, install NixOS"
-  echo "  2. Go back to main menu"
-  echo "  3. Cancel"
-  echo ""
-
-  read -p "Enter choice (1-3): " choice
-  echo ""
-
-  case "$choice" in
-    1)
-      return 0
-      ;;
-    2)
-      main_menu
-      ;;
-    3)
-      echo "Installation cancelled."
-      exit 0
-      ;;
-    *)
-      echo "Invalid choice: $choice"
-      ask_confirm
-      ;;
-  esac
-}
-
-# Ask user to proceed with deletion
-ask_proceed_deletion() {
-  echo -e "${CYAN}Do you want to proceed with deletion and installation?${NC}"
-  echo ""
-  echo "  1. Yes, delete everything and install NixOS"
-  echo "  2. No, cancel"
-  echo ""
-
-  read -p "Enter choice (1-2): " choice
-  echo ""
-
-  if [[ "$choice" != "1" ]]; then
-    echo "Installation cancelled."
-    exit 0
-  fi
-}
-
-# Main menu loop
-main_menu() {
-  while true; do
-    show_main_menu
-    read -p "Enter choice (1-5): " choice
-    echo ""
-    handle_menu "$choice"
-    echo ""
-    echo "Press Enter to continue..."
-    read
-  done
-}
-
-# Interactive installation
-interactive_install() {
-  show_welcome
-  main_menu
-}
-
 # Check if Nix is installed
 has_nix() {
   command -v nix &> /dev/null
-}
-
-# Clone or update Cafaye
-clone_or_update_cafaye() {
-  if [[ -d /root/cafaye ]]; then
-    cd /root/cafaye
-    log_info "Cafaye already exists, pulling latest..."
-    git pull origin master
-  else
-    log_info "Cloning Cafaye..."
-    git clone https://github.com/kaka-ruto/cafaye /root/cafaye
-    cd /root/cafaye
-  fi
-}
-
-# Change to cafaye directory
-cd_cafaye() {
-  cd /root/cafaye
 }
 
 # Install curl if missing
@@ -313,6 +61,48 @@ enable_experimental_features() {
   fi
 }
 
+# Clone or update Cafaye
+clone_or_update_cafaye() {
+  if [[ -d /root/cafaye ]]; then
+    cd /root/cafaye
+    log_info "Cafaye already exists, pulling latest..."
+    git pull origin master
+  else
+    log_info "Cloning Cafaye..."
+    git clone https://github.com/kaka-ruto/cafaye /root/cafaye
+    cd /root/cafaye
+  fi
+}
+
+# Change to cafaye directory
+cd_cafaye() {
+  cd /root/cafaye
+}
+
+# Full NixOS installation
+full_install() {
+  log_info "Installing NixOS..."
+
+  clone_or_update_cafaye
+  cd_cafaye
+
+  enable_experimental_features
+  source_nix
+
+  log_info "Running nixos-anywhere..."
+  log_info "This will kexec into NixOS installer and install the system."
+  echo ""
+
+  nix run \
+    --option extra-experimental-features "nix-command flakes" \
+    github:nix-community/nixos-anywhere -- \
+    --flake ".#cafaye" \
+    --kexec \
+    --no-passwd \
+    --no-bootloader \
+    root@localhost
+}
+
 # Install Nix (multi-user)
 install_nix() {
   if has_nix; then
@@ -329,26 +119,6 @@ install_nix() {
 
   source_nix
   log "Nix installed successfully"
-}
-
-# Install NixOS using nixos-anywhere
-install_nixos() {
-  log_info "Installing NixOS..."
-
-  source_nix
-
-  log_info "Running nixos-anywhere..."
-  log_info "This will kexec into NixOS installer and install the system."
-  echo ""
-
-  nix run \
-    --option extra-experimental-features "nix-command flakes" \
-    github:nix-community/nixos-anywhere -- \
-    --flake ".#cafaye" \
-    --kexec \
-    --no-passwd \
-    --no-bootloader \
-    root@localhost
 }
 
 # Check for existing installations
@@ -520,36 +290,170 @@ cleanup_existing() {
   echo ""
 }
 
-# Main installer logic
-run_installer() {
-  local installer_dir
+# Automated installation (non-interactive)
+auto_install() {
+  check_existing
 
-  # If running from curl|bash without repo, clone it first
-  if [[ ! -f /root/cafaye/install.sh ]]; then
-    installer_dir=$(get_installer_dir)
-    cd "$installer_dir"
+  if has_nix || [[ -d /root/cafaye ]] || [[ -d /nix ]]; then
+    show_deletion_preview
+
+    if [[ "$auto_yes" == true ]]; then
+      log_info "Auto-confirming (--yes flag set)..."
+      cleanup_existing
+    else
+      echo -e "${CYAN}Do you want to proceed with deletion and installation?${NC}"
+      echo ""
+      echo "  1. Yes, delete everything and install NixOS"
+      echo "  2. No, cancel"
+      echo ""
+      read -p "Enter choice (1-2): " choice
+      echo ""
+      if [[ "$choice" != "1" ]]; then
+        echo "Installation cancelled."
+        exit 0
+      fi
+      cleanup_existing
+    fi
   fi
 
-  if is_nixos_installer; then
-    echo -e "${GREEN}☕ Cafaye OS Installer${NC}"
-    echo -e "${YELLOW}========================${NC}"
+  install_nix
+  full_install
+}
+
+# Show welcome screen
+show_welcome() {
+  echo -e "${CYAN}☕ Cafaye OS Installer${NC}"
+  echo -e "${CYAN}========================${NC}"
+  echo ""
+  echo "Welcome! This installer will set up NixOS on your VPS with:"
+  echo "  • Nix package manager"
+  echo "  • Cafaye OS configuration"
+  echo "  • AI-first development environment"
+  echo ""
+}
+
+# Show main menu
+show_main_menu() {
+  echo -e "${CYAN}☕ Cafaye OS Installer${NC}"
+  echo -e "${CYAN}========================${NC}"
+  echo ""
+  echo "What would you like to do?"
+  echo ""
+  echo "  1. Install NixOS (full system)"
+  echo "  2. Install Nix only"
+  echo "  3. Clone Cafaye repository"
+  echo "  4. Run caf-setup"
+  echo "  5. Exit"
+  echo ""
+}
+
+# Handle menu choice
+handle_menu() {
+  local choice=$1
+
+  case "$choice" in
+    1)
+      echo ""
+      log_info "Selected: Install NixOS (full system)"
+      echo ""
+      check_existing
+
+      if has_nix || [[ -d /root/cafaye ]] || [[ -d /nix ]]; then
+        show_deletion_preview
+        echo -e "${CYAN}Do you want to proceed with deletion and installation?${NC}"
+        echo ""
+        echo "  1. Yes, delete everything and install NixOS"
+        echo "  2. No, cancel"
+        echo ""
+        read -p "Enter choice (1-2): " choice
+        echo ""
+        if [[ "$choice" != "1" ]]; then
+          echo "Installation cancelled."
+          exit 0
+        fi
+        cleanup_existing
+      fi
+
+      echo ""
+      echo -e "${CYAN}📋 Installation Summary${NC}"
+      echo "====================="
+      echo ""
+      echo "This will:"
+      echo "  1. Install Nix (multi-user)"
+      echo "  2. Clone Cafaye repository"
+      echo "  3. Run nixos-anywhere to install NixOS"
+      echo "  4. Reboot into NixOS"
+      echo ""
+      echo -e "${YELLOW}⚠️  WARNING: This will REPLACE your current OS with NixOS!${NC}"
+      echo ""
+      echo -e "${CYAN}Ready to proceed?${NC}"
+      echo ""
+      echo "  1. Yes, install NixOS"
+      echo "  2. Go back to main menu"
+      echo "  3. Cancel"
+      echo ""
+      read -p "Enter choice (1-3): " choice
+      echo ""
+      if [[ "$choice" == "2" ]]; then
+        main_menu
+      elif [[ "$choice" == "3" ]]; then
+        echo "Installation cancelled."
+        exit 0
+      fi
+
+      install_nix
+      full_install
+
+      echo ""
+      log "Installation complete!"
+      echo ""
+      echo "After reboot:"
+      echo "  ssh root@<your-vps-ip>"
+      echo "  caf-setup"
+      ;;
+    2)
+      install_nix
+      ;;
+    3)
+      clone_or_update_cafaye
+      ;;
+    4)
+      if [[ -d /root/cafaye ]]; then
+        cd_cafaye
+        if has_nix; then
+          source_nix
+        fi
+        ./caf-setup
+      else
+        echo "Cafaye not found. Run option 3 first."
+      fi
+      ;;
+    5)
+      echo "Exiting..."
+      exit 0
+      ;;
+    *)
+      echo "Invalid choice: $choice"
+      ;;
+  esac
+}
+
+# Main menu loop
+main_menu() {
+  while true; do
+    show_main_menu
+    read -p "Enter choice (1-5): " choice
     echo ""
-    log "Detected NixOS installer environment"
-    full_install
-    exit 0
-  fi
-
-  if [[ ! -t 0 ]] || [[ "$auto_yes" == true ]]; then
-    auto_install
-    exit 0
-  fi
-
-  interactive_install
+    handle_menu "$choice"
+    echo ""
+    echo "Press Enter to continue..."
+    read
+  done
 }
 
 # Main entry point
 main() {
-  auto_yes=false
+  local auto_yes=false
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -574,7 +478,23 @@ main() {
   done
 
   check_root
-  run_installer
+
+  if is_nixos_installer; then
+    echo -e "${GREEN}☕ Cafaye OS Installer${NC}"
+    echo -e "${YELLOW}========================${NC}"
+    echo ""
+    log "Detected NixOS installer environment"
+    full_install
+    exit 0
+  fi
+
+  if [[ ! -t 0 ]] || [[ "$auto_yes" == true ]]; then
+    auto_install
+    exit 0
+  fi
+
+  show_welcome
+  main_menu
 }
 
 main "$@"
