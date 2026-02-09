@@ -6,6 +6,8 @@
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
+    disko.url = "github:nix-community/disko";
+    disko.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = { self, nixpkgs, sops-nix, flake-utils, ... }@inputs:
@@ -112,7 +114,9 @@
         system = vpsSystem;
         specialArgs = { inherit inputs userState; };
         modules = [
+          inputs.disko.nixosModules.disko
           inputs.sops-nix.nixosModules.sops
+          ./hardware/vps.nix
           ./core
           ./interface
           ./modules

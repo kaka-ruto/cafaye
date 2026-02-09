@@ -38,7 +38,7 @@ clone_cafaye() {
 }
 
 is_nixos_installer() {
-  [[ -f /etc/NIXOS_LUSTRATION ]] || grep -q "nixos" /proc/version 2>/dev/null
+  [[ -f /etc/NIXOS ]] || [[ -f /etc/NIXOS_LUSTRATION ]] || grep -qi "nixos" /proc/version 2>/dev/null
 }
 
 has_nix() {
