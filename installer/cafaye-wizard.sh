@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Cafaye OS: Installer Wizard (TUI)
 # Collects all user preferences before starting the background installation.
 

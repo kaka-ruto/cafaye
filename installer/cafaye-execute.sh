@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Cafaye OS: Background Execution Script
 # This script is designed to be detached from the SSH session.
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Cafaye OS: The "Self-Driving" Bootstrap
 # Usage: curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
 
@@ -82,7 +82,7 @@ cd "$REPO_DIR"
 chmod +x installer/*.sh
 
 # 3. Running the Wizard (Interactively)
-./installer/cafaye-wizard.sh || exit 1
+bash ./installer/cafaye-wizard.sh || exit 1
 
 # 4. Prepare for Detached Execution
 echo "Setting up localhost SSH for automated installation..."
@@ -112,7 +112,7 @@ echo "2. Connect to Cafaye:   ssh root@$(hostname -I | awk '{print $1}')"
 echo "-----------------------------------------------------------------------"
 
 # Use nohup to detach. The execution script handles the rest.
-nohup ./installer/cafaye-execute.sh > "$LOG_FILE" 2>&1 &
+nohup bash ./installer/cafaye-execute.sh > "$LOG_FILE" 2>&1 &
 
 echo "Bootstrap complete. See you on the other side!"
 sleep 2
