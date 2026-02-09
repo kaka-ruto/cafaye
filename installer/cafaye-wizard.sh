@@ -69,20 +69,20 @@ if gum confirm "Start the background installation? (You can disconnect after thi
     cp user/user-state.json.example "$STATE_FILE"
     
     # Update disk
-    jq ".core.boot.grub_device = \"$disk\"" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+    jq ".core.boot.grub_device = \"$disk\"" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
     
     # Update keys
     if [[ "$import_keys" == "true" ]]; then
        keys_json=$(cat /root/.ssh/authorized_keys | jq -R . | jq -s .)
-       jq ".core.authorized_keys = $keys_json" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+       jq ".core.authorized_keys = $keys_json" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
     fi
     
     # Update modules
-    [[ "$choice" == *"Docker"* ]] && jq ".dev_tools.docker = true" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
-    [[ "$choice" == *"PostgreSQL"* ]] && jq ".services.postgresql = true" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
-    [[ "$choice" == *"Rails"* ]] && jq ".frameworks.rails = true" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
-    [[ "$choice" == *"Next.js"* ]] && jq ".frameworks.nextjs = true" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
-    [[ "$choice" == *"Rust"* ]] && jq ".languages.rust = true" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+    [[ "$choice" == *"Docker"* ]] && jq ".dev_tools.docker = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
+    [[ "$choice" == *"PostgreSQL"* ]] && jq ".services.postgresql = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
+    [[ "$choice" == *"Rails"* ]] && jq ".frameworks.rails = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
+    [[ "$choice" == *"Next.js"* ]] && jq ".frameworks.nextjs = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
+    [[ "$choice" == *"Rust"* ]] && jq ".languages.rust = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
 
     echo "✅ Configuration generated at $STATE_FILE"
     exit 0
