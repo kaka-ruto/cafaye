@@ -118,15 +118,37 @@ cleanup_existing() {
     rm -rf /root/cafaye
   fi
 
-  if has_nix || [[ -d /nix ]]; then
-    systemctl stop nix-daemon.socket nix-daemon.service 2>/dev/null || true
-    for i in $(seq 1 32); do userdel "nixbld$i" 2>/dev/null || true; done
-    groupdel nixbld 2>/dev/null || true
-    rm -rf /nix /root/.nix /root/.config/nix /root/.cache/nix 2>/dev/null || true
-    rm -rf /etc/nix /etc/profile.d/nix.sh 2>/dev/null || true
-    rm -f /etc/bash.bashrc.backup-before-nix /etc/bashrc.backup-before-nix /etc/zshrc.backup-before-nix 2>/dev/null || true
-    systemctl daemon-reload 2>/dev/null || true
-  fi
+  # Stop nix services if running
+  systemctl stop nix-daemon.socket nix-daemon.service 2>/dev/null || true
+
+  # Remove nix build users
+  for i in $(seq 1 32); do userdel "nixbld$i" 2>/dev/null || true; done
+  groupdel nixbld 2>/dev/null || true
+
+  # Remove nix directories
+  rm -rf /nix /root/.nix /root/.config/nix /root/.cache/nix 2>/dev/null || true
+
+  # Remove nix config and shell integration
+  rm -rf /etc/nix /etc/profile.d/nix.sh 2>/dev/null || true
+
+  # Remove nix backup files (these prevent reinstallation)
+  rm -f /etc/bash.bashrc.backup-before-nix /etc/bashrc.backup-before-nix /etc/zshrc.backup-before-nix 2>/dev/null || true
+  rm -f /etc/profile.d/nix.sh.backup-before-nix 2>/dev/null || true
+
+  # Remove systemd units
+  rm -f /etc/systemd/system/nix-daemon.service /etc/systemd/system/nix-daemon.socket 2>/dev/null || true
+  rm -f /etc/systemd/system/sockets.target.wants/nix-daemon.socket 2>/dev/null || true
+  rm -f /etc/tmpfiles.d/nix-daemon.conf 2>/dev/null || true
+
+  # Remove nix references from shell configs
+  for file in /etc/bash.bashrc /etc/bashrc /etc/zshrc /etc/profile; do
+    if [[ -f "$file" ]]; then
+      sed -i '/nix-daemon.sh/d' "$file" 2>/dev/null || true
+      sed -i '/# Nix/,/# End Nix/d' "$file" 2>/dev/null || true
+    fi
+  done
+
+  systemctl daemon-reload 2>/dev/null || true
 
   log "Cleanup complete!"
 }
