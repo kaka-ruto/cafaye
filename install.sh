@@ -133,7 +133,7 @@ cleanup_existing() {
 
   # Remove nix backup files (these prevent reinstallation)
   rm -f /etc/bash.bashrc.backup-before-nix /etc/bashrc.backup-before-nix /etc/zshrc.backup-before-nix 2>/dev/null || true
-  rm -f /etc/profile.d/nix.sh.backup-before-nix 2>/dev/null || true
+  rm -f /etc/profile.d/nix.sh.backup-before-nix /etc/profile.d/nix.sh 2>/dev/null || true
 
   # Remove systemd units
   rm -f /etc/systemd/system/nix-daemon.service /etc/systemd/system/nix-daemon.socket 2>/dev/null || true
