@@ -84,7 +84,10 @@ install_nixos() {
   log_info "Running nixos-anywhere (this will kexec into NixOS installer)..."
   log_info "The installer will download NixOS files and reboot into them..."
 
-  export NIX_CONFIG="experimental-features = nix-command flakes"
+  if ! grep -q "experimental-features" /etc/nix/nix.conf 2>/dev/null; then
+    log_info "Enabling experimental features in nix.conf..."
+    echo "experimental-features = nix-command flakes" | sudo tee -a /etc/nix/nix.conf > /dev/null
+  fi
 
   nix run github:nix-community/nixos-anywhere -- \
     --flake ".#cafaye" \
