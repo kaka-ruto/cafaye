@@ -9,7 +9,8 @@ NC='\033[0m'
 BLUE='\033[0;34m'
 
 # State
-FAILURES=()
+FAILURES_FILE="/tmp/cafaye-test-failures"
+echo "0" > "$FAILURES_FILE"
 TEST_COUNT=0
 CURRENT_TEST=""
 
@@ -25,11 +26,32 @@ it() {
     TEST_COUNT=$((TEST_COUNT + 1))
     
     # Run the test block
-    if "$@"; then
+    if ( "$@" ); then
         echo -n "."
     else
         echo -n "F"
-        FAILURES+=("$CURRENT_TEST")
+        count=$(cat "$FAILURES_FILE")
+        echo $((count + 1)) > "$FAILURES_FILE"
+        echo "##FAILURE##:$CURRENT_TEST" >> "$FAILURES_FILE.log"
+    fi
+}
+
+# --- Runner ---
+run_suite() {
+    echo ""
+    failures=$(cat "$FAILURES_FILE")
+    
+    if [[ "$failures" == "0" ]]; then
+        echo -e "${GREEN}All tests passed ($TEST_COUNT assertions)${NC}"
+        rm -f "$FAILURES_FILE" "$FAILURES_FILE.log"
+        exit 0
+    else
+        echo -e "${RED}$failures failures encountered.${NC}"
+        if [[ -f "$FAILURES_FILE.log" ]]; then
+            grep "##FAILURE##" "$FAILURES_FILE.log" | cut -d: -f2-
+        fi
+        rm -f "$FAILURES_FILE" "$FAILURES_FILE.log"
+        exit 1
     fi
 }
 
@@ -83,14 +105,3 @@ assert_file_exists() {
 setup() { :; }
 teardown() { :; }
 
-# --- Runner ---
-run_suite() {
-    echo ""
-    if [ ${#FAILURES[@]} -eq 0 ]; then
-        echo -e "${GREEN}All tests passed ($TEST_COUNT assertions)${NC}"
-        exit 0
-    else
-        echo -e "${RED}${ #FAILURES[@]} failures encountered.${NC}"
-        exit 1
-    fi
-}
