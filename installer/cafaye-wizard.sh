@@ -8,26 +8,14 @@ set -e
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# Helper to run jq via Nix if missing
-run_jq() {
-    if command -v jq &> /dev/null; then
-        jq "$@"
-    elif command -v nix &> /dev/null; then
-        # Try to run via nix and capture error
-        if ! nix --extra-experimental-features "nix-command flakes" run "nixpkgs#jq" -- "$@" 2>/tmp/jq-error; then
-            echo "Nix run jq failed. Error:"
-            cat /tmp/jq-error
-            exit 1
-        fi
-    else
-        echo "Error: jq not found and nix not available."
-        exit 1
-    fi
-}
-
 # Ensure gum is available
 if ! command -v gum &> /dev/null; then
     [[ -f /tmp/gum ]] && export PATH="/tmp:$PATH"
+fi
+
+# Ensure jq is available
+if ! command -v jq &> /dev/null; then
+    [[ -f /tmp/jq ]] && export PATH="/tmp:$PATH"
 fi
 
 cat << "EOF"
@@ -86,22 +74,22 @@ if gum confirm "Start the background installation? (You can disconnect after thi
     
     # Update disk
     echo "Updating disk..."
-    run_jq ".core.boot.grub_device = \"$disk\"" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update disk"; exit 1; }
+    jq ".core.boot.grub_device = \"$disk\"" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update disk"; exit 1; }
     
     # Update keys
     if [[ "$import_keys" == "true" ]]; then
        echo "Updating keys..."
-       keys_json=$(cat /root/.ssh/authorized_keys | run_jq -R . | run_jq -s .)
-       run_jq ".core.authorized_keys = $keys_json" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update keys"; exit 1; }
+       keys_json=$(cat /root/.ssh/authorized_keys | jq -R . | jq -s .)
+       jq ".core.authorized_keys = $keys_json" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update keys"; exit 1; }
     fi
     
     # Update modules
     echo "Updating modules..."
-    [[ "$choice" == *"Docker"* ]] && (run_jq ".dev_tools.docker = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Docker"; exit 1; })
-    [[ "$choice" == *"PostgreSQL"* ]] && (run_jq ".services.postgresql = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update PostgreSQL"; exit 1; })
-    [[ "$choice" == *"Rails"* ]] && (run_jq ".frameworks.rails = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Rails"; exit 1; })
-    [[ "$choice" == *"Next.js"* ]] && (run_jq ".frameworks.nextjs = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Next.js"; exit 1; })
-    [[ "$choice" == *"Rust"* ]] && (run_jq ".languages.rust = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Rust"; exit 1; })
+    [[ "$choice" == *"Docker"* ]] && (jq ".dev_tools.docker = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Docker"; exit 1; })
+    [[ "$choice" == *"PostgreSQL"* ]] && (jq ".services.postgresql = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update PostgreSQL"; exit 1; })
+    [[ "$choice" == *"Rails"* ]] && (jq ".frameworks.rails = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Rails"; exit 1; })
+    [[ "$choice" == *"Next.js"* ]] && (jq ".frameworks.nextjs = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Next.js"; exit 1; })
+    [[ "$choice" == *"Rust"* ]] && (jq ".languages.rust = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Rust"; exit 1; })
 
     echo "✅ Configuration generated at $STATE_FILE"
     exit 0

@@ -6,27 +6,20 @@ set -e
 REPO_DIR=$(pwd)
 TEMP_STATE="/tmp/cafaye-test-state.json"
 MOCK_GUM="/tmp/gum"
+MOCK_JQ="/tmp/jq"
 
 echo "🧪 Starting Installer Automated Tests..."
 
-# Ensure jq is present for state verification
-if ! command -v jq &> /dev/null; then
-    if command -v nix &> /dev/null; then
-        echo "Auto-installing jq for tests..."
-        export PATH="$(nix build nixpkgs#jq --no-link --print-out-paths --extra-experimental-features "nix-command flakes")/bin:$PATH"
-    fi
-fi
+# --- Setup Mock Gum ---
 cat > "$MOCK_GUM" << 'EOF'
 #!/usr/bin/env bash
 cmd=$1
 shift
 case "$cmd" in
     confirm)
-        # Always confirm yes unless mock env says no
         if [[ "$MOCK_CONFIRM" == "no" ]]; then exit 1; else exit 0; fi
         ;;
     choose)
-        # Return mock choices
         echo -e "$MOCK_CHOICES"
         ;;
     *)
@@ -35,6 +28,19 @@ case "$cmd" in
 esac
 EOF
 chmod +x "$MOCK_GUM"
+
+# --- Setup Mock JQ (Using Nix to find real JQ) ---
+if ! command -v jq &> /dev/null; then
+    if command -v nix &> /dev/null; then
+        echo "Linking real jq to mock path via Nix..."
+        REAL_JQ=$(nix build nixpkgs#jq --no-link --print-out-paths --extra-experimental-features "nix-command flakes")/bin/jq
+        cat > "$MOCK_JQ" << EOF
+#!/bin/sh
+$REAL_JQ "\$@"
+EOF
+        chmod +x "$MOCK_JQ"
+    fi
+fi
 
 # Function to run the wizard with mocks
 run_wizard_test() {
@@ -48,16 +54,15 @@ run_wizard_test() {
     # Setup environment
     export MOCK_CONFIRM="$confirm"
     export MOCK_CHOICES="$choices"
-    export PATH="/tmp:$PATH" # Use mock gum
+    export PATH="/tmp:$PATH" # Use mocks
     
     # Mock files
     mkdir -p user
-    cp user/user-state.json.example user/user-state.json
+    cp user/user-state.json.example user/user-state.json 2>/dev/null || true
     
     # Run wizard
-    echo "Executing Wizard..."
     if [[ "$confirm" == "no" ]]; then
-        if PATH="$PATH" bash installer/cafaye-wizard.sh; then
+        if bash installer/cafaye-wizard.sh > /dev/null 2>&1; then
             echo "❌ FAILED (Should have exited with error on cancel)"
             exit 1
         else
@@ -66,8 +71,7 @@ run_wizard_test() {
         fi
     fi
 
-    PATH="$PATH" bash installer/cafaye-wizard.sh
-    echo "Wizard Finished. Status: $?"
+    bash installer/cafaye-wizard.sh > /dev/null 2>&1 || { echo "❌ FAILED (Wizard crashed)"; exit 1; }
     
     # Verify State
     if [[ ! -f /tmp/cafaye-initial-state.json ]]; then
@@ -87,8 +91,6 @@ run_wizard_test() {
         if [[ -n "$check" ]]; then
             if ! jq -e "$check" /tmp/cafaye-initial-state.json > /dev/null; then
                 echo "❌ FAILED (Choice $choice not reflected in state)"
-                echo "Current State Content:"
-                cat /tmp/cafaye-initial-state.json
                 exit 1
             fi
         fi
@@ -113,4 +115,4 @@ echo "---------------------------------------"
 echo "🎉 ALL TESTS PASSED SUCCESSFULLY!"
 echo "---------------------------------------"
 
-rm "$MOCK_GUM"
+rm -f "$MOCK_GUM" "$MOCK_JQ"
