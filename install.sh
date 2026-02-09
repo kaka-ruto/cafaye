@@ -84,7 +84,7 @@ install_nixos() {
   log_info "Running nixos-anywhere (this will kexec into NixOS installer)..."
   log_info "The installer will download NixOS files and reboot into them..."
 
-  nix run github:nix-community/nixos-anywhere -- \
+  nix --extra-experimental-features "nix-command flakes" run github:nix-community/nixos-anywhere -- \
     --flake ".#cafaye" \
     --kexec \
     --no-passwd \
