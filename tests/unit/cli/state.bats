@@ -14,7 +14,7 @@ teardown() {
 
 @test "caf-state-write: updates boolean values" {
     run cli/scripts/caf-state-write "test.boolean" "true"
-    [ "$status" -eq 0 ]
+    [ "$status" -eq 0 ] || { echo "Status: $status"; echo "Output: $output"; false; }
     
     run jq -r ".test.boolean" "$STATE_FILE"
     [ "$output" == "true" ]
@@ -22,7 +22,7 @@ teardown() {
 
 @test "caf-state-write: updates string values" {
     run cli/scripts/caf-state-write "test.string" "updated"
-    [ "$status" -eq 0 ]
+    [ "$status" -eq 0 ] || { echo "Status: $status"; echo "Output: $output"; false; }
     
     run jq -r ".test.string" "$STATE_FILE"
     [ "$output" == "updated" ]
@@ -30,13 +30,13 @@ teardown() {
 
 @test "caf-state-read: retrieves values correctly" {
     run cli/scripts/caf-state-read "test.string"
-    [ "$status" -eq 0 ]
+    [ "$status" -eq 0 ] || { echo "Status: $status"; echo "Output: $output"; false; }
     [ "$output" == "initial" ]
 }
 
 @test "caf-state-write: handles nested keys" {
     run cli/scripts/caf-state-write "new.nested.key" "123"
-    [ "$status" -eq 0 ]
+    [ "$status" -eq 0 ] || { echo "Status: $status"; echo "Output: $output"; false; }
     
     run jq -r ".new.nested.key" "$STATE_FILE"
     [ "$output" == "123" ]
