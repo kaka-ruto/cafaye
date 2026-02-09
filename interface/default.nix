@@ -11,6 +11,7 @@
     ./terminal/lazygit.nix
     ./terminal/fastfetch.nix
     ./ide
+    ./branding.nix
   ];
 
   # Global branding deployment

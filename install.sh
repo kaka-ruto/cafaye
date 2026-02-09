@@ -67,13 +67,14 @@ if [[ -f /etc/ssh/sshd_config ]]; then
 fi
 
 # 5. Launch Background Execution
-echo ""
 echo "-----------------------------------------------------------------------"
 echo "🚀 DETACHING FROM SESSION"
 echo "Cafaye OS is now installing in the background."
 echo "You can safely disconnect (Ctrl-C or close window)."
-echo "Log file: $LOG_FILE"
-echo "Machine will reboot into Cafaye OS in approximately 3-5 minutes."
+echo ""
+echo "ACTION REQUIRED (on your local machine) in ~5 minutes:"
+echo "1. Clear old host keys:  ssh-keygen -R $(hostname -I | awk '{print $1}')"
+echo "2. Connect to Cafaye:   ssh root@$(hostname -I | awk '{print $1}')"
 echo "-----------------------------------------------------------------------"
 
 # Use nohup to detach. The execution script handles the rest.
