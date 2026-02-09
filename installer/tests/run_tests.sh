@@ -48,9 +48,9 @@ run_wizard_test() {
     mkdir -p user
     cp user/user-state.json.example user/user-state.json
     
-    # Run wizard (redirecting output to null to keep it clean)
+    # Run wizard
     if [[ "$confirm" == "no" ]]; then
-        if bash installer/cafaye-wizard.sh > /dev/null 2>&1; then
+        if bash installer/cafaye-wizard.sh; then
             echo "❌ FAILED (Should have exited with error on cancel)"
             exit 1
         else
@@ -59,7 +59,7 @@ run_wizard_test() {
         fi
     fi
 
-    bash installer/cafaye-wizard.sh > /dev/null 2>&1
+    bash installer/cafaye-wizard.sh
     
     # Verify State
     if [[ ! -f /tmp/cafaye-initial-state.json ]]; then
@@ -79,6 +79,8 @@ run_wizard_test() {
         if [[ -n "$check" ]]; then
             if ! jq -e "$check" /tmp/cafaye-initial-state.json > /dev/null; then
                 echo "❌ FAILED (Choice $choice not reflected in state)"
+                echo "Current State Content:"
+                cat /tmp/cafaye-initial-state.json
                 exit 1
             fi
         fi
