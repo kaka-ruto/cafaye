@@ -77,7 +77,12 @@ install_nixos() {
 
   cd /root/cafaye
 
+  if [[ -f "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]]; then
+    source "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
+  fi
+
   log_info "Running nixos-anywhere (this will kexec into NixOS installer)..."
+  log_info "The installer will download NixOS files and reboot into them..."
 
   nix run github:nix-community/nixos-anywhere -- \
     --flake ".#cafaye" \
