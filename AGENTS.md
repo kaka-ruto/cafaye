@@ -147,6 +147,22 @@ cd /Users/kaka/Code/Cafaye/cafaye
 bash bin/test.sh
 ```
 
+### 🔑 SSH Best Practices (Heredocs vs Strings)
+
+When executing complex commands on a remote VPS via SSH, avoid passing commands as a single string. This prevents issues with escaping and special characters. **Always use a Here-Doc.**
+
+```bash
+# ❌ BAD: Messy escaping, fragile
+ssh cafaye "cd /root/cafaye && . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh && nix build"
+
+# ✅ GOOD: Clean, reliable, handles complex logic
+ssh cafaye << 'EOF'
+  cd /root/cafaye
+  source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+  nix build .#nixosConfigurations.cafaye.config.system.build.toplevel --dry-run
+EOF
+```
+
 ### Fast Evaluation (macOS/Anywhere)
 Checks syntax, option existence, and flake logic. Does not run VMs.
 ```bash

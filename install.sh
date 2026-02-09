@@ -322,6 +322,13 @@ auto_install() {
     # Update disk and architecture in the local state for the installer
     sed -i "s|/dev/vda|$disk|" user/user-state.json
     sed -i "s|/dev/sda|$disk|" user/user-state.json
+    
+    # Capture current authorized keys if any
+    if [[ -f /root/.ssh/authorized_keys ]]; then
+       log_info "Migrating SSH keys to user state..."
+       keys=$(cat /root/.ssh/authorized_keys | tr '\n' ',' | sed 's/,$//' | sed 's/,/","/g')
+       sed -i "s|ssh-ed25519 YOUR_SSH_PUBLIC_KEY_HERE your@email.com|$keys|" user/user-state.json
+    fi
   fi
   
   install_nixos
