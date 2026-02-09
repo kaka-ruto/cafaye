@@ -61,7 +61,7 @@ if ! command -v gum &> /dev/null; then
         chmod +x "$GUM_BIN"
         # Try a few common paths
         cp "$GUM_BIN" /usr/local/bin/gum 2>/dev/null || cp "$GUM_BIN" /usr/bin/gum 2>/dev/null || cp "$GUM_BIN" /bin/gum 2>/dev/null || cp "$GUM_BIN" /tmp/gum
-        [[ -f /tmp/gum ]] && export PATH="/tmp:$PATH"
+        export PATH="/tmp:/usr/local/bin:$PATH"
     else
         echo "Error: Could not find gum binary in package."
         exit 1
@@ -82,7 +82,8 @@ cd "$REPO_DIR"
 chmod +x installer/*.sh
 
 # 3. Running the Wizard (Interactively)
-bash ./installer/cafaye-wizard.sh || exit 1
+# Ensure gum from /tmp is found if it was installed there
+PATH="$PATH" bash ./installer/cafaye-wizard.sh || exit 1
 
 # 4. Prepare for Detached Execution
 echo "Setting up localhost SSH for automated installation..."
