@@ -80,6 +80,4 @@
     "vm.swappiness" = 10;
     "vm.vfs_cache_pressure" = 50;
   };
-
-  system.stateVersion = "25.11";
 }
