@@ -185,8 +185,93 @@ install_nixos() {
   # Install nixos-anywhere
   nix profile install github:nix-community/nixos-anywhere 2>/dev/null || true
 
-  # Run nixos-anywhere
-  /root/.nix-profile/bin/nixos-anywhere --flake '.#cafaye' root@localhost
+  # Run nixos-anywhere with proper error handling
+  if ! /root/.nix-profile/bin/nixos-anywhere --flake '.#cafaye' root@localhost; then
+    log_error "nixos-anywhere failed. This is often due to disk space limitations in the installer."
+    log_info "Falling back to manual installation method..."
+    install_nixos_manual
+  fi
+}
+
+install_nixos_manual() {
+  log_info "Installing NixOS manually (fallback method)..."
+  
+  # Setup zram to avoid disk space issues
+  log_info "Setting up zram for additional memory..."
+  modprobe zram 2>/dev/null || true
+  if [[ -e /sys/block/zram0 ]]; then
+    echo 4G > /sys/block/zram0/disksize 2>/dev/null || true
+    mkswap /dev/zram0 2>/dev/null || true
+    swapon /dev/zram0 2>/dev/null || true
+  fi
+  
+  # Clean up nix store to free space
+  nix store gc 2>/dev/null || true
+  
+  # Mount disks
+  log_info "Mounting disks..."
+  mkdir -p /mnt
+  mount /dev/sda1 /mnt
+  mkdir -p /mnt/boot
+  mount /dev/sda15 /mnt/boot
+  
+  # Install channel
+  log_info "Installing NixOS channel..."
+  nix-channel --add https://nixos.org/channels/nixos-24.05 nixos
+  nix-channel --update
+  
+  # Clone cafaye
+  log_info "Cloning cafaye configuration..."
+  mkdir -p /mnt/root
+  cd /mnt/root
+  curl -fsSL https://github.com/kaka-ruto/cafaye/archive/refs/heads/master.tar.gz -o /tmp/cafaye.tar.gz
+  tar xzf /tmp/cafaye.tar.gz
+  mv cafaye-master cafaye
+  
+  # Create minimal configuration
+  log_info "Creating minimal NixOS configuration..."
+  cat > /mnt/etc/nixos/configuration.nix << 'EOF'
+{ config, pkgs, ... }:
+{
+  imports = [ ./hardware-configuration.nix ];
+  
+  boot.loader.grub = {
+    enable = true;
+    device = "/dev/sda";
+  };
+  
+  networking.hostName = "cafaye";
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  
+  services.openssh = {
+    enable = true;
+    settings = {
+      PermitRootLogin = "yes";
+      PasswordAuthentication = true;
+    };
+  };
+  
+  users.users.root.initialPassword = "changeme";
+  environment.systemPackages = with pkgs; [ git curl vim ];
+  system.stateVersion = "24.05";
+}
+EOF
+  
+  # Generate hardware configuration
+  nixos-generate-config --root /mnt
+  
+  # Install
+  log_info "Running nixos-install (this will take 15-30 minutes)..."
+  if ! nixos-install --root /mnt --no-root-passwd; then
+    log_error "Installation failed. Check /tmp/nixos-install.log for details."
+    log_info "You may need to retry or use a VPS with more RAM/disk space."
+    log_info "See docs/VPS-INSTALL.md for troubleshooting."
+    exit 1
+  fi
+  
+  log "Installation complete! Rebooting..."
+  sleep 5
+  reboot
 }
 
 auto_install() {

@@ -28,6 +28,8 @@ ssh root@<your-vps-ip>
 caf-setup
 ```
 
+**📚 Need help?** Check out the [VPS Installation Guide](docs/VPS-INSTALL.md) for detailed instructions, troubleshooting tips, and manual installation steps.
+
 ---
 
 ## 🆚 Why Cafaye Over Omarchy?
