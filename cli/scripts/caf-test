@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Cafaye OS Unified Test Runner
-# Orchestrates Layer 0-3 testing
-# Inspired by Minitest/Rails
+# Cafaye OS Test Launcher
+# Routes commands to the correct test suite
 
 set -e
 
@@ -11,70 +10,57 @@ cd "$REPO_DIR"
 
 # Global Config
 TIMEOUT_MINUTES=30
+STATE_FILE_TEST="/tmp/cafaye-cli-test-state.json"
+export STATE_FILE="$STATE_FILE_TEST"
 
 usage() {
     echo "Cafaye OS Test Runner (caf-test)"
     echo "Usage: caf-test [section]"
     echo ""
     echo "Sections:"
-    echo "  installer         Run Layer 0 (Bootstrap/Installer) tests"
-    echo "  cli               Run Layer 1 (Orchestration/State) logic tests"
-    echo "  core              Run Layer 2 (Security/Networking) NixOS tests"
-    echo "  modules           Run Layer 3 (User Module) NixOS tests"
-    echo "  all               Run ALL tests (Warning: Slow)"
-    echo "  integration       Run Full Integration Tests"
+    echo "  unit              Run ALL local/unit tests (Fast)"
+    echo "  installer         Run Layer 0 (Installer) tests"
+    echo "  cli               Run Layer 1 (CLI/State) tests"
+    echo "  integration       Run full VM integration tests (Slow)"
     echo ""
 }
 
-run_installer_tests() {
+run_unit_tests() {
     echo ""
-    echo "▶ LAYER 0: INSTALLER / BOOTSTRAP ..."
-    bash installer/tests/run_tests.sh
+    echo "🔬 Running Unit Tests (Local execution - No VM)..."
+    
+    # 1. Installer Logic
+    echo "▶ Layer 0: Installer Wizard"
+    bash tests/unit/installer/test_wizard.sh
+
+    # 2. CLI Logic
+    echo "▶ Layer 1: CLI State Management"
+    bash tests/unit/cli/test_state.sh
 }
 
-run_cli_tests() {
+run_integration_tests() {
     echo ""
-    echo "▶ LAYER 1: CLI / STATE LOGIC ..."
-    bash cli/tests/run_tests.sh
-}
-
-run_nixos_test() {
-    local target=$1
-    echo ""
-    echo "▶ NIXOS TEST: $target ..."
+    echo "🚜 Running Integration Tests (Requires Nix + KVM)..."
     if ! command -v nix &> /dev/null; then
-        echo "Error: Nix not found. Skipping NixOS test."
+        echo "Error: Nix not found. Skipping NixOS integration tests."
         return 1
     fi
-    nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).$target" --print-build-logs
-}
-
-run_all_tests() {
-    run_installer_tests
-    run_cli_tests
-    run_nixos_test "core-unified"
-    run_nixos_test "modules-unified"
+    nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).core-unified" --print-build-logs
 }
 
 # --- Main Logic ---
 case "$1" in
+    unit|all)
+        run_unit_tests
+        ;;
     installer)
-        run_installer_tests
+        bash tests/unit/installer/test_wizard.sh
         ;;
     cli)
-        run_cli_tests
-        ;;
-    core)
-        run_nixos_test "core-unified"
-        ;;
-    modules)
-        run_nixos_test "modules-unified"
-        ;;
-    all)
-        run_all_tests
+        bash tests/unit/cli/test_state.sh
         ;;
     integration)
-        run_nixos_test "integration-setup"
+        run_integration_tests
         ;;
     *)
         usage
