@@ -33,18 +33,18 @@ usage() {
 
 # --- Section: Installer ---
 run_installer_tests() {
-    echo -e "${BLUE}▶ Running Installer Tests (Layer 0)...${NC}"
+    echo "Running Installer Tests (Layer 0)..."
     bash installer/tests/run_tests.sh
 }
 
 # --- Section: NixOS Tests ---
 run_nixos_test() {
     local target=$1
-    echo -e "${BLUE}▶ Running NixOS Test: $target...${NC}"
+    echo "Running NixOS Test: $target..."
     
     # Check if we are on a system with Nix
     if ! command -v nix &> /dev/null; then
-        echo -e "${RED}Error: Nix not found. NixOS tests require Nix.${NC}"
+        echo "Error: Nix not found. NixOS tests require Nix."
         exit 1
     fi
 
@@ -54,7 +54,7 @@ run_nixos_test() {
 
 run_individual_nixos_test() {
     local name=$1
-    echo -e "${BLUE}▶ Running Individual NixOS Test: $name...${NC}"
+    echo "Running Individual NixOS Test: $name..."
     nix build ".#individualChecks.$(nix eval --raw --impure --expr builtins.currentSystem).$name" --print-build-logs
 }
 
