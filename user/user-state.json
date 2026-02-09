@@ -21,7 +21,7 @@
     "rust": false,
     "go": false,
     "nodejs": false,
-    "python": true,
+    "python": false,
     "ruby": false
   },
   "dev_tools": {
