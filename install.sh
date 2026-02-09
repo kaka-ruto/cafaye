@@ -33,6 +33,19 @@ is_nixos_installer() {
   [[ -f /etc/NIXOS_LUSTRATION ]] || grep -q "nixos" /proc/version 2>/dev/null
 }
 
+# Get installer directory (either from repo or temp clone)
+get_installer_dir() {
+  if [[ -f /root/cafaye/install.sh ]]; then
+    echo "/root/cafaye"
+  else
+    # Clone to temp dir
+    local temp_dir="/tmp/cafaye-install-$$"
+    log_info "Cloning installer files..."
+    git clone https://github.com/kaka-ruto/cafaye "$temp_dir" >/dev/null 2>&1
+    echo "$temp_dir"
+  fi
+}
+
 # Clone installer repo and run from there
 run_from_repo() {
   local temp_dir="/tmp/cafaye-install-$$"
@@ -262,8 +275,8 @@ has_nix() {
 # Clone or update Cafaye
 clone_or_update_cafaye() {
   if [[ -d /root/cafaye ]]; then
-    log_info "Cafaye already exists, pulling latest..."
     cd /root/cafaye
+    log_info "Cafaye already exists, pulling latest..."
     git pull origin master
   else
     log_info "Cloning Cafaye..."
@@ -509,6 +522,14 @@ cleanup_existing() {
 
 # Main installer logic
 run_installer() {
+  local installer_dir
+
+  # If running from curl|bash without repo, clone it first
+  if [[ ! -f /root/cafaye/install.sh ]]; then
+    installer_dir=$(get_installer_dir)
+    cd "$installer_dir"
+  fi
+
   if is_nixos_installer; then
     echo -e "${GREEN}☕ Cafaye OS Installer${NC}"
     echo -e "${YELLOW}========================${NC}"
