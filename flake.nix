@@ -39,8 +39,9 @@
         # This allows tests to run on standard VPS instances without nested virt.
         runTest = testFile: pkgs.testers.runNixOSTest {
           imports = [ (import testFile { inherit pkgs inputs userState; }) ];
-          # Configure QEMU to use TCG
+          # Configure QEMU to use TCG and disable KVM explicitly
           defaults.virtualisation.qemu.options = [ "-accel tcg" ];
+          defaults.virtualisation.qemu.enableKVM = false;
         };
       in
       {
