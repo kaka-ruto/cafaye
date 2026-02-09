@@ -39,8 +39,9 @@
         # This allows tests to run on standard VPS instances without nested virt.
         runTest = testFile: pkgs.testers.runNixOSTest {
           imports = [ (import testFile { inherit pkgs inputs userState; }) ];
-          # Configure QEMU for strict software emulation (TCG)
-          defaults.virtualisation.qemu.options = [ "-cpu max" "-accel tcg" ];
+          # Disable KVM to force pure QEMU software emulation
+          defaults.virtualisation.qemu.kvm = false;
+          defaults.virtualisation.qemu.options = [ "-cpu max" ];
           defaults.virtualisation.graphics = false; # Headless
           defaults.virtualisation.memorySize = 2048; # Give enough RAM for slow emulation
         };
