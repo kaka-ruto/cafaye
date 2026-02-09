@@ -29,8 +29,8 @@ fi
 if ! command -v gum &> /dev/null; then
     echo "Setting up TUI engine..."
     # Simplified gum install for bootstrap
-    VERSION="0.14.3"
-    curl -fL "https://github.com/charmbracelet/gum/releases/download/v${VERSION}/gum_${VERSION}_linux_amd64.tar.gz" | tar xz --wildcards "**/gum"
+    VERSION="0.17.0"
+    curl -fL "https://github.com/charmbracelet/gum/releases/download/v${VERSION}/gum_${VERSION}_Linux_x86_64.tar.gz" | tar xz --wildcards "**/gum"
     mv gum*/gum /usr/local/bin/
     rm -rf gum*
 fi
