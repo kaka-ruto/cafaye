@@ -37,50 +37,51 @@ run_unit() {
     ensure_bats
     echo "🔬 Running Unit Tests (BATS)..."
     
-    # Run all .bats files in tests/unit
-    if ! "$BATS_BIN" -r tests/unit; then
+    local target="${1:-tests/unit}"
+    
+    # Run specific file or all .bats files in tests/unit
+    if ! "$BATS_BIN" -r "$target"; then
         echo "❌ Unit Tests Failed"
         exit 1
     fi
 }
 
+run_integration_target() {
+    local target=$1
+    check_nix
+    echo "🚜 Running Individual Integration Test: $target..."
+    nix build ".#individualChecks.$(nix eval --raw --impure --expr builtins.currentSystem).$target" --print-build-logs
+}
+
 run_integration_tests() {
-    echo ""
-    echo "🚜 Running Integration Tests (Requires Nix + KVM)..."
-    if ! command -v nix &> /dev/null; then
-        echo "Error: Nix not found. Skipping NixOS integration tests."
-        return 1
-    fi
+    check_nix
+    echo "🚜 Running Unified Integration Tests..."
     nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).core-unified" --print-build-logs
 }
 
 # --- Main ---
 case "$1" in
     unit|all)
-        run_unit
+        run_unit "$2"
         ;;
-    # Valid shortcuts for specific integration tests
+    # Shortcuts for unified suites
     core)
-        check_nix
-        echo "🚜 Running Core Integration Tests..."
-        nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).core-unified" --print-build-logs
-        ;;
+        check_nix; echo "🚜 Core Unified..."; nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).core-unified" --print-build-logs ;;
     cli-integration)
-        check_nix
-        echo "🚜 Running CLI Integration Tests..."
-        nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).cli-unified" --print-build-logs
-        ;;
+        check_nix; echo "🚜 CLI Unified..."; nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).cli-unified" --print-build-logs ;;
     modules)
-        check_nix
-        echo "🚜 Running Modules Integration Tests..."
-        nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).modules-unified" --print-build-logs
-        ;;
+        check_nix; echo "🚜 Modules Unified..."; nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).modules-unified" --print-build-logs ;;
+    
+    # Integration runner
     integration)
-        check_nix
-        run_integration_tests
+        if [[ -n "$2" ]]; then
+            run_integration_target "$2"
+        else
+            run_integration_tests
+        fi
         ;;
     *)
-        echo "Usage: caf-test [unit|integration|all]"
+        echo "Usage: caf-test [unit <file> | integration <name> | core | modules | all]"
         exit 1
         ;;
 esac
