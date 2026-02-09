@@ -19,6 +19,9 @@ Cafaye OS is built using a **Vertical Layering** strategy. Instead of building h
     - **Fast Test:** `nix-build .#individualChecks.x86_64-linux.core-boot`
     - **Success Criteria:** The system reboots, partitions are correctly mounted (`/`, `/boot`), and the SSH daemon is listening.
 - **Integration:** Provides the physical/virtual filesystem and boot environment for all upper layers.
+- **Testing:**
+    - Use `caf-test installer` to verify the bootstrap logic and TUI wizard.
+    - Tests run on the VPS in a persistent directory (`~/cafaye-dev`) to allow rapid iteration.
 
 ---
 
