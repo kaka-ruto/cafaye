@@ -4,7 +4,7 @@
   # Bootloader configuration
   boot.loader.grub = {
     enable = true;
-    device = userState.core.boot.grub_device or "/dev/vda";
+    # device is handled by disko or hardware config
   };
 
   # Use a modern kernel
