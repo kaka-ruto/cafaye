@@ -55,6 +55,7 @@ run_wizard_test() {
     cp user/user-state.json.example user/user-state.json
     
     # Run wizard
+    echo "Executing Wizard..."
     if [[ "$confirm" == "no" ]]; then
         if PATH="$PATH" bash installer/cafaye-wizard.sh; then
             echo "❌ FAILED (Should have exited with error on cancel)"
@@ -66,6 +67,7 @@ run_wizard_test() {
     fi
 
     PATH="$PATH" bash installer/cafaye-wizard.sh
+    echo "Wizard Finished. Status: $?"
     
     # Verify State
     if [[ ! -f /tmp/cafaye-initial-state.json ]]; then
