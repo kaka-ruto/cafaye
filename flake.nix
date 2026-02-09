@@ -37,14 +37,11 @@
         
         # Helper to run tests without requiring KVM (Using software emulation TCG)
         # This allows tests to run on standard VPS instances without nested virt.
-        runTest = testFile: (pkgs.testers.runNixOSTest {
+        runTest = testFile: pkgs.testers.runNixOSTest {
           imports = [ (import testFile { inherit pkgs inputs userState; }) ];
           # Configure QEMU to use TCG
           defaults.virtualisation.qemu.options = [ "-accel tcg" ];
-        }).overrideAttrs (old: {
-          # Remove "kvm" from the required build features
-          requiredSystemFeatures = lib.filter (f: f != "kvm") (old.requiredSystemFeatures or []);
-        });
+        };
       in
       {
         devShells.default = pkgs.mkShell {
