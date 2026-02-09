@@ -5,7 +5,7 @@ set -e
 
 REPO_DIR=$(pwd)
 TEMP_STATE="/tmp/cafaye-test-state.json"
-MOCK_GUM="/tmp/mock-gum"
+MOCK_GUM="/tmp/gum"
 
 echo "🧪 Starting Installer Automated Tests..."
 
