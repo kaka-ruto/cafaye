@@ -1,12 +1,7 @@
 #!/bin/bash
 # Cafaye OS: VPS Installer
-# Usage:
-#   Interactive: ssh root@<vps-ip> && curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
-#   Automated:    curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash -s -- --yes
-
 set -e
 
-# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -19,38 +14,30 @@ log_info() { echo -e "${BLUE}[i]${NC} $*"; }
 log_warn() { echo -e "${YELLOW}[!]${NC} $*"; }
 log_error() { echo -e "${RED}[✗]${NC} $*" >&2; }
 
-# Check if running as root
 check_root() {
   if [[ $EUID -ne 0 ]]; then
     log_error "This script must be run as root"
-    echo "Run: sudo -i"
     exit 1
   fi
 }
 
-# Clone the installer repo first
 clone_installer_repo() {
   if [[ -d /root/cafaye ]]; then
-    log_info "Cafaye already exists at /root/cafaye"
-    cd /root/cafaye
+    log_info "Cafaye exists at /root/cafaye"
   else
-    log_info "Cloning Cafaye installer..."
+    log_info "Cloning Cafaye to /root/cafaye..."
     git clone https://github.com/kaka-ruto/cafaye /root/cafaye
-    cd /root/cafaye
   fi
 }
 
-# Detect if we're in NixOS installer
 is_nixos_installer() {
   [[ -f /etc/NIXOS_LUSTRATION ]] || grep -q "nixos" /proc/version 2>/dev/null
 }
 
-# Check if Nix is installed
 has_nix() {
   command -v nix &> /dev/null
 }
 
-# Install curl if missing
 ensure_curl() {
   if ! command -v curl &> /dev/null; then
     log_info "Installing curl..."
@@ -58,52 +45,94 @@ ensure_curl() {
   fi
 }
 
-# Source Nix profile
 source_nix() {
   if [[ -f "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]]; then
     source "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
   fi
 }
 
-# Enable experimental features
 enable_experimental_features() {
   if ! grep -q "experimental-features" /etc/nix/nix.conf 2>/dev/null; then
-    log_info "Enabling experimental features (flakes, nix-command)..."
+    log_info "Enabling experimental features..."
     echo "experimental-features = nix-command flakes" | sudo tee -a /etc/nix/nix.conf > /dev/null
   fi
 }
 
-# Clone or update Cafaye
-clone_or_update_cafaye() {
-  if [[ -d /root/cafaye ]]; then
-    cd /root/cafaye
-    log_info "Cafaye already exists, pulling latest..."
-    git pull origin master
-  else
-    log_info "Cloning Cafaye..."
-    git clone https://github.com/kaka-ruto/cafaye /root/cafaye
-    cd /root/cafaye
+install_nix() {
+  if has_nix; then
+    log_info "Nix already installed, skipping..."
+    return 0
   fi
+
+  log_info "Installing Nix (multi-user)..."
+  ensure_curl
+  curl -fsSL https://nixos.org/nix/install | sh -s -- --daemon
+  source_nix
+  log "Nix installed successfully"
 }
 
-# Change to cafaye directory
-cd_cafaye() {
-  cd /root/cafaye
+check_existing() {
+  echo -e "${CYAN}🔍 Scanning for existing installations...${NC}"
+
+  local found=false
+  if has_nix || [[ -d /nix ]]; then
+    found=true
+    echo -e "${YELLOW}[!]${NC} Nix found"
+  fi
+  if [[ -d /root/cafaye ]]; then
+    found=true
+    echo -e "${YELLOW}[!]${NC} Cafaye found"
+  fi
+
+  if [[ "$found" == true ]]; then
+    echo ""
+    echo "⚠️  Previous installations detected!"
+  else
+    echo "✅ No existing installations found."
+  fi
+  echo ""
 }
 
-# Full NixOS installation
-full_install() {
-  log_info "Installing NixOS..."
+show_deletion_preview() {
+  echo -e "${CYAN}📋 The following will be DELETED:${NC}"
+  echo ""
 
-  clone_or_update_cafaye
-  cd_cafaye
+  if has_nix || [[ -d /nix ]]; then
+    echo "  🗑️  Nix package manager and all /nix data"
+  fi
+  if [[ -d /root/cafaye ]]; then
+    echo "  🗑️  Cafaye at /root/cafaye"
+  fi
+  echo ""
+}
+
+cleanup_existing() {
+  echo -e "${CYAN}🧹 Cleaning up...${NC}"
+
+  if [[ -d /root/cafaye ]]; then
+    rm -rf /root/cafaye
+  fi
+
+  if has_nix; then
+    systemctl stop nix-daemon.socket nix-daemon.service 2>/dev/null || true
+    for i in $(seq 1 32); do userdel "nixbld$i" 2>/dev/null || true; done
+    groupdel nixbld 2>/dev/null || true
+    rm -rf /nix /root/.nix /root/.config/nix /root/.cache/nix 2>/dev/null || true
+    rm -rf /etc/nix /etc/profile.d/nix.sh 2>/dev/null || true
+    rm -f /etc/bash.bashrc.backup-before-nix /etc/bashrc.backup-before-nix /etc/zshrc.backup-before-nix 2>/dev/null || true
+    systemctl daemon-reload 2>/dev/null || true
+  fi
+
+  log "Cleanup complete!"
+}
+
+install_nixos() {
+  log_info "Installing NixOS via nixos-anywhere..."
 
   enable_experimental_features
   source_nix
 
-  log_info "Running nixos-anywhere..."
-  log_info "This will kexec into NixOS installer and install the system."
-  echo ""
+  cd /root/cafaye
 
   nix run \
     --option extra-experimental-features "nix-command flakes" \
@@ -115,391 +144,46 @@ full_install() {
     root@localhost
 }
 
-# Install Nix (multi-user)
-install_nix() {
-  if has_nix; then
-    log_info "Nix is already installed, skipping..."
-    return 0
-  fi
-
-  echo ""
-  log_info "Installing Nix (multi-user)..."
-  echo ""
-
-  ensure_curl
-  curl -fsSL https://nixos.org/nix/install | sh -s -- --daemon
-
-  source_nix
-  log "Nix installed successfully"
-}
-
-# Check for existing installations
-check_existing() {
-  echo -e "${CYAN}🔍 Scanning for existing installations...${NC}"
-  echo ""
-
-  local found_any=false
-
-  if has_nix; then
-    found_any=true
-    echo -e "${YELLOW}[!]${NC} Nix command found"
-  fi
-
-  if [[ -d /nix ]]; then
-    found_any=true
-    echo -e "${YELLOW}[!]${NC} Nix directory found at /nix"
-  fi
-
-  if [[ -d /etc/nix ]]; then
-    found_any=true
-    echo -e "${YELLOW}[!]${NC} Nix configuration found at /etc/nix"
-  fi
-
-  if id nixbld1 &>/dev/null; then
-    found_any=true
-    echo -e "${YELLOW}[!]${NC} Nix build users found"
-  fi
-
-  if [[ -d /root/cafaye ]]; then
-    found_any=true
-    echo -e "${YELLOW}[!]${NC} Cafaye directory found at /root/cafaye"
-  fi
-
-  if [[ "$found_any" == true ]]; then
-    echo ""
-    echo "⚠️  Previous installations detected!"
-    echo ""
-    echo "A clean installation requires removing all existing Nix/Cafaye files."
-    echo "This prevents conflicts and ensures a working system."
-  else
-    echo "✅ No existing installations found."
-  fi
-
-  echo ""
-}
-
-# Show what will be deleted
-show_deletion_preview() {
-  echo -e "${CYAN}📋 The following will be DELETED:${NC}"
-  echo ""
-
-  if has_nix || [[ -d /nix ]]; then
-    echo "  🗑️  Nix package manager:"
-    echo "      • /nix directory (all cached packages)"
-    echo "      • Build users: nixbld1 through nixbld32"
-    echo "      • Group: nixbld"
-    echo "      • Configuration: /etc/nix/"
-    echo "      • Shell configs: /etc/profile.d/nix.sh"
-  fi
-
-  if [[ -d /root/cafaye ]]; then
-    echo ""
-    echo "  🗑️  Cafaye:"
-    echo "      • /root/cafaye directory"
-  fi
-
-  echo ""
-}
-
-# Stop and disable nix-daemon services
-stop_nix_services() {
-  log_info "Stopping Nix daemon services..."
-  systemctl stop nix-daemon.socket nix-daemon.service 2>/dev/null || true
-  systemctl disable nix-daemon.socket nix-daemon.service 2>/dev/null || true
-}
-
-# Remove Nix build users
-remove_nix_users() {
-  log_info "Removing Nix build users..."
-  for i in $(seq 1 32); do
-    userdel "nixbld$i" 2>/dev/null || true
-  done
-}
-
-# Remove Nix build group
-remove_nix_group() {
-  log_info "Removing Nix build group..."
-  groupdel nixbld 2>/dev/null || true
-}
-
-# Remove Nix directories
-remove_nix_dirs() {
-  log_info "Removing Nix directories..."
-  rm -rf /nix 2>/dev/null || true
-  rm -rf /root/.nix 2>/dev/null || true
-  rm -rf /root/.config/nix 2>/dev/null || true
-  rm -rf /root/.cache/nix 2>/dev/null || true
-  rm -rf /home/*/.nix 2>/dev/null || true
-  rm -rf /home/*/.config/nix 2>/dev/null || true
-  rm -rf /home/*/.cache/nix 2>/dev/null || true
-}
-
-# Remove Nix configuration
-remove_nix_config() {
-  log_info "Removing Nix configuration..."
-  rm -rf /etc/nix 2>/dev/null || true
-  rm -f /etc/profile.d/nix.sh 2>/dev/null || true
-}
-
-# Clean up shell configurations
-cleanup_shell_configs() {
-  log_info "Cleaning up shell configurations..."
-
-  for file in /etc/bash.bashrc /etc/bashrc /etc/zshrc /etc/profile; do
-    if [[ -f "$file" ]]; then
-      sed -i '/nix-daemon.sh/d' "$file" 2>/dev/null || true
-      sed -i '/# Nix/,/# End Nix/d' "$file" 2>/dev/null || true
-    fi
-  done
-
-  rm -f /etc/bash.bashrc.backup-before-nix 2>/dev/null || true
-  rm -f /etc/bashrc.backup-before-nix 2>/dev/null || true
-  rm -f /etc/zshrc.backup-before-nix 2>/dev/null || true
-}
-
-# Remove Cafaye
-remove_cafaye() {
-  if [[ -d /root/cafaye ]]; then
-    log_info "Removing Cafaye directory..."
-    rm -rf /root/cafaye
-  fi
-}
-
-# Clean nix profiles
-clean_nix_profiles() {
-  log_info "Cleaning Nix profiles..."
-  rm -rf /nix/var/nix/profiles 2>/dev/null || true
-  rm -rf /nix/var/nix/gcroots 2>/dev/null || true
-  rm -rf /nix/var/nix/db 2>/dev/null || true
-}
-
-# Remove systemd units
-remove_systemd_units() {
-  log_info "Removing systemd units..."
-  rm -f /etc/systemd/system/nix-daemon.service 2>/dev/null || true
-  rm -f /etc/systemd/system/nix-daemon.socket 2>/dev/null || true
-  rm -f /etc/systemd/system/sockets.target.wants/nix-daemon.socket 2>/dev/null || true
-  rm -f /etc/tmpfiles.d/nix-daemon.conf 2>/dev/null || true
-  systemctl daemon-reload 2>/dev/null || true
-}
-
-# Main cleanup function
-cleanup_existing() {
-  echo -e "${CYAN}🧹 Wiping clean for fresh installation...${NC}"
-  echo ""
-
-  stop_nix_services
-  remove_nix_users
-  remove_nix_group
-  remove_nix_dirs
-  remove_nix_config
-  cleanup_shell_configs
-  remove_cafaye
-  clean_nix_profiles
-  remove_systemd_units
-
-  log "✅ System cleaned successfully!"
-  echo ""
-}
-
-# Automated installation (non-interactive)
 auto_install() {
   check_existing
+  show_deletion_preview
 
-  if has_nix || [[ -d /root/cafaye ]] || [[ -d /nix ]]; then
-    show_deletion_preview
-
-    if [[ "$auto_yes" == true ]]; then
-      log_info "Auto-confirming (--yes flag set)..."
-      cleanup_existing
-    else
-      echo -e "${CYAN}Do you want to proceed with deletion and installation?${NC}"
-      echo ""
-      echo "  1. Yes, delete everything and install NixOS"
-      echo "  2. No, cancel"
-      echo ""
-      read -p "Enter choice (1-2): " choice
-      echo ""
-      if [[ "$choice" != "1" ]]; then
-        echo "Installation cancelled."
-        exit 0
-      fi
-      cleanup_existing
+  if [[ "$auto_yes" == true ]]; then
+    log_info "Auto-confirming..."
+    cleanup_existing
+  else
+    echo -e "${CYAN}Proceed with deletion and installation?${NC}"
+    echo "  1. Yes"
+    echo "  2. No"
+    read -p "Choice: " choice
+    echo ""
+    if [[ "$choice" != "1" ]]; then
+      echo "Cancelled."
+      exit 0
     fi
+    cleanup_existing
   fi
 
   install_nix
-  full_install
+  install_nixos
 }
 
-# Show welcome screen
-show_welcome() {
-  echo -e "${CYAN}☕ Cafaye OS Installer${NC}"
-  echo -e "${CYAN}========================${NC}"
-  echo ""
-  echo "Welcome! This installer will set up NixOS on your VPS with:"
-  echo "  • Nix package manager"
-  echo "  • Cafaye OS configuration"
-  echo "  • AI-first development environment"
-  echo ""
-}
-
-# Show main menu
-show_main_menu() {
-  echo -e "${CYAN}☕ Cafaye OS Installer${NC}"
-  echo -e "${CYAN}========================${NC}"
-  echo ""
-  echo "What would you like to do?"
-  echo ""
-  echo "  1. Install NixOS (full system)"
-  echo "  2. Install Nix only"
-  echo "  3. Clone Cafaye repository"
-  echo "  4. Run caf-setup"
-  echo "  5. Exit"
-  echo ""
-}
-
-# Handle menu choice
-handle_menu() {
-  local choice=$1
-
-  case "$choice" in
-    1)
-      echo ""
-      log_info "Selected: Install NixOS (full system)"
-      echo ""
-      check_existing
-
-      if has_nix || [[ -d /root/cafaye ]] || [[ -d /nix ]]; then
-        show_deletion_preview
-        echo -e "${CYAN}Do you want to proceed with deletion and installation?${NC}"
-        echo ""
-        echo "  1. Yes, delete everything and install NixOS"
-        echo "  2. No, cancel"
-        echo ""
-        read -p "Enter choice (1-2): " choice
-        echo ""
-        if [[ "$choice" != "1" ]]; then
-          echo "Installation cancelled."
-          exit 0
-        fi
-        cleanup_existing
-      fi
-
-      echo ""
-      echo -e "${CYAN}📋 Installation Summary${NC}"
-      echo "====================="
-      echo ""
-      echo "This will:"
-      echo "  1. Install Nix (multi-user)"
-      echo "  2. Clone Cafaye repository"
-      echo "  3. Run nixos-anywhere to install NixOS"
-      echo "  4. Reboot into NixOS"
-      echo ""
-      echo -e "${YELLOW}⚠️  WARNING: This will REPLACE your current OS with NixOS!${NC}"
-      echo ""
-      echo -e "${CYAN}Ready to proceed?${NC}"
-      echo ""
-      echo "  1. Yes, install NixOS"
-      echo "  2. Go back to main menu"
-      echo "  3. Cancel"
-      echo ""
-      read -p "Enter choice (1-3): " choice
-      echo ""
-      if [[ "$choice" == "2" ]]; then
-        main_menu
-      elif [[ "$choice" == "3" ]]; then
-        echo "Installation cancelled."
-        exit 0
-      fi
-
-      install_nix
-      full_install
-
-      echo ""
-      log "Installation complete!"
-      echo ""
-      echo "After reboot:"
-      echo "  ssh root@<your-vps-ip>"
-      echo "  caf-setup"
-      ;;
-    2)
-      install_nix
-      ;;
-    3)
-      clone_or_update_cafaye
-      ;;
-    4)
-      if [[ -d /root/cafaye ]]; then
-        cd_cafaye
-        if has_nix; then
-          source_nix
-        fi
-        ./caf-setup
-      else
-        echo "Cafaye not found. Run option 3 first."
-      fi
-      ;;
-    5)
-      echo "Exiting..."
-      exit 0
-      ;;
-    *)
-      echo "Invalid choice: $choice"
-      ;;
-  esac
-}
-
-# Main menu loop
-main_menu() {
-  while true; do
-    show_main_menu
-    read -p "Enter choice (1-5): " choice
-    echo ""
-    handle_menu "$choice"
-    echo ""
-    echo "Press Enter to continue..."
-    read
-  done
-}
-
-# Main entry point
 main() {
   local auto_yes=false
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --yes)
-        auto_yes=true
-        shift
-        ;;
-      --help|-h)
-        echo "Cafaye OS Installer"
-        echo ""
-        echo "Usage:"
-        echo "  Interactive: curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash"
-        echo "  Automated:   curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash -s -- --yes"
-        exit 0
-        ;;
-      *)
-        echo "Unknown option: $1"
-        echo "Usage: $0 [--yes]"
-        exit 1
-        ;;
+      --yes) auto_yes=true; shift ;;
+      *) shift ;;
     esac
   done
 
   check_root
-
-  # Always clone repo first to ensure all files are available
   clone_installer_repo
 
   if is_nixos_installer; then
-    echo -e "${GREEN}☕ Cafaye OS Installer${NC}"
-    echo -e "${YELLOW}========================${NC}"
-    echo ""
     log "Detected NixOS installer environment"
-    full_install
+    install_nixos
     exit 0
   fi
 
@@ -508,8 +192,18 @@ main() {
     exit 0
   fi
 
-  show_welcome
-  main_menu
+  echo -e "${CYAN}☕ Cafaye OS Installer${NC}"
+  echo "1. Install NixOS"
+  echo "2. Install Nix only"
+  echo "3. Clone Cafaye"
+  echo "4. Exit"
+  read -p "Choice: " choice
+
+  case "$choice" in
+    1) auto_install ;;
+    2) install_nix ;;
+    3) clone_installer_repo ;;
+  esac
 }
 
 main "$@"
