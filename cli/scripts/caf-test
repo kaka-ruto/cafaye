@@ -21,11 +21,29 @@ ensure_bats() {
 # --- Helper: Check Nix ---
 check_nix() {
     if ! command -v nix &> /dev/null; then
-        echo "❌ Error: Nix is not installed."
-        echo "   Layer 2+ tests require the Nix package manager."
-        echo "   Please run the bootstrap script or install Nix manually:"
-        echo "   curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install"
-        exit 1
+        echo "⚠️  Nix is not installed."
+        echo "   Layer 2+ tests require the Nix package manager to build VMs."
+        
+        # Check if we should auto-install
+        if [[ "$1" == "--auto" ]]; then
+            confirm="y"
+        else
+            read -p "   Do you want to install Nix now? [y/N] " confirm
+        fi
+
+        if [[ "$confirm" =~ ^[Yy]$ ]]; then
+            echo "⬇️  Installing Determinate Nix..."
+            curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --no-confirm
+            
+            # Source Nix immediately
+            if [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+                . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+            fi
+            echo "✅ Nix installed. Resuming tests..."
+        else
+            echo "❌ Aborted. Nix is required for integration tests."
+            exit 1
+        fi
     fi
 }
 
