@@ -58,13 +58,19 @@ run_integration_target() {
 run_integration_tests() {
     check_nix
     echo "🚜 Running Unified Integration Tests..."
-    nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).core-unified" --print-build-logs
+    nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).core-unified" \
+        --option system-features "nixos-test benchmark big-parallel kvm" \
+        --print-build-logs
 }
 
 # --- Main ---
 case "$1" in
-    unit|all)
+    unit)
         run_unit "$2"
+        ;;
+    all)
+        run_unit
+        run_integration_tests
         ;;
     # Shortcuts for unified suites
     core)
