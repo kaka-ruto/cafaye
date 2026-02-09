@@ -19,6 +19,21 @@ fi
 
 # 1. Install dependencies for the Wizard
 echo "Installing bootstrap dependencies (git, jq, gum)..."
+
+# Helper to run commands via Nix if missing
+run_cmd() {
+    local cmd=$1
+    shift
+    if command -v "$cmd" &> /dev/null; then
+        "$cmd" "$@"
+    elif command -v nix &> /dev/null; then
+        nix --extra-experimental-features "nix-command flakes" run "nixpkgs#$cmd" -- "$@"
+    else
+        echo "Error: $cmd not found and nix not available."
+        exit 1
+    fi
+}
+
 if command -v apt-get &> /dev/null; then
     apt-get update -y && apt-get install -y git jq curl
 elif command -v yum &> /dev/null; then
@@ -45,7 +60,8 @@ if ! command -v gum &> /dev/null; then
     if [[ -n "$GUM_BIN" ]]; then
         chmod +x "$GUM_BIN"
         # Try a few common paths
-        cp "$GUM_BIN" /usr/local/bin/gum 2>/dev/null || cp "$GUM_BIN" /usr/bin/gum 2>/dev/null || cp "$GUM_BIN" /bin/gum 2>/dev/null
+        cp "$GUM_BIN" /usr/local/bin/gum 2>/dev/null || cp "$GUM_BIN" /usr/bin/gum 2>/dev/null || cp "$GUM_BIN" /bin/gum 2>/dev/null || cp "$GUM_BIN" /tmp/gum
+        [[ -f /tmp/gum ]] && export PATH="/tmp:$PATH"
     else
         echo "Error: Could not find gum binary in package."
         exit 1
@@ -56,10 +72,10 @@ fi
 # 2. Clone the repository
 if [[ -d "$REPO_DIR" ]]; then
     echo "Updating existing Cafaye repository..."
-    cd "$REPO_DIR" && git pull origin master
+    cd "$REPO_DIR" && run_cmd git pull origin master
 else
     echo "Cloning Cafaye repository..."
-    git clone "$REPO_URL" "$REPO_DIR"
+    run_cmd git clone "$REPO_URL" "$REPO_DIR"
 fi
 
 cd "$REPO_DIR"
