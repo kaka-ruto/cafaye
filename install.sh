@@ -28,6 +28,18 @@ check_root() {
   fi
 }
 
+# Clone the installer repo first
+clone_installer_repo() {
+  if [[ -d /root/cafaye ]]; then
+    log_info "Cafaye already exists at /root/cafaye"
+    cd /root/cafaye
+  else
+    log_info "Cloning Cafaye installer..."
+    git clone https://github.com/kaka-ruto/cafaye /root/cafaye
+    cd /root/cafaye
+  fi
+}
+
 # Detect if we're in NixOS installer
 is_nixos_installer() {
   [[ -f /etc/NIXOS_LUSTRATION ]] || grep -q "nixos" /proc/version 2>/dev/null
@@ -478,6 +490,9 @@ main() {
   done
 
   check_root
+
+  # Always clone repo first to ensure all files are available
+  clone_installer_repo
 
   if is_nixos_installer; then
     echo -e "${GREEN}☕ Cafaye OS Installer${NC}"
