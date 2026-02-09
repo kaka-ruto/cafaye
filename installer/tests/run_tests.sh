@@ -16,7 +16,13 @@ ensure_tool() {
     if command -v "$name" &> /dev/null; then return 0; fi
     if [[ -f "$mock_path" ]]; then return 0; fi
 
-    # Try Nix first
+    # Try System Package Manager (apt-get) for common tools
+    if [[ "$name" == "jq" ]] && command -v apt-get &> /dev/null; then
+        apt-get update -qq && apt-get install -y -qq jq > /dev/null
+        return 0
+    fi
+
+    # Try Nix
     local nix_bin=$(nix build "nixpkgs#$name" --no-link --print-out-paths --extra-experimental-features "nix-command flakes" 2>/dev/null || echo "")
     if [[ -n "$nix_bin" ]]; then
         ln -sf "$nix_bin/bin/$name" "$mock_path"
