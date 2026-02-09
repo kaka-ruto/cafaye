@@ -1,5 +1,9 @@
 #!/bin/bash
 # Cafaye OS: VPS Installer
+# Usage:
+#   Interactive: ssh root@<vps-ip> && curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
+#   Automated:    curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash -s -- --yes
+
 set -e
 
 RED='\033[0;31m'
@@ -21,11 +25,12 @@ check_root() {
   fi
 }
 
-clone_installer_repo() {
+clone_cafaye() {
   if [[ -d /root/cafaye ]]; then
     log_info "Cafaye exists at /root/cafaye"
   else
     log_info "Cloning Cafaye to /root/cafaye..."
+    cd /root
     git clone https://github.com/kaka-ruto/cafaye /root/cafaye
   fi
 }
@@ -54,7 +59,7 @@ source_nix() {
 enable_experimental_features() {
   if ! grep -q "experimental-features" /etc/nix/nix.conf 2>/dev/null; then
     log_info "Enabling experimental features..."
-    echo "experimental-features = nix-command flakes" | sudo tee -a /etc/nix/nix.conf > /dev/null
+    echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
   fi
 }
 
@@ -113,7 +118,7 @@ cleanup_existing() {
     rm -rf /root/cafaye
   fi
 
-  if has_nix; then
+  if has_nix || [[ -d /nix ]]; then
     systemctl stop nix-daemon.socket nix-daemon.service 2>/dev/null || true
     for i in $(seq 1 32); do userdel "nixbld$i" 2>/dev/null || true; done
     groupdel nixbld 2>/dev/null || true
@@ -134,10 +139,9 @@ install_nixos() {
 
   cd /root/cafaye
 
-  nix run \
-    --option extra-experimental-features "nix-command flakes" \
-    github:nix-community/nixos-anywhere -- \
-    --flake ".#cafaye" \
+  # Use -- to separate nix run options from nixos-anywhere options
+  nix run github:nix-community/nixos-anywhere -- \
+    --flake .#cafaye \
     --kexec \
     --no-passwd \
     --no-bootloader \
@@ -165,6 +169,7 @@ auto_install() {
   fi
 
   install_nix
+  clone_cafaye
   install_nixos
 }
 
@@ -179,10 +184,10 @@ main() {
   done
 
   check_root
-  clone_installer_repo
 
   if is_nixos_installer; then
     log "Detected NixOS installer environment"
+    clone_cafaye
     install_nixos
     exit 0
   fi
@@ -202,7 +207,7 @@ main() {
   case "$choice" in
     1) auto_install ;;
     2) install_nix ;;
-    3) clone_installer_repo ;;
+    3) clone_cafaye ;;
   esac
 }
 
