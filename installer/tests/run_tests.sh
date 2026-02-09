@@ -24,12 +24,15 @@ ensure_tool() {
 
     # Try Nix
     local nix_bin=$(nix build "nixpkgs#$name" --no-link --print-out-paths --extra-experimental-features "nix-command flakes" 2>/dev/null || echo "")
-    if [[ -n "$nix_bin" ]]; then
-        ln -sf "$nix_bin/bin/$name" "$mock_path"
+    
+    # Try downloading standalone if possible (gum only)
+    if [[ "$name" == "gum" ]]; then
+        curl -fL "https://github.com/charmbracelet/gum/releases/download/v0.17.0/gum_0.17.0_Linux_x86_64.tar.gz" -o /tmp/gum.tar.gz
+        tar xzf /tmp/gum.tar.gz -C /tmp
+        find /tmp -name gum -type f -exec mv {} "$mock_path" \;
+        chmod +x "$mock_path"
         return 0
     fi
-    return 1
-}
 
 # Setup Mocks
 setup_mocks() {
