@@ -28,10 +28,12 @@ check_root() {
 clone_cafaye() {
   if [[ -d /root/cafaye ]]; then
     log_info "Cafaye exists at /root/cafaye"
+    cd /root/cafaye
   else
     log_info "Cloning Cafaye to /root/cafaye..."
     cd /root
     git clone https://github.com/kaka-ruto/cafaye /root/cafaye
+    cd /root/cafaye
   fi
 }
 
@@ -57,7 +59,7 @@ source_nix() {
 }
 
 enable_experimental_features() {
-  if ! grep -q "experimental-features" /etc/nix/nix.conf 2>/dev/null; then
+  if [[ -f /etc/nix/nix.conf ]] && ! grep -q "experimental-features" /etc/nix/nix.conf 2>/dev/null; then
     log_info "Enabling experimental features..."
     echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
   fi
@@ -114,33 +116,30 @@ show_deletion_preview() {
 cleanup_existing() {
   echo -e "${CYAN}🧹 Cleaning up...${NC}"
 
-  if [[ -d /root/cafaye ]]; then
-    rm -rf /root/cafaye
-  fi
-
-  # Stop nix services if running
+  # Stop nix services
   systemctl stop nix-daemon.socket nix-daemon.service 2>/dev/null || true
 
   # Remove nix build users
   for i in $(seq 1 32); do userdel "nixbld$i" 2>/dev/null || true; done
   groupdel nixbld 2>/dev/null || true
 
+  # Remove cafaye
+  rm -rf /root/cafaye 2>/dev/null || true
+
   # Remove nix directories
   rm -rf /nix /root/.nix /root/.config/nix /root/.cache/nix 2>/dev/null || true
 
-  # Remove nix config and shell integration
-  rm -rf /etc/nix /etc/profile.d/nix.sh 2>/dev/null || true
-
-  # Remove nix backup files (these prevent reinstallation)
+  # Remove nix config and ALL backup files
+  rm -rf /etc/nix 2>/dev/null || true
+  rm -f /etc/profile.d/nix.sh /etc/profile.d/nix.sh.backup-before-nix 2>/dev/null || true
   rm -f /etc/bash.bashrc.backup-before-nix /etc/bashrc.backup-before-nix /etc/zshrc.backup-before-nix 2>/dev/null || true
-  rm -f /etc/profile.d/nix.sh.backup-before-nix /etc/profile.d/nix.sh 2>/dev/null || true
 
   # Remove systemd units
   rm -f /etc/systemd/system/nix-daemon.service /etc/systemd/system/nix-daemon.socket 2>/dev/null || true
   rm -f /etc/systemd/system/sockets.target.wants/nix-daemon.socket 2>/dev/null || true
   rm -f /etc/tmpfiles.d/nix-daemon.conf 2>/dev/null || true
 
-  # Remove nix references from shell configs
+  # Clean shell configs
   for file in /etc/bash.bashrc /etc/bashrc /etc/zshrc /etc/profile; do
     if [[ -f "$file" ]]; then
       sed -i '/nix-daemon.sh/d' "$file" 2>/dev/null || true
@@ -153,21 +152,41 @@ cleanup_existing() {
   log "Cleanup complete!"
 }
 
+setup_ssh_for_localhost() {
+  log_info "Setting up SSH for root@localhost..."
+  
+  # Generate SSH key if not exists
+  if [[ ! -f /root/.ssh/id_ed25519 ]]; then
+    mkdir -p /root/.ssh
+    ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N "" -C "root@localhost" 2>/dev/null || true
+  fi
+  
+  # Add key to authorized_keys
+  cat /root/.ssh/id_ed25519.pub >> /root/.ssh/authorized_keys 2>/dev/null || true
+  chmod 600 /root/.ssh/authorized_keys 2>/dev/null || true
+  chmod 700 /root/.ssh 2>/dev/null || true
+  
+  # Enable root login and password auth temporarily
+  if [[ -f /etc/ssh/sshd_config ]]; then
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+    systemctl restart sshd 2>/dev/null || systemctl restart ssh 2>/dev/null || true
+  fi
+  
+  log "SSH configured"
+}
+
 install_nixos() {
   log_info "Installing NixOS via nixos-anywhere..."
 
   enable_experimental_features
   source_nix
 
-  cd /root/cafaye
+  # Install nixos-anywhere
+  nix profile install github:nix-community/nixos-anywhere 2>/dev/null || true
 
-  # Use -- to separate nix run options from nixos-anywhere options
-  nix run github:nix-community/nixos-anywhere -- \
-    --flake .#cafaye \
-    --kexec \
-    --no-passwd \
-    --no-bootloader \
-    root@localhost
+  # Run nixos-anywhere
+  /root/.nix-profile/bin/nixos-anywhere --flake '.#cafaye' root@localhost
 }
 
 auto_install() {
@@ -191,6 +210,7 @@ auto_install() {
   fi
 
   install_nix
+  setup_ssh_for_localhost
   clone_cafaye
   install_nixos
 }
