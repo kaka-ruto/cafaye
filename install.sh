@@ -30,14 +30,27 @@ if ! command -v gum &> /dev/null; then
     echo "Setting up TUI engine..."
     # Robust gum install for Linux x86_64
     VERSION="0.17.0"
-    # Try the most likely URL formats
-    if ! curl -fL "https://github.com/charmbracelet/gum/releases/download/v${VERSION}/gum_${VERSION}_Linux_x86_64.tar.gz" -o gum.tar.gz; then
-         echo "Retrying with fallback architecture name..."
-         curl -fL "https://github.com/charmbracelet/gum/releases/download/v${VERSION}/gum_${VERSION}_linux_amd64.tar.gz" -o gum.tar.gz
+    ARCH=$(uname -m)
+    [[ "$ARCH" == "x86_64" ]] && GUM_ARCH="x86_64" || GUM_ARCH="arm64"
+    
+    URL="https://github.com/charmbracelet/gum/releases/download/v${VERSION}/gum_${VERSION}_Linux_${GUM_ARCH}.tar.gz"
+    
+    curl -fL "$URL" -o gum.tar.gz
+    mkdir -p gum_temp
+    tar xzf gum.tar.gz -C gum_temp
+    
+    # Find the binary wherever it was extracted
+    GUM_BIN=$(find gum_temp -name gum -type f | head -n1)
+    
+    if [[ -n "$GUM_BIN" ]]; then
+        chmod +x "$GUM_BIN"
+        # Try a few common paths
+        cp "$GUM_BIN" /usr/local/bin/gum 2>/dev/null || cp "$GUM_BIN" /usr/bin/gum 2>/dev/null || cp "$GUM_BIN" /bin/gum 2>/dev/null
+    else
+        echo "Error: Could not find gum binary in package."
+        exit 1
     fi
-    tar xzf gum.tar.gz --wildcards "**/gum"
-    mv gum*/gum /usr/local/bin/ 2>/dev/null || mv gum /usr/local/bin/
-    rm -rf gum*
+    rm -rf gum.tar.gz gum_temp
 fi
 
 # 2. Clone the repository
