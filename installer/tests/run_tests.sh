@@ -62,7 +62,7 @@ run_wizard_test() {
     
     # Run wizard
     if [[ "$confirm" == "no" ]]; then
-        if bash installer/cafaye-wizard.sh > /dev/null 2>&1; then
+        if bash installer/cafaye-wizard.sh; then
             echo "❌ FAILED (Should have exited with error on cancel)"
             exit 1
         else
@@ -71,7 +71,7 @@ run_wizard_test() {
         fi
     fi
 
-    bash installer/cafaye-wizard.sh > /dev/null 2>&1 || { echo "❌ FAILED (Wizard crashed)"; exit 1; }
+    bash installer/cafaye-wizard.sh || { echo "❌ FAILED (Wizard crashed)"; exit 1; }
     
     # Verify State
     if [[ ! -f /tmp/cafaye-initial-state.json ]]; then
