@@ -28,7 +28,13 @@ it() {
     # Run the test block in a subshell to trap exit codes
     (
         set -e
+        # Run Setup Hook if defined
+        if declare -f setup > /dev/null; then setup; fi
+        
         "$@"
+        
+        # Run Teardown Hook if defined
+        if declare -f teardown > /dev/null; then teardown; fi
     )
     code=$?
     
