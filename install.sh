@@ -136,6 +136,11 @@ cleanup_existing() {
     log "Removed Nix"
   fi
 
+  if grep -q "experimental-features" /etc/nix/nix.conf 2>/dev/null; then
+    log_info "Removing experimental-features from nix.conf..."
+    sed -i '/experimental-features/d' /etc/nix/nix.conf 2>/dev/null || true
+  fi
+
   log "Cleanup complete!"
   echo ""
 }
@@ -181,12 +186,40 @@ clone_cafaye() {
 
 # Enable experimental features
 enable_experimental_features() {
-  if grep -q "experimental-features" /etc/nix/nix.conf 2>/dev/null; then
-    return 0
+  if ! grep -q "experimental-features" /etc/nix/nix.conf 2>/dev/null; then
+    log_info "Enabling experimental features (flakes, nix-command)..."
+    echo "experimental-features = nix-command flakes" | sudo tee -a /etc/nix/nix.conf > /dev/null
+  fi
+}
+
+# Install NixOS via nixos-anywhere
+install_nixos() {
+  log_info "Installing NixOS..."
+
+  clone_cafaye
+
+  cd /root/cafaye
+
+  enable_experimental_features
+
+  if [[ -f "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]]; then
+    source "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
   fi
 
-  log_info "Enabling experimental features (flakes, nix-command)..."
-  echo "experimental-features = nix-command flakes" | sudo tee -a /etc/nix/nix.conf > /dev/null
+  export NIX_CONFIG="experimental-features = nix-command flakes"
+
+  log_info "Running nixos-anywhere..."
+  log_info "This will kexec into NixOS installer and install the system."
+  echo ""
+
+  nix run github:nix-community/nixos-anywhere -- \
+    --flake ".#cafaye" \
+    --kexec \
+    --no-passwd \
+    --no-bootloader \
+    root@localhost
+
+  log "NixOS installation complete!"
 }
 
 # Show installation summary
