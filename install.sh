@@ -56,11 +56,14 @@ if ! command -v gum &> /dev/null; then
     
     # Find the binary wherever it was extracted
     GUM_BIN=$(find gum_temp -name gum -type f | head -n1)
+    echo "Found gum binary at: $GUM_BIN"
     
     if [[ -n "$GUM_BIN" ]]; then
         chmod +x "$GUM_BIN"
-        # Try a few common paths
-        cp "$GUM_BIN" /usr/local/bin/gum 2>/dev/null || cp "$GUM_BIN" /usr/bin/gum 2>/dev/null || cp "$GUM_BIN" /bin/gum 2>/dev/null || cp "$GUM_BIN" /tmp/gum
+        echo "Attempting to install gum to /tmp/gum..."
+        cp "$GUM_BIN" /tmp/gum && echo "Successfully copied gum to /tmp/gum" || echo "Failed to copy gum to /tmp/gum"
+        # Also try standard paths
+        cp "$GUM_BIN" /usr/local/bin/gum 2>/dev/null || true
         export PATH="/tmp:/usr/local/bin:$PATH"
     else
         echo "Error: Could not find gum binary in package."
