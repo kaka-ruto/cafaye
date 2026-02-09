@@ -9,7 +9,13 @@ MOCK_GUM="/tmp/gum"
 
 echo "🧪 Starting Installer Automated Tests..."
 
-# --- Setup Mock Gum ---
+# Ensure jq is present for state verification
+if ! command -v jq &> /dev/null; then
+    if command -v nix &> /dev/null; then
+        echo "Auto-installing jq for tests..."
+        export PATH="$(nix build nixpkgs#jq --no-link --print-out-paths --extra-experimental-features "nix-command flakes")/bin:$PATH"
+    fi
+fi
 cat > "$MOCK_GUM" << 'EOF'
 #!/usr/bin/env bash
 cmd=$1

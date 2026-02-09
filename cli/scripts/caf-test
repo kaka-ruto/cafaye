@@ -34,15 +34,6 @@ usage() {
 # --- Section: Installer ---
 run_installer_tests() {
     echo -e "${BLUE}▶ Running Installer Tests (Layer 0)...${NC}"
-    
-    # Ensure dependencies for testing are present
-    if ! command -v jq &> /dev/null; then
-       if command -v nix &> /dev/null; then
-          echo "Installing jq via nix..."
-          export PATH="$(nix build nixpkgs#jq --no-link --print-out-paths --extra-experimental-features "nix-command flakes")/bin:$PATH"
-       fi
-    fi
-
     bash installer/tests/run_tests.sh
 }
 
