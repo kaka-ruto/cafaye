@@ -121,6 +121,22 @@ caf-setup
 - **Menu Extensions**: Override or extend the `caf` menu with your own options.
 - **Modular Architecture**: Add a language runtime in one `.nix` file.
 
+## 🚀 Post-Installation
+
+Once the installer detaches and the VPS reboots, Cafaye OS will generate its own secure host keys. Because these differ from the original Ubuntu keys, your first connection attempt might show a scary warning: **"REMOTE HOST IDENTIFICATION HAS CHANGED!"**
+
+Don't panic! This is expected. Run the following on your local machine to refresh the connection:
+
+```bash
+# Clear the old host identity
+ssh-keygen -R <vps-ip-or-alias>
+
+# Connect to your new Cafaye OS
+ssh root@<vps-ip-or-alias>
+```
+
+---
+
 ### Beautiful
 
 - **Catppuccin Mocha**: The same stunning theme from Omarchy, everywhere.
