@@ -16,6 +16,7 @@ show_main_menu() {
         "⚙️  Services (Postgres, Redis)" \
         "🎨 Style (Themes & UI)" \
         "🏥 Status (System Health)" \
+        "🔐 Secrets" \
         "🔄 Update & Rebuild" \
         "  About" \
         "👋 Exit")
@@ -25,6 +26,7 @@ show_main_menu() {
         *"Services"*) show_services_menu ;;
         *"Style"*) show_style_menu ;;
         *"Status"*) show_status_menu ;;
+        *"Secrets"*) caf-secrets ;;
         *"Update"*) run_system_update ;;
         *"About"*) show_about ;;
         *"Exit"*) exit 0 ;;

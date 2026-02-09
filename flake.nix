@@ -15,11 +15,18 @@
       # Library for helper functions
       lib = nixpkgs.lib;
 
-      # System for the VPS (stays x86_64-linux)
-      vpsSystem = "x86_64-linux";
-      
-      # User state shared across configurations
-      userState = builtins.fromJSON (builtins.readFile ./user/user-state.json);
+      # Function to read user state with priority: /etc -> local -> example
+      readUserState = path: 
+        let
+          etcPath = "/etc/cafaye/user-state.json";
+          localPath = ./user/user-state.json;
+          examplePath = ./user/user-state.json.example;
+        in
+          if builtins.pathExists etcPath then builtins.fromJSON (builtins.readFile etcPath)
+          else if builtins.pathExists localPath then builtins.fromJSON (builtins.readFile localPath)
+          else builtins.fromJSON (builtins.readFile examplePath);
+
+      userState = readUserState ./.;
 
       # Supported systems for development shells
       supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
@@ -109,9 +116,9 @@
         };
       }
     ) // {
-      # NixOS configuration for the VPS (stays outside eachSystem)
+      # NixOS configuration generator for different architectures
       nixosConfigurations.cafaye = nixpkgs.lib.nixosSystem {
-        system = vpsSystem;
+        system = "x86_64-linux"; # Default to x86_64
         specialArgs = { inherit inputs userState; };
         modules = [
           inputs.disko.nixosModules.disko

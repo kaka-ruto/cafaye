@@ -1,7 +1,7 @@
 # VPS Hardware Configuration with Disko
 # Defines disk partitioning for DigitalOcean/AWS-style VPSs
 
-{ config, lib, pkgs, modulesPath, ... }:
+{ config, lib, pkgs, modulesPath, userState, ... }:
 
 {
   imports = [
@@ -13,7 +13,7 @@
     disk = {
       main = {
         type = "disk";
-        device = lib.mkDefault "/dev/sda";
+        device = lib.mkDefault (userState.core.boot.grub_device or "/dev/sda");
         content = {
           type = "gpt";
           partitions = {

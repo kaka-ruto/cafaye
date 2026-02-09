@@ -45,6 +45,18 @@ has_nix() {
   command -v nix &> /dev/null
 }
 
+detect_primary_disk() {
+  # Try to find the first non-removable disk
+  local disk=""
+  disk=$(lsblk -dn -o NAME,TYPE,ROTA | grep "disk" | head -n1 | awk '{print "/dev/"$1}')
+  
+  if [[ -z "$disk" ]]; then
+    # Fallback to a common default if detection fails
+    disk="/dev/sda"
+  fi
+  echo "$disk"
+}
+
 ensure_curl() {
   if ! command -v curl &> /dev/null; then
     log_info "Installing curl..."
@@ -230,14 +242,15 @@ install_nixos_manual() {
   
   # Create minimal configuration
   log_info "Creating minimal NixOS configuration..."
-  cat > /mnt/etc/nixos/configuration.nix << 'EOF'
+  local disk=$(detect_primary_disk)
+  cat > /mnt/etc/nixos/configuration.nix << EOF
 { config, pkgs, ... }:
 {
   imports = [ ./hardware-configuration.nix ];
   
   boot.loader.grub = {
     enable = true;
-    device = "/dev/sda";
+    device = "$disk";
   };
   
   networking.hostName = "cafaye";
