@@ -25,14 +25,22 @@ it() {
     CURRENT_TEST="$name"
     TEST_COUNT=$((TEST_COUNT + 1))
     
-    # Run the test block
-    if ( "$@" ); then
+    # Run the test block in a subshell to trap exit codes
+    (
+        set -e
+        "$@"
+    )
+    code=$?
+    
+    if [[ $code -eq 0 ]]; then
         echo -n "."
     else
         echo -n "F"
+        # Since we are essentially in the main shell here (the subshell just ran the command),
+        # we can safely update the file.
         count=$(cat "$FAILURES_FILE")
         echo $((count + 1)) > "$FAILURES_FILE"
-        echo "##FAILURE##:$CURRENT_TEST" >> "$FAILURES_FILE.log"
+        echo "##FAILURE##:$CURRENT_TEST (Exit Code: $code)" >> "$FAILURES_FILE.log"
     fi
 }
 
