@@ -8,15 +8,8 @@ set -e
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# Ensure gum is available
-if ! command -v gum &> /dev/null; then
-    [[ -f /tmp/gum ]] && export PATH="/tmp:$PATH"
-fi
-
-# Ensure jq is available
-if ! command -v jq &> /dev/null; then
-    [[ -f /tmp/jq ]] && export PATH="/tmp:$PATH"
-fi
+# Ensure dependencies are found (especially in minimal/test environments)
+export PATH="/tmp:/usr/local/bin:/usr/bin:/bin:$PATH"
 
 cat << "EOF"
   ☕ Cafaye OS: The cloud-native powerhouse
