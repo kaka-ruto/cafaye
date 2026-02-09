@@ -49,7 +49,7 @@
 
         # Evaluation checks for the dev systems
         # Note: runNixOSTest only works on Linux, so we only add it there
-         checks = lib.optionalAttrs (system == vpsSystem) {
+         checks = lib.optionalAttrs pkgs.stdenv.isLinux {
             # Unified tests (FAST) - Run multiple scenarios in ONE VM boot
             core-unified = pkgs.testers.runNixOSTest (import ./tests/core/unified.nix { inherit pkgs inputs userState; });
             cli-unified = pkgs.testers.runNixOSTest (import ./tests/cli/unified.nix { inherit pkgs inputs userState; });
@@ -63,7 +63,7 @@
           # Individual tests for debugging (NOT run in default CI)
           # Run individually: nix build .#individualChecks.x86_64-linux.<name>
           # Useful for: debugging specific failures, faster iteration during development
-          individualChecks = lib.optionalAttrs (system == vpsSystem) {
+          individualChecks = lib.optionalAttrs pkgs.stdenv.isLinux {
             core-boot = pkgs.testers.runNixOSTest (import ./tests/core/boot.nix { inherit pkgs inputs userState; });
             core-network = pkgs.testers.runNixOSTest (import ./tests/core/network.nix { inherit pkgs inputs userState; });
             core-security = pkgs.testers.runNixOSTest (import ./tests/core/security.nix { inherit pkgs inputs userState; });
