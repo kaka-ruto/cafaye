@@ -77,23 +77,26 @@ echo ""
 if gum confirm "Start the background installation? (You can disconnect after this)"; then
     # Generate the state file
     STATE_FILE="/tmp/cafaye-initial-state.json"
-    cp user/user-state.json.example "$STATE_FILE"
+    cp user/user-state.json.example "$STATE_FILE" || { echo "Failed to copy example state"; exit 1; }
     
     # Update disk
-    run_jq ".core.boot.grub_device = \"$disk\"" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
+    echo "Updating disk..."
+    run_jq ".core.boot.grub_device = \"$disk\"" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update disk"; exit 1; }
     
     # Update keys
     if [[ "$import_keys" == "true" ]]; then
+       echo "Updating keys..."
        keys_json=$(cat /root/.ssh/authorized_keys | run_jq -R . | run_jq -s .)
-       run_jq ".core.authorized_keys = $keys_json" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
+       run_jq ".core.authorized_keys = $keys_json" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update keys"; exit 1; }
     fi
     
     # Update modules
-    [[ "$choice" == *"Docker"* ]] && run_jq ".dev_tools.docker = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
-    [[ "$choice" == *"PostgreSQL"* ]] && run_jq ".services.postgresql = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
-    [[ "$choice" == *"Rails"* ]] && run_jq ".frameworks.rails = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
-    [[ "$choice" == *"Next.js"* ]] && run_jq ".frameworks.nextjs = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
-    [[ "$choice" == *"Rust"* ]] && run_jq ".languages.rust = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp"
+    echo "Updating modules..."
+    [[ "$choice" == *"Docker"* ]] && (run_jq ".dev_tools.docker = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Docker"; exit 1; })
+    [[ "$choice" == *"PostgreSQL"* ]] && (run_jq ".services.postgresql = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update PostgreSQL"; exit 1; })
+    [[ "$choice" == *"Rails"* ]] && (run_jq ".frameworks.rails = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Rails"; exit 1; })
+    [[ "$choice" == *"Next.js"* ]] && (run_jq ".frameworks.nextjs = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Next.js"; exit 1; })
+    [[ "$choice" == *"Rust"* ]] && (run_jq ".languages.rust = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Rust"; exit 1; })
 
     echo "✅ Configuration generated at $STATE_FILE"
     exit 0
