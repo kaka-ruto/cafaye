@@ -206,13 +206,13 @@ install_nixos() {
     source "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh"
   fi
 
-  export NIX_CONFIG="experimental-features = nix-command flakes"
-
   log_info "Running nixos-anywhere..."
   log_info "This will kexec into NixOS installer and install the system."
   echo ""
 
-  nix run github:nix-community/nixos-anywhere -- \
+  nix run \
+    --option extra-experimental-features "nix-command flakes" \
+    github:nix-community/nixos-anywhere -- \
     --flake ".#cafaye" \
     --kexec \
     --no-passwd \
