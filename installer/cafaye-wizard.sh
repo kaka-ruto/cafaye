@@ -13,7 +13,12 @@ run_jq() {
     if command -v jq &> /dev/null; then
         jq "$@"
     elif command -v nix &> /dev/null; then
-        nix --extra-experimental-features "nix-command flakes" run "nixpkgs#jq" -- "$@"
+        # Try to run via nix and capture error
+        if ! nix --extra-experimental-features "nix-command flakes" run "nixpkgs#jq" -- "$@" 2>/tmp/jq-error; then
+            echo "Nix run jq failed. Error:"
+            cat /tmp/jq-error
+            exit 1
+        fi
     else
         echo "Error: jq not found and nix not available."
         exit 1
