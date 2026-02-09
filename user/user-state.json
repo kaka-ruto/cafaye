@@ -1,13 +1,13 @@
 {
   "core": {
-    "tailscale_enabled": true,
+    "tailscale_enabled": false,
     "zram_enabled": true,
     "authorized_keys": [],
     "boot": {
-      "grub_device": "/dev/vda"
+      "grub_device": "/dev/sda"
     },
     "security": {
-      "bootstrap_mode": false
+      "bootstrap_mode": true
     }
   },
   "interface": {
@@ -18,10 +18,10 @@
     "theme": "catppuccin-mocha"
   },
   "languages": {
-    "rust": false,
-    "go": false,
-    "nodejs": false,
-    "python": false,
+    "rust": true,
+    "go": true,
+    "nodejs": true,
+    "python": true,
     "ruby": true
   },
   "dev_tools": {
@@ -29,24 +29,24 @@
   },
   "services": {
     "postgresql": true,
-    "redis": false
+    "redis": true
   },
   "frameworks": {
     "rails": true,
-    "django": false,
-    "nextjs": false
+    "django": true,
+    "nextjs": true
   },
   "editors": {
     "neovim": true,
-    "helix": false,
-    "vscode_server": false,
+    "helix": true,
+    "vscode_server": true,
     "default": "neovim",
     "distributions": {
       "nvim": {
-        "lazyvim": false,
+        "lazyvim": true,
         "astronvim": true,
-        "nvchad": false,
-        "lunarvim": false
+        "nvchad": true,
+        "lunarvim": true
       }
     }
   }
