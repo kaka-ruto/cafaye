@@ -10,7 +10,46 @@ MOCK_JQ="/tmp/jq"
 
 echo "🧪 Starting Installer Automated Tests..."
 
-# --- Setup Mock Gum ---
+# --- Helper: Ensure dependencies ---
+ensure_tool() {
+    local name=$1
+    local mock_path=$2
+    if command -v "$name" &> /dev/null; then
+        return 0
+    fi
+    
+    if [[ -f "$mock_path" ]]; then
+        return 0
+    fi
+
+    echo "Missing $name. Attempting to provide it..."
+    
+    # Try Nix first
+    local nix_bin=$(nix build "nixpkgs#$name" --no-link --print-out-paths --extra-experimental-features "nix-command flakes" 2>/dev/null || echo "")
+    if [[ -n "$nix_bin" ]]; then
+        ln -sf "$nix_bin/bin/$name" "$mock_path"
+        return 0
+    fi
+
+    # Try downloading standalone if possible (gum only)
+    if [[ "$name" == "gum" ]]; then
+        curl -fL "https://github.com/charmbracelet/gum/releases/download/v0.17.0/gum_0.17.0_Linux_x86_64.tar.gz" -o /tmp/gum.tar.gz
+        tar xzf /tmp/gum.tar.gz -C /tmp
+        find /tmp -name gum -type f -exec mv {} /tmp/gum \;
+        chmod +x /tmp/gum
+        return 0
+    fi
+
+    echo "Error: Could not provide $name"
+    exit 1
+}
+
+ensure_tool "gum" "$MOCK_GUM"
+ensure_tool "jq" "$MOCK_JQ"
+
+# --- Redefine Gum for MOCKING logic ---
+# We keep the real gum as /tmp/gum.real and make /tmp/gum a wrapper
+mv "$MOCK_GUM" "$MOCK_GUM.real"
 cat > "$MOCK_GUM" << 'EOF'
 #!/usr/bin/env bash
 cmd=$1
@@ -23,24 +62,11 @@ case "$cmd" in
         echo -e "$MOCK_CHOICES"
         ;;
     *)
-        exit 0
+        /tmp/gum.real "$cmd" "$@"
         ;;
 esac
 EOF
 chmod +x "$MOCK_GUM"
-
-# --- Setup Mock JQ (Using Nix to find real JQ) ---
-if ! command -v jq &> /dev/null; then
-    if command -v nix &> /dev/null; then
-        echo "Linking real jq to mock path via Nix..."
-        REAL_JQ=$(nix build nixpkgs#jq --no-link --print-out-paths --extra-experimental-features "nix-command flakes")/bin/jq
-        cat > "$MOCK_JQ" << EOF
-#!/bin/sh
-$REAL_JQ "\$@"
-EOF
-        chmod +x "$MOCK_JQ"
-    fi
-fi
 
 # Function to run the wizard with mocks
 run_wizard_test() {
@@ -54,7 +80,7 @@ run_wizard_test() {
     # Setup environment
     export MOCK_CONFIRM="$confirm"
     export MOCK_CHOICES="$choices"
-    export PATH="/tmp:$PATH" # Use mocks
+    export PATH="/tmp:$PATH"
     
     # Mock files
     mkdir -p user
@@ -62,7 +88,7 @@ run_wizard_test() {
     
     # Run wizard
     if [[ "$confirm" == "no" ]]; then
-        if bash installer/cafaye-wizard.sh; then
+        if bash installer/cafaye-wizard.sh > /dev/null 2>&1; then
             echo "❌ FAILED (Should have exited with error on cancel)"
             exit 1
         else
@@ -71,7 +97,7 @@ run_wizard_test() {
         fi
     fi
 
-    bash installer/cafaye-wizard.sh || { echo "❌ FAILED (Wizard crashed)"; exit 1; }
+    bash installer/cafaye-wizard.sh > /dev/null 2>&1 || { echo "❌ FAILED (Wizard crashed)"; exit 1; }
     
     # Verify State
     if [[ ! -f /tmp/cafaye-initial-state.json ]]; then
@@ -89,7 +115,9 @@ run_wizard_test() {
         esac
         
         if [[ -n "$check" ]]; then
-            if ! jq -e "$check" /tmp/cafaye-initial-state.json > /dev/null; then
+            if jq -e "$check" /tmp/cafaye-initial-state.json > /dev/null; then
+               :
+            else
                 echo "❌ FAILED (Choice $choice not reflected in state)"
                 exit 1
             fi
@@ -115,4 +143,4 @@ echo "---------------------------------------"
 echo "🎉 ALL TESTS PASSED SUCCESSFULLY!"
 echo "---------------------------------------"
 
-rm -f "$MOCK_GUM" "$MOCK_JQ"
+rm -f "$MOCK_GUM" "$MOCK_GUM.real" "$MOCK_JQ"
