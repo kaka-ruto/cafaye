@@ -43,14 +43,7 @@
     };
   };
 
-  # Boot configuration for VPS
-  boot.loader.grub = {
-    enable = true;
-    efiSupport = true;
-    efiInstallAsRemovable = true;
-    device = "nodev";
-  };
-
+  # Note: boot.loader.grub is configured in core/boot.nix
   # Network configuration - will be overridden by cloud-init or manual config
   networking.useDHCP = lib.mkDefault true;
   
@@ -62,18 +55,7 @@
     htop
   ];
 
-  # Enable SSH by default
-  services.openssh = {
-    enable = true;
-    settings = {
-      PermitRootLogin = "prohibit-password";
-      PasswordAuthentication = false;
-    };
-  };
-
-  # Firewall - basic setup
-  networking.firewall.enable = true;
-  networking.firewall.allowedTCPPorts = [ 22 ];
+  # Note: SSH and firewall are configured in core/security.nix
 
   # VPS-specific optimizations
   boot.kernel.sysctl = {
