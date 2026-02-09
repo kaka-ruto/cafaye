@@ -11,10 +11,8 @@
   boot.kernelModules = [ "kvm-intel" "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
-  fileSystems."/" = {
-    device = "/dev/disk/by-label/nixos";
-    fsType = "ext4";
-  };
+  # Note: fileSystems are defined by disko in hardware/vps.nix
+  # This is intentionally left empty to avoid conflicts
 
   swapDevices = [ ];
 }
