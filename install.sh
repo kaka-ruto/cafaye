@@ -28,10 +28,15 @@ fi
 # Install gum (TUI engine) if not present
 if ! command -v gum &> /dev/null; then
     echo "Setting up TUI engine..."
-    # Simplified gum install for bootstrap
+    # Robust gum install for Linux x86_64
     VERSION="0.17.0"
-    curl -fL "https://github.com/charmbracelet/gum/releases/download/v${VERSION}/gum_${VERSION}_Linux_x86_64.tar.gz" | tar xz --wildcards "**/gum"
-    mv gum*/gum /usr/local/bin/
+    # Try the most likely URL formats
+    if ! curl -fL "https://github.com/charmbracelet/gum/releases/download/v${VERSION}/gum_${VERSION}_Linux_x86_64.tar.gz" -o gum.tar.gz; then
+         echo "Retrying with fallback architecture name..."
+         curl -fL "https://github.com/charmbracelet/gum/releases/download/v${VERSION}/gum_${VERSION}_linux_amd64.tar.gz" -o gum.tar.gz
+    fi
+    tar xzf gum.tar.gz --wildcards "**/gum"
+    mv gum*/gum /usr/local/bin/ 2>/dev/null || mv gum /usr/local/bin/
     rm -rf gum*
 fi
 
