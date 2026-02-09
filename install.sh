@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Cafaye OS: The "Self-Driving" Bootstrap
-# Usage: curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
+# Usage: bash <(curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh)
 
 set -e
 
@@ -10,11 +10,36 @@ REPO_DIR="/root/cafaye"
 LOG_FILE="/var/log/cafaye-install.log"
 
 # --- Basics ---
-echo "☕ Cafaye OS: Starting bootstrap..."
+cat << "EOF"
+  ☕ Cafaye OS: The "Self-Driving" Bootstrap
+  -----------------------------------------
+EOF
 
 if [[ $EUID -ne 0 ]]; then
     echo "Error: This script must be run as root."
     exit 1
+fi
+
+# Detect if we are in a pipe
+if [[ ! -t 0 ]]; then
+    echo "⚠️  DETECTION: You are running this script via a pipe (curl | bash)."
+    echo "   The setup wizard requires an interactive terminal."
+    echo ""
+    echo "   Please run this instead:"
+    echo "   bash <(curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh)"
+    echo ""
+    exit 1
+fi
+
+echo "Welcome! I've detected a fresh $(grep PRETTY_NAME /etc/os-release | cut -d'"' -f2) VPS."
+echo "Before we start, I need to:"
+echo " 1. Install bootstrap tools: git, jq, gum (TUI engine)"
+echo " 2. Clone the Cafaye repository"
+echo ""
+read -p "Ready to prepare the system? [y/N] " confirm
+if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+    echo "Setup cancelled. No changes were made."
+    exit 0
 fi
 
 # 1. Install dependencies for the Wizard
@@ -43,31 +68,20 @@ fi
 # Install gum (TUI engine) if not present
 if ! command -v gum &> /dev/null; then
     echo "Setting up TUI engine..."
-    # Robust gum install for Linux x86_64
     VERSION="0.17.0"
     ARCH=$(uname -m)
     [[ "$ARCH" == "x86_64" ]] && GUM_ARCH="x86_64" || GUM_ARCH="arm64"
-    
     URL="https://github.com/charmbracelet/gum/releases/download/v${VERSION}/gum_${VERSION}_Linux_${GUM_ARCH}.tar.gz"
     
     curl -fL "$URL" -o gum.tar.gz
     mkdir -p gum_temp
     tar xzf gum.tar.gz -C gum_temp
-    
-    # Find the binary wherever it was extracted
     GUM_BIN=$(find gum_temp -name gum -type f | head -n1)
-    echo "Found gum binary at: $GUM_BIN"
     
     if [[ -n "$GUM_BIN" ]]; then
         chmod +x "$GUM_BIN"
-        echo "Attempting to install gum to /tmp/gum..."
-        cp "$GUM_BIN" /tmp/gum && echo "Successfully copied gum to /tmp/gum" || echo "Failed to copy gum to /tmp/gum"
-        # Also try standard paths
-        cp "$GUM_BIN" /usr/local/bin/gum 2>/dev/null || true
+        cp "$GUM_BIN" /usr/local/bin/gum 2>/dev/null || cp "$GUM_BIN" /usr/bin/gum 2>/dev/null || cp "$GUM_BIN" /tmp/gum
         export PATH="/tmp:/usr/local/bin:$PATH"
-    else
-        echo "Error: Could not find gum binary in package."
-        exit 1
     fi
     rm -rf gum.tar.gz gum_temp
 fi
