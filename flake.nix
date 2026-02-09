@@ -40,16 +40,26 @@
         runTest = testFile: pkgs.testers.runNixOSTest {
           imports = [ (import testFile { inherit pkgs inputs userState; }) ];
           # Configure QEMU for TCG by wrapping the binary to strip -enable-kvm
-          defaults.virtualisation.qemu.package = pkgs.lib.mkForce (pkgs.writeShellScriptBin "qemu-system-x86_64" ''
-            args=("$@")
-            new_args=()
-            for arg in "''${args[@]}"; do
-              if [ "$arg" != "-enable-kvm" ]; then
-                new_args+=("$arg")
-              fi
-            done
-            exec ${pkgs.qemu}/bin/qemu-system-x86_64 "''${new_args[@]}"
-          '');
+          # We use symlinkJoin to ensure qemu-img and other tools are available
+          defaults.virtualisation.qemu.package = pkgs.lib.mkForce (pkgs.symlinkJoin {
+            name = "qemu-tcg-wrapper";
+            paths = [ pkgs.qemu ];
+            postBuild = ''
+              rm $out/bin/qemu-system-x86_64
+              cat <<'EOF' > $out/bin/qemu-system-x86_64
+#!/usr/bin/env bash
+args=("$@")
+new_args=()
+for arg in "''${args[@]}"; do
+  if [ "$arg" != "-enable-kvm" ]; then
+    new_args+=("$arg")
+  fi
+done
+exec ${pkgs.qemu}/bin/qemu-system-x86_64 "''${new_args[@]}"
+EOF
+              chmod +x $out/bin/qemu-system-x86_64
+            '';
+          });
           defaults.virtualisation.qemu.options = [ "-cpu max" "-accel tcg" ];
           defaults.virtualisation.graphics = false;
           defaults.virtualisation.memorySize = 2048;
