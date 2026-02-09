@@ -45,6 +45,19 @@ case "$1" in
     unit|all)
         run_unit
         ;;
+    # Valid shortcuts for specific integration tests
+    core)
+        echo "🚜 Running Core Integration Tests..."
+        nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).core-unified" --print-build-logs
+        ;;
+    cli-integration) # Renamed to avoid confusion with unit/cli
+        echo "🚜 Running CLI Integration Tests..."
+        nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).cli-unified" --print-build-logs
+        ;;
+    modules)
+        echo "🚜 Running Modules Integration Tests..."
+        nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).modules-unified" --print-build-logs
+        ;;
     integration)
         run_integration_tests
         ;;
