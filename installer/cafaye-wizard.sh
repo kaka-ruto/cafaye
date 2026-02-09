@@ -10,8 +10,12 @@ NC='\033[0m'
 
 # Ensure gum is available (should be installed by bootstrap)
 if ! command -v gum &> /dev/null; then
-    echo "Error: gum not found. Please run this via install.sh"
-    exit 1
+    if [[ -f /tmp/gum ]]; then
+        export PATH="/tmp:$PATH"
+    else
+        echo "Error: gum not found. Please run this via install.sh"
+        exit 1
+    fi
 fi
 
 cat << "EOF"
