@@ -11,7 +11,7 @@
 ssh root@<your-vps-ip>
 
 # Step 2: Run the installer
-curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
+bash <(curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh)
 ```
 
 That's it! The installer will:
@@ -36,7 +36,7 @@ caf-setup
 
 | Aspect | Omarchy | Cafaye |
 |--------|---------|--------|
-| **One-liner install** | ❌ Clone manually | ✅ `curl \| bash` |
+| **One-liner install** | ❌ Clone manually | ✅ `bash <(curl)` |
 | **Pre-requisites** | Git + existing Arch | Auto-installs Nix |
 | **Target** | Desktop | VPS/Server |
 | **Access** | Local machine | SSH + Browser anywhere |
@@ -187,7 +187,7 @@ When developing Cafaye, reference the local Omarchy repository (`../omarchy/`):
 ssh root@<your-vps-ip>
 
 # Step 2: Run the installer
-curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
+bash <(curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh)
 ```
 
 The installer will:
