@@ -50,7 +50,9 @@ run_integration_target() {
     local target=$1
     check_nix
     echo "🚜 Running Individual Integration Test: $target..."
-    nix build ".#individualChecks.$(nix eval --raw --impure --expr builtins.currentSystem).$target" --print-build-logs
+    nix build ".#individualChecks.$(nix eval --raw --impure --expr builtins.currentSystem).$target" \
+        --option system-features "nixos-test benchmark big-parallel kvm" \
+        --print-build-logs
 }
 
 run_integration_tests() {
