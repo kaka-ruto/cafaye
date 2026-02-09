@@ -40,7 +40,7 @@
         runTest = testFile: pkgs.testers.runNixOSTest {
           imports = [ (import testFile { inherit pkgs inputs userState; }) ];
           # Configure QEMU for TCG by wrapping the binary to strip -enable-kvm
-          defaults.virtualisation.qemu.package = pkgs.writeShellScriptBin "qemu-system-x86_64" ''
+          defaults.virtualisation.qemu.package = pkgs.lib.mkForce (pkgs.writeShellScriptBin "qemu-system-x86_64" ''
             args=("$@")
             new_args=()
             for arg in "''${args[@]}"; do
@@ -49,7 +49,7 @@
               fi
             done
             exec ${pkgs.qemu}/bin/qemu-system-x86_64 "''${new_args[@]}"
-          '';
+          '');
           defaults.virtualisation.qemu.options = [ "-cpu max" "-accel tcg" ];
           defaults.virtualisation.graphics = false;
           defaults.virtualisation.memorySize = 2048;
