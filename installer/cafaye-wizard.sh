@@ -34,7 +34,7 @@ echo ""
 
 if ! gum confirm "Install Cafaye OS on $disk? (THIS WILL ERASE ALL DATA)"; then
     echo "Installation cancelled."
-    exit 0
+    exit 1
 fi
 
 # 2. SSH Configuration
