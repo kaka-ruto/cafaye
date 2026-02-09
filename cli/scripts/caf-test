@@ -1,41 +1,33 @@
 #!/usr/bin/env bash
-# Cafaye OS Test Launcher
-# Routes commands to the correct test suite
+# Cafaye OS Test Runner
+# Self-bootstraps BATS (Bash Automated Testing System)
 
 set -e
-
-# Repository Root
 REPO_DIR=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
-cd "$REPO_DIR"
+CACHE_DIR="$REPO_DIR/.cache"
+BATS_DIR="$CACHE_DIR/bats-core"
+BATS_BIN="$BATS_DIR/bin/bats"
 
-# Global Config
-TIMEOUT_MINUTES=30
-STATE_FILE_TEST="/tmp/cafaye-cli-test-state.json"
-export STATE_FILE="$STATE_FILE_TEST"
-
-usage() {
-    echo "Cafaye OS Test Runner (caf-test)"
-    echo "Usage: caf-test [section]"
-    echo ""
-    echo "Sections:"
-    echo "  unit              Run ALL local/unit tests (Fast)"
-    echo "  installer         Run Layer 0 (Installer) tests"
-    echo "  cli               Run Layer 1 (CLI/State) tests"
-    echo "  integration       Run full VM integration tests (Slow)"
-    echo ""
+# --- Bootstrap BATS ---
+ensure_bats() {
+    if [[ ! -f "$BATS_BIN" ]]; then
+        echo "⬇️  Installing BATS to $BATS_DIR..."
+        mkdir -p "$CACHE_DIR"
+        git clone --depth 1 https://github.com/bats-core/bats-core.git "$BATS_DIR" > /dev/null 2>&1
+    fi
+    export PATH="$CACHE_DIR/bats-core/bin:$PATH"
 }
 
-run_unit_tests() {
-    echo ""
-    echo "🔬 Running Unit Tests (Local execution - No VM)..."
+# --- Runners ---
+run_unit() {
+    ensure_bats
+    echo "🔬 Running Unit Tests (BATS)..."
     
-    # 1. Installer Logic
-    echo "▶ Layer 0: Installer Wizard"
-    bash tests/unit/installer/test_wizard.sh
-
-    # 2. CLI Logic
-    echo "▶ Layer 1: CLI State Management"
-    bash tests/unit/cli/test_state.sh
+    # Run all .bats files in tests/unit
+    if ! "$BATS_BIN" -r tests/unit; then
+        echo "❌ Unit Tests Failed"
+        exit 1
+    fi
 }
 
 run_integration_tests() {
@@ -48,22 +40,16 @@ run_integration_tests() {
     nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).core-unified" --print-build-logs
 }
 
-# --- Main Logic ---
+# --- Main ---
 case "$1" in
     unit|all)
-        run_unit_tests
-        ;;
-    installer)
-        bash tests/unit/installer/test_wizard.sh
-        ;;
-    cli)
-        bash tests/unit/cli/test_state.sh
+        run_unit
         ;;
     integration)
         run_integration_tests
         ;;
     *)
-        usage
+        echo "Usage: caf-test [unit|integration|all]"
         exit 1
         ;;
 esac
