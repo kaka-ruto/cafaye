@@ -1,6 +1,6 @@
 {
   "core": {
-    "tailscale_enabled": false,
+    "tailscale_enabled": true,
     "zram_enabled": true,
     "authorized_keys": [],
     "boot": {

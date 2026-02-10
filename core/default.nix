@@ -8,6 +8,7 @@
     ./security
     ./sops.nix
     ./user.nix
+    ./auto-shutdown.nix
   ];
 
   # Basic system settings that don't fit elsewhere

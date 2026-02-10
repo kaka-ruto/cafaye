@@ -20,13 +20,23 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# Detect if we are in a pipe
-if [[ ! -t 0 ]]; then
+# Detect if we are in a pipe - support non-interactive mode with --yes flag
+NON_INTERACTIVE=false
+if [[ "$1" == "--yes" ]] || [[ "$1" == "-y" ]]; then
+    NON_INTERACTIVE=true
+    echo "⚡ Running in non-interactive mode with default configuration"
+fi
+
+if [[ ! -t 0 ]] && [[ "$NON_INTERACTIVE" != "true" ]]; then
     echo "⚠️  DETECTION: You are running this script via a pipe (curl | bash)."
     echo "   The setup wizard requires an interactive terminal."
     echo ""
-    echo "   Please run this instead:"
-    echo "   bash <(curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh)"
+    echo "   Options:"
+    echo "   1. Run interactively:"
+    echo "      bash <(curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh)"
+    echo ""
+    echo "   2. Run non-interactively with defaults:"
+    echo "      curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash -s -- --yes"
     echo ""
     exit 1
 fi
@@ -49,6 +59,9 @@ echo "Installing bootstrap dependencies (git, jq, gum)..."
 run_cmd() {
     local cmd=$1
     shift
+    if [[ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+        . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+    fi
     if command -v "$cmd" &> /dev/null; then
         "$cmd" "$@"
     elif command -v nix &> /dev/null; then

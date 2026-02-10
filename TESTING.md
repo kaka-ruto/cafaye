@@ -22,24 +22,63 @@ To avoid the "100 VMs" problem, we categorize tests into distinct layers:
 
 ## 🛠 Usage
 
-The `caf-test` script is self-bootstrapping. It will automatically install BATS and Nix if they are missing.
+The `caf-test` script is the unified entry point for all tests. It automatically handles dependency bootstrapping (BATS, Nix).
+
+### Local vs. Remote Workflow
+Cafaye OS is designed for a **remote-first** development cycle. You can run tests locally on your Mac, or offload them to the **GCP Forge** for maximum speed.
+
+```bash
+# Append --remote to ANY command to run it on the Forge
+caf-test unit --remote
+caf-test integration core-boot --remote
+```
 
 ### Basic Commands
 ```bash
-# Run all unit tests
-caf-test unit
+# --- Unit Tests (Logic & State) ---
+caf-test unit                            # Run all unit tests locally
+caf-test unit tests/unit/cli/state.bats  # Run a specific unit test file
+caf-test unit --remote                   # Run all unit tests on the Forge
 
-# Run a specific unit test file
-caf-test unit tests/unit/cli/state.bats
+# --- Integration Tests (NixOS VMs) ---
+caf-test integration                     # Run all unified integration tests
+caf-test integration core-boot           # Run a specific check (e.g., boot logic)
+caf-test integration modules-languages   # Test language installations
 
-# Run all integration tests (Requires Nix + KVM/TCG)
-caf-test integration
+# --- Shortcut Suites ---
+caf-test core          # Run 'core-unified' (Fast system verify)
+caf-test modules       # Run 'modules-unified' (Verify all dev tools)
+caf-test all           # Run EVERYTHING (Unit + Core)
+```
 
-# Run a specific integration test target
-caf-test integration core-boot
+---
 
-# Run EVERYTHING (Unit + Core Integration)
-caf-test all
+## 🐞 Debugging & Reliability
+
+### 1. Interactive VM Debugging
+If an integration test is failing, you can launch it in **Interactive Mode**. This boots the VM and gives you a Python shell to control it.
+
+```bash
+caf-test integration core-boot --debug
+```
+**In the shell:**
+*   `test_script()`: Runs the entire test logic once.
+*   `machine.shell()`: Opens a real root shell inside the running NixOS VM.
+*   `machine.succeed("systemctl status tailscaled")`: Run commands manually.
+
+### 2. State Validation (The Guard)
+Cafaye OS uses a strict JSON schema for its state. The `caf-state-write` script automatically validates any change against `user/user-state.schema.json`.
+
+*   **Test this**: Try running `caf-state-write core.tailscale_enabled "maybe"`. It will be rejected because it expects a boolean.
+*   **Manual Check**: `nix shell nixpkgs#check-jsonschema --command check-jsonschema --schemafile user/user-state.schema.json user/user-state.json`
+
+### 3. Granular Targeting
+Avoid running the entire OS suite if you're only working on one module. We have "forced-state" targets for common modules:
+
+```bash
+caf-test integration modules-ruby      # Only tests Ruby installation
+caf-test integration modules-rust      # Only tests Rust
+caf-test integration modules-postgres  # Only tests PostgreSQL
 ```
 
 ---

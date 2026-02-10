@@ -1,7 +1,7 @@
 { config, pkgs, userState, ... }:
 
 let
-  enabled = userState.services.redis or false;
+  enabled = (userState.services.redis or false) || (userState.frameworks.rails or false) || (userState.frameworks.django or false);
 in
 {
   services.redis.servers.default = {

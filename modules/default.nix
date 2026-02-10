@@ -7,5 +7,6 @@
     ./frameworks
     ./editors
     ./dev-tools/docker.nix
+    ./dev-tools/mise.nix
   ];
 }

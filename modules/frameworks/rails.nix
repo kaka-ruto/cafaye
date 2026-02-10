@@ -12,6 +12,8 @@ in
       libxml2
       libxslt
       readline
+      sqlite
+      rubyPackages.rails
     ]
   );
 }

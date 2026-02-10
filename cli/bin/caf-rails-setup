@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Cafaye OS: Rails Project Setup Helper
+# Simplifies creating and configuring a Rails project for Cafaye's environment.
+
+set -e
+
+PROJECT_NAME=$1
+
+if [[ -z "$PROJECT_NAME" ]]; then
+    echo "Usage: caf-rails-setup <project_name>"
+    exit 1
+fi
+
+echo "☕ Setting up Rails project: $PROJECT_NAME"
+
+# 1. Ensure dependencies are met
+if ! command -v rails &> /dev/null; then
+    echo "❌ Rails is not installed. Enabling Ruby on Rails module..."
+    # In a real Cafaye OS, we would use 'caf state set frameworks.rails true'
+    exit 1
+fi
+
+# 2. Create the project
+rails new "$PROJECT_NAME" --database=postgresql --skip-bundle
+
+cd "$PROJECT_NAME"
+
+# 3. Configure database.yml for Cafaye's trusted postgres
+echo "🔧 Configuring database.yml..."
+sed -i "s/username: .*/username: cafaye/" config/database.yml
+sed -i "s/password: .*/# password: (trusted)/" config/database.yml
+sed -i "s/host: .*/host: localhost/" config/database.yml
+
+# 4. Initialize mise
+echo "💎 Initializing mise for version management..."
+mise local ruby@latest node@latest
+mise install
+
+# 5. Success
+echo ""
+echo "✅ Project '$PROJECT_NAME' is ready!"
+echo "   Next steps:"
+echo "   1. cd $PROJECT_NAME"
+echo "   2. bundle install"
+echo "   3. bin/rails db:create"
+echo "   4. bin/rails server"

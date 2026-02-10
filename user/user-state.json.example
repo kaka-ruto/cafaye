@@ -10,7 +10,9 @@
     },
     "security": {
       "bootstrap_mode": false
-    }
+    },
+    "auto_shutdown_enabled": false,
+    "auto_shutdown_idle_minutes": 60
   },
   "interface": {
     "terminal": {

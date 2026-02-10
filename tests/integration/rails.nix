@@ -9,7 +9,7 @@
           ../../core/boot.nix
           ../../core/hardware.nix
           ../../core/network.nix
-          ../../core/security.nix
+          ../../core/security
           ../../core/sops.nix
           ../../core/user.nix
           ../../modules

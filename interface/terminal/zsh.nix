@@ -15,6 +15,33 @@ in
       plugins = [ "git" "sudo" "docker" "direnv" ];
     };
 
+    shellAliases = {
+      # Base shortcuts
+      l = "eza -lh --icons";
+      ls = "eza --icons";
+      ll = "eza -alHh --icons";
+      cat = "bat";
+      top = "btop";
+      
+      # Cafaye CLI
+      apply = "caf apply";
+      test = "caf test";
+    } // (pkgs.lib.optionalAttrs (userState.languages.ruby or false || userState.frameworks.rails or false) {
+      r = "bundle exec rails";
+      rs = "bundle exec rails server";
+      rc = "bundle exec rails console";
+      be = "bundle exec";
+    }) // (pkgs.lib.optionalAttrs (userState.languages.rust or false) {
+      c = "cargo";
+      cb = "cargo build";
+      cr = "cargo run";
+      ct = "cargo test";
+    }) // (pkgs.lib.optionalAttrs (userState.languages.nodejs or false) {
+      n = "npm";
+      nr = "npm run";
+      ni = "npm install";
+    });
+
     # Initialize starship and zoxide
     interactiveShellInit = ''
       export STARSHIP_CONFIG=/etc/cafaye/terminal/starship.toml

@@ -179,19 +179,42 @@ case "$1" in
         echo "  - modules"
         echo "  - cli-integration"
         ;;
+    lint)
+        if [[ "$REMOTE" == true ]]; then
+            run_remote "$CLEANUP" "lint"
+            exit 0
+        fi
+        echo "🧹 Running Linters & Static Analysis..."
+        "$REPO_DIR/cli/scripts/caf-lint"
+        ;;
     unit)
         run_unit "$2"
         ;;
     all)
+        echo "🧹 Running Linters..."
+        "$REPO_DIR/cli/scripts/caf-lint" || { echo "❌ Linting failed"; exit 1; }
         run_unit
         run_integration_unified "core-unified"
+        run_integration_target "core-security"
+        run_integration_target "integration-security-penetration"
+        run_integration_target "integration-app-deployment"
+        run_integration_unified "modules-unified"
+        run_integration_unified "cli-unified"
         ;;
     core)
         run_integration_unified "core-unified" ;;
+    security)
+        run_integration_target "core-security" ;;
     cli-integration)
         run_integration_unified "cli-unified" ;;
     modules)
         run_integration_unified "modules-unified" ;;
+    deploy)
+        local target="${2:-cafaye}"
+        echo "🚀 Deploying Cafaye OS to $target..."
+        check_nix
+        nix run github:nix-community/nixos-anywhere -- --flake ".#cafaye" "root@$target"
+        ;;
     integration)
         if [[ -n "$2" ]]; then
             run_integration_target "$2"
@@ -200,7 +223,7 @@ case "$1" in
         fi
         ;;
     "")
-        echo "Usage: caf-test [--remote] [--debug] [unit <file> | integration <name> | list | <test-name>]"
+        echo "Usage: caf-test [--remote] [--debug] [lint | unit <file> | integration <name> | list | deploy <target> | <test-name>]"
         exit 1
         ;;
     *)

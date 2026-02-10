@@ -17,11 +17,37 @@ key="$1"
 value="$2"
 
 # Simple type detection for boolean/numbers
+tmp=$(mktemp)
 if [[ "$value" == "true" || "$value" == "false" || "$value" =~ ^[0-9]+$ ]]; then
-    tmp=$(mktemp)
-    jq ".$key = $value" "$STATE_FILE" > "$tmp" && mv "$tmp" "$STATE_FILE"
+    jq ".$key = $value" "$STATE_FILE" > "$tmp"
 else
     # Treat as string
-    tmp=$(mktemp)
-    jq ".$key = \"$value\"" "$STATE_FILE" > "$tmp" && mv "$tmp" "$STATE_FILE"
+    jq ".$key = \"$value\"" "$STATE_FILE" > "$tmp"
 fi
+
+# Validate against schema
+REPO_DIR="$(git rev-parse --show-toplevel 2>/dev/null)"
+SCHEMA_FILE="$REPO_DIR/user/user-state.schema.json"
+
+if [[ -f "$SCHEMA_FILE" ]]; then
+    # Try local command first, then fallback to nix shell
+    VALIDATOR="check-jsonschema"
+    if ! command -v check-jsonschema &> /dev/null; then
+        if command -v nix &> /dev/null; then
+            VALIDATOR="nix --extra-experimental-features nix-command --extra-experimental-features flakes shell nixpkgs#check-jsonschema --command check-jsonschema"
+        else
+            VALIDATOR=""
+        fi
+    fi
+
+    if [[ -n "$VALIDATOR" ]]; then
+        if ! $VALIDATOR --schemafile "$SCHEMA_FILE" "$tmp" > /dev/null 2>&1; then
+            echo "❌ Validation Error: The change would result in an invalid state.json"
+            $VALIDATOR --schemafile "$SCHEMA_FILE" "$tmp" 2>&1 | grep -A 3 "error" || echo "Check schema constraints for '$key'"
+            rm "$tmp"
+            exit 1
+        fi
+    fi
+fi
+
+mv "$tmp" "$STATE_FILE"

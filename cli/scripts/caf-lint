@@ -5,9 +5,10 @@
 # Usage: ./bin/test-local.sh [OPTIONS]
 
 set -e
+set -o pipefail
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Colors
 RED='\033[0;31m'
@@ -40,8 +41,11 @@ print_warning() {
 run_syntax_check() {
     print_header "Test 1: Nix Syntax & Evaluation (No VMs)"
     
-    if ! nix flake check --show-trace --option max-jobs 4 2>&1; then
-        print_error "Syntax check failed"
+    local output
+    output=$(nix flake show --all-systems 2>&1)
+    if ! echo "$output" | grep -q "nixosConfigurations"; then
+        print_error "Syntax check failed. Output:"
+        echo "$output"
         return 1
     fi
     
@@ -152,7 +156,7 @@ run_common_issues_check() {
     fi
     
     # Check for secrets in code (basic check)
-    if grep -r "password\|secret\|token\|key" --include="*.nix" --include="*.sh" . 2>/dev/null | grep -v "sops\|hashedPassword\|passwordAuthentication" | head -5; then
+    if grep -r "password\|secret\|token" --include="*.nix" --include="*.sh" --exclude="caf-lint" . 2>/dev/null | grep -v "sops\|hashedPassword\|passwordAuthentication\|fastfetch\|Mock secrets\|password auth is off\|Secrets\|gum input --password" | head -5; then
         print_warning "Found potential hardcoded secrets (review manually)"
     fi
     

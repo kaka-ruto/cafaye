@@ -1,0 +1,85 @@
+
+☕ Cafaye OS Local Testing Suite
+==================================
+Running fast, non-VM tests...
+
+
+[0;34m════════════════════════════════════════════════════════════════[0m
+[0;34m  Test 1: Nix Syntax & Evaluation (No VMs)[0m
+[0;34m════════════════════════════════════════════════════════════════[0m
+
+error: experimental Nix feature 'nix-command' is disabled; add '--extra-experimental-features nix-command' to enable it
+[0;31m✗ Syntax check failed[0m
+
+[0;34m════════════════════════════════════════════════════════════════[0m
+[0;34m  Test 4: CLI Script Syntax Check[0m
+[0;34m════════════════════════════════════════════════════════════════[0m
+
+  Checking caf-about-show... OK
+  Checking caf-channel-set... OK
+  Checking caf-cmd-present... OK
+  Checking caf-config-diff... OK
+  Checking caf-config-init... OK
+  Checking caf-config-refresh... OK
+  Checking caf-debug-collect... OK
+  Checking caf-debug-upload... OK
+  Checking caf-debug-view... OK
+  Checking caf-docker-db-install... OK
+  Checking caf-editor-distribution-set... OK
+  Checking caf-editor-launch... OK
+  Checking caf-editor-set... OK
+  Checking caf-factory-check... OK
+  Checking caf-hook-run... OK
+  Checking caf-keys-show... OK
+  Checking caf-lint... OK
+  Checking caf-logo-show... OK
+  Checking caf-nvim-distribution-setup... OK
+  Checking caf-secrets... OK
+  Checking caf-setup... OK
+  Checking caf-state-read... OK
+  Checking caf-state-write... OK
+  Checking caf-system-doctor... OK
+  Checking caf-system-rebuild... OK
+  Checking caf-system-update... OK
+  Checking caf-tailscale-setup... OK
+  Checking caf-task-done... OK
+  Checking caf-tz-select... OK
+  Checking caf-version... OK
+  Checking caf-version-pkgs... OK
+  Checking main.sh... [0;31m✗ SYNTAX ERROR[0m
+
+[0;34m════════════════════════════════════════════════════════════════[0m
+[0;34m  Test 3: User State JSON Validation[0m
+[0;34m════════════════════════════════════════════════════════════════[0m
+
+[0;32m✓ user-state.json is valid JSON[0m
+[0;32m✓ user-state.json matches schema[0m
+
+[0;34m════════════════════════════════════════════════════════════════[0m
+[0;34m  Test 6: Module Dependency Check[0m
+[0;34m════════════════════════════════════════════════════════════════[0m
+
+  Checking module imports...
+[0;32m✓ Module structure is valid[0m
+
+[0;34m════════════════════════════════════════════════════════════════[0m
+[0;34m  Test 5: Common Issues Check[0m
+[0;34m════════════════════════════════════════════════════════════════[0m
+
+./bin/test-local.sh:    # Check for secrets in code (basic check)
+./bin/test-local.sh:        print_warning "Found potential hardcoded secrets (review manually)"
+./tests/integration/security/ssh.nix:    # Verify password auth is off
+./cli/main.sh:        *"Secrets"*) caf-secrets ;;
+./installer/tailscale.sh:        TS_AUTH_KEY=$(gum input --password --placeholder "tskey-auth-..." --header "Paste your Tailscale auth key")
+[1;33m⚠ Found potential hardcoded secrets (review manually)[0m
+
+[0;34m════════════════════════════════════════════════════════════════[0m
+[0;34m  Test 7: Documentation Check[0m
+[0;34m════════════════════════════════════════════════════════════════[0m
+
+[0;32m✓ All documentation files present[0m
+
+==================================
+[0;31m✗ 2 test(s) failed[0m
+
+Fix the issues above before pushing.

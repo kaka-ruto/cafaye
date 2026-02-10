@@ -49,6 +49,7 @@ echo -e "🛠️  ${CYAN}Default Stack:${NC}"
 choice=$(gum choose --no-limit --cursor "👉 " --header "Select additional modules to enable now" \
     "🐳 Docker" \
     "🐘 PostgreSQL" \
+    "🐬 MySQL" \
     "🛤️  Ruby on Rails" \
     "⚛️  Next.js" \
     "🦀 Rust")
@@ -62,7 +63,7 @@ echo ""
 
 if gum confirm "Start the background installation? (You can disconnect after this)"; then
     # Generate the state file
-    STATE_FILE="/tmp/cafaye-initial-state.json"
+    STATE_FILE="${STATE_FILE:-/tmp/cafaye-initial-state.json}"
     cp user/user-state.json.example "$STATE_FILE" || { echo "Failed to copy example state"; exit 1; }
     
     # Update disk
@@ -80,6 +81,7 @@ if gum confirm "Start the background installation? (You can disconnect after thi
     echo "Updating modules..."
     [[ "$choice" == *"Docker"* ]] && (jq ".dev_tools.docker = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Docker"; exit 1; })
     [[ "$choice" == *"PostgreSQL"* ]] && (jq ".services.postgresql = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update PostgreSQL"; exit 1; })
+    [[ "$choice" == *"MySQL"* ]] && (jq ".services.mysql = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update MySQL"; exit 1; })
     [[ "$choice" == *"Rails"* ]] && (jq ".frameworks.rails = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Rails"; exit 1; })
     [[ "$choice" == *"Next.js"* ]] && (jq ".frameworks.nextjs = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Next.js"; exit 1; })
     [[ "$choice" == *"Rust"* ]] && (jq ".languages.rust = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Rust"; exit 1; })

@@ -14,6 +14,10 @@ pkgs.stdenv.mkDerivation {
       cp -r scripts/* $out/bin/
     fi
 
+    if [ -d bin ]; then
+      cp -r bin/* $out/bin/
+    fi
+
     # Make everything in bin executable
     find $out/bin -type f -exec chmod +x {} +
   '';

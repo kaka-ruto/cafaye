@@ -7,8 +7,10 @@ in
   environment.systemPackages = pkgs.lib.optionals enabled (
     with pkgs; [
       sqlite
+      libpq
       pkg-config
       gcc
+      python3Packages.psycopg2
     ]
   );
 }

@@ -107,6 +107,34 @@ else
   echo "○ Not enabled"
 fi
 
+# Check MySQL (if enabled)
+echo -n "Checking MySQL... "
+if systemctl is-enabled --quiet mysql 2>/dev/null; then
+  if systemctl is-active --quiet mysql; then
+    echo "✓ Running"
+  else
+    echo "❌ Enabled but not running"
+    ((ISSUES++))
+  fi
+else
+  echo "○ Not enabled"
+fi
+
+# Check Runtimes
+echo -n "Checking Ruby... "
+if command -v ruby &> /dev/null; then
+  echo "✓ $(ruby -v | awk '{print $2}')"
+else
+  echo "○ Not installed"
+fi
+
+echo -n "Checking Rails... "
+if command -v rails &> /dev/null; then
+  echo "✓ $(rails -v | awk '{print $2}')"
+else
+  echo "○ Not installed"
+fi
+
 echo ""
 echo "=========================="
 if [ $ISSUES -eq 0 ]; then

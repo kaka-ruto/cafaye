@@ -98,6 +98,10 @@
               inherit pkgs inputs; 
               userState = userState // { services = { postgresql = true; }; }; 
             });
+            integration-security-penetration = runTest ./tests/integration/security/penetration.nix;
+            integration-app-deployment = runTest ./tests/integration/app-deployment.nix;
+            integration-rails = runTest ./tests/integration/rails.nix;
+            integration-dev-ux = runTest ./tests/integration/dev-ux.nix;
             interface-workload-aliases = runTest ./tests/interface/workload-aliases.nix;
           };
 
