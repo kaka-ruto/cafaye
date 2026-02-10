@@ -8,18 +8,22 @@ in
   nodes = {
     machine = {
       imports = [ 
-        ../../core/security.nix 
-        ../../core/network.nix 
-        ../../core/sops.nix
-        ../../core/user.nix
+        ../../../core/security
+        ../../../core/network.nix
+        ../../../core/hardware.nix
+        ../../../core/user.nix
+        ../../../core/sops.nix
         inputs.sops-nix.nixosModules.sops
       ];
-      _module.args = { inherit inputs userState; };
+      _module.args = { 
+        inherit inputs;
+        userState = userState // { core = userState.core // { security = { bootstrap_mode = true; }; }; };
+      };
       
-      # Mock the sops file presence
+      # Mocks for test environment
       sops.validateSopsFiles = false;
-      # Disable tailscale autoconnect in this test as well
       systemd.services.tailscale-autoconnect.enable = false;
+      users.users.cafaye.openssh.authorizedKeys.keys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMY6S... test" ];
     };
   };
 
@@ -33,14 +37,16 @@ in
     ${if bootstrapMode then ''
     # Bootstrap mode: fail2ban should be disabled
     machine.fail("systemctl is-active fail2ban.service")
-    # Bootstrap mode: Verify firewall allows SSH globally
-    machine.succeed("grep -q 'allowedTCPPorts' /etc/nixos/configuration.nix || true")
     '' else ''
     # Normal mode: fail2ban should be running
     machine.wait_for_unit("fail2ban.service")
-    # Normal mode: The system built successfully, which validates our security.nix config
-    # The firewall service is active and configured (actual iptables rules depend on Tailscale being connected)
-    machine.succeed("systemctl is-active firewall.service")
+    
+    # Hardened Kernel Checks
+    machine.succeed("sysctl kernel.kptr_restrict | grep '2'")
+    machine.succeed("sysctl kernel.randomize_va_space | grep '2'")
+
+    # Hardened SSH Checks
+    machine.succeed("grep 'KexAlgorithms curve25519-sha256' /etc/ssh/sshd_config")
     ''}
   '';
 }

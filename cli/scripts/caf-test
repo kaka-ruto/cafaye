@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# Cafaye OS Test Runner
-# Self-bootstraps BATS (Bash Automated Testing System)
-
 set -e
+export NIX_CONFIG="experimental-features = nix-command flakes"
 REPO_DIR=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 CACHE_DIR="$REPO_DIR/.cache"
 BATS_DIR="$CACHE_DIR/bats-core"
 BATS_BIN="$BATS_DIR/bin/bats"
+
+# Configuration for Remote Forge
+FORGE_HOST="cafaye"
+FORGE_DIR="~/cafaye-dev"
 
 # --- Bootstrap BATS ---
 ensure_bats() {
@@ -32,64 +34,183 @@ check_nix() {
     fi
 }
 
+# --- Remote Sync ---
+run_remote() {
+    local cleanup=$1
+    shift
+    local cmd="$*"
+    
+    echo "⚡ Syncing to Forge ($FORGE_HOST)..."
+    rsync -az --delete \
+        --exclude '.git' \
+        --exclude '.cache' \
+        --exclude '.direnv' \
+        --exclude '.envrc' \
+        "$REPO_DIR/" "$FORGE_HOST:$FORGE_DIR/"
+
+    echo "🚀 Executing on Forge: $cmd"
+    set +e
+    ssh "$FORGE_HOST" "cd $FORGE_DIR && TERM=xterm-256color cli/scripts/caf-test $cmd"
+    local exit_code=$?
+    set -e
+
+    if [[ "$cleanup" == "true" ]]; then
+        echo "🧹 Cleaning up Forge directory..."
+        ssh "$FORGE_HOST" "rm -rf $FORGE_DIR"
+    fi
+
+    exit $exit_code
+}
+
 # --- Runners ---
 run_unit() {
     ensure_bats
-    echo "🔬 Running Unit Tests (BATS)..."
-    
     local target="${1:-tests/unit}"
     
-    # Run specific file or all .bats files in tests/unit
-    if ! "$BATS_BIN" -r "$target"; then
-        echo "❌ Unit Tests Failed"
-        exit 1
+    # Calculate parallelism
+    local jobs=1
+    if command -v parallel &> /dev/null; then
+        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+            jobs=$(nproc)
+        elif [[ "$OSTYPE" == "darwin"* ]]; then
+            jobs=$(sysctl -n hw.ncpu)
+        fi
+    fi
+
+    if [[ "$jobs" -gt 1 ]]; then
+        echo "🔬 Running Unit Tests (BATS) with $jobs jobs..."
+        if ! "$BATS_BIN" -j "$jobs" -r "$target"; then
+            echo "❌ Unit Tests Failed"
+            exit 1
+        fi
+    else
+        echo "🔬 Running Unit Tests (BATS) sequentially (install 'parallel' for speed)..."
+        if ! "$BATS_BIN" -r "$target"; then
+            echo "❌ Unit Tests Failed"
+            exit 1
+        fi
     fi
 }
 
 run_integration_target() {
     local target=$1
     check_nix
-    echo "🚜 Running Individual Integration Test: $target..."
-    nix build ".#individualChecks.$(nix eval --raw --impure --expr builtins.currentSystem).$target" \
-        --option system-features "nixos-test benchmark big-parallel kvm" \
-        --print-build-logs
+    local system
+    system=$(nix eval --raw --impure --expr builtins.currentSystem)
+    
+    if $DEBUG; then
+        echo "🐛 Debug Mode: Launching Interactive Test Driver for $target..."
+        echo "💡 Type 'test_script()' to run the test, or 'machine.shell()' to jump into the VM."
+        nix run "path:.#individualChecks.$system.$target.driverInteractive"
+    else
+        echo "🚜 Running Individual Integration Test: $target..."
+        nix build "path:.#individualChecks.$system.$target" \
+            --option system-features "nixos-test benchmark big-parallel kvm" \
+            --print-build-logs
+    fi
 }
 
-run_integration_tests() {
+run_integration_unified() {
+    local suite="${1:-core-unified}"
     check_nix
-    echo "🚜 Running Unified Integration Tests..."
-    nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).core-unified" \
-        --option system-features "nixos-test benchmark big-parallel kvm" \
-        --print-build-logs
+    local system
+    system=$(nix eval --raw --impure --expr builtins.currentSystem)
+
+    if $DEBUG; then
+        echo "🐛 Debug Mode: Launching Interactive Test Driver for $suite..."
+        nix run "path:.#checks.$system.$suite.driverInteractive"
+    else
+        echo "🚜 Running Unified Integration Suite: $suite..."
+        nix build "path:.#checks.$system.$suite" \
+            --option system-features "nixos-test benchmark big-parallel kvm" \
+            --print-build-logs
+    fi
 }
 
 # --- Main ---
+# Parse flags
+REMOTE=false
+DEBUG=false
+CLEANUP=true
+ARGS=()
+for arg in "$@"; do
+    case "$arg" in
+        --remote) REMOTE=true ;;
+        --debug)  DEBUG=true ;;
+        --no-cleanup) CLEANUP=false ;;
+        *)        ARGS+=("$arg") ;;
+    esac
+done
+
+if [[ "$REMOTE" == true ]]; then
+    # Pass flags along if set
+    remote_args="${ARGS[@]}"
+    [[ "$DEBUG" == true ]] && remote_args="$remote_args --debug"
+    # Ensure --no-cleanup isn't passed down to the remote script to avoid confusion
+    remote_args=$(echo "$remote_args" | sed 's/--no-cleanup//g')
+    run_remote "$CLEANUP" "$remote_args"
+    exit 0
+fi
+
+# Set positional arguments back from filtered ARGS
+set -- "${ARGS[@]}"
+
+# Helper for individual test discovery
+is_individual_test() {
+    local name=$1
+    [[ -z "$name" ]] && return 1
+    # Check if target exists in individualChecks (requires quick evaluation)
+    nix eval "path:.#individualChecks.$(nix eval --raw --impure --expr builtins.currentSystem)" --apply "builtins.attrNames" --json | jq -r ".[]" | grep -q "^$name$"
+}
+
 case "$1" in
+    list)
+        if [[ "$REMOTE" == true ]]; then
+            run_remote "$CLEANUP" "list"
+            exit 0
+        fi
+        check_nix
+        echo "📋 Available Individual Integration Tests:"
+        current_system=$(nix eval --raw --impure --expr builtins.currentSystem)
+        nix eval "path:.#individualChecks.$current_system" --apply "builtins.attrNames" --json | jq -r ".[]" | sed 's/^/  - /'
+        echo ""
+        echo "📋 Unified Suites:"
+        echo "  - core"
+        echo "  - modules"
+        echo "  - cli-integration"
+        ;;
     unit)
         run_unit "$2"
         ;;
     all)
         run_unit
-        run_integration_tests
+        run_integration_unified "core-unified"
         ;;
-    # Shortcuts for unified suites
     core)
-        check_nix; echo "🚜 Core Unified..."; nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).core-unified" --print-build-logs ;;
+        run_integration_unified "core-unified" ;;
     cli-integration)
-        check_nix; echo "🚜 CLI Unified..."; nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).cli-unified" --print-build-logs ;;
+        run_integration_unified "cli-unified" ;;
     modules)
-        check_nix; echo "🚜 Modules Unified..."; nix build ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).modules-unified" --print-build-logs ;;
-    
-    # Integration runner
+        run_integration_unified "modules-unified" ;;
     integration)
         if [[ -n "$2" ]]; then
             run_integration_target "$2"
         else
-            run_integration_tests
+            run_integration_unified "core-unified"
         fi
         ;;
-    *)
-        echo "Usage: caf-test [unit <file> | integration <name> | core | modules | all]"
+    "")
+        echo "Usage: caf-test [--remote] [--debug] [unit <file> | integration <name> | list | <test-name>]"
         exit 1
+        ;;
+    *)
+        # Attempt to run as an individual test if it matches a name
+        if is_individual_test "$1"; then
+            run_integration_target "$1"
+        else
+            echo "❌ Unknown command or test: $1"
+            echo "Run 'caf-test list' to see available tests."
+            exit 1
+        fi
         ;;
 esac

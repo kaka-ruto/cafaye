@@ -15,17 +15,10 @@ in
     interfaces."tailscale0".allowedTCPPorts = [ 22 ];
   });
 
-  # Enable SSH
-  services.openssh = {
-    enable = true;
-    openFirewall = false; # We control firewall rules manually
-    settings = {
-      PasswordAuthentication = false;
-      KbdInteractiveAuthentication = false;
-      PermitRootLogin = "no";
-    };
-  };
-
   # Fail2ban for basic brute force protection (only in normal mode)
-  services.fail2ban.enable = !bootstrapMode;
+  services.fail2ban = {
+    enable = !bootstrapMode;
+    maxretry = 5;
+    bantime = "1h";
+  };
 }

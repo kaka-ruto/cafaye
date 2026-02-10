@@ -5,7 +5,7 @@
     ./boot.nix
     ./hardware.nix
     ./network.nix
-    ./security.nix
+    ./security
     ./sops.nix
     ./user.nix
   ];

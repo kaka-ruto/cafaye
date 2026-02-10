@@ -14,7 +14,7 @@
   zramSwap.enable = userState.core.zram_enabled or true;
   zramSwap.memoryPercent = 50;
 
-  # Kernel tweaks for performance and security
+  # Kernel tweaks for performance
   boot.kernel.sysctl = {
     "net.ipv4.tcp_fastopen" = 3;
     "net.ipv4.tcp_slow_start_after_idle" = 0;

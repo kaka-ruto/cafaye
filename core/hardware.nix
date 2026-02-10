@@ -8,7 +8,8 @@
   # Basic storage configuration (standard for cloud-init/nixos-anywhere deployments)
   boot.initrd.availableKernelModules = [ "ata_piix" "uhci_hcd" "virtio_pci" "virtio_blk" ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ "kvm-intel" "kvm-amd" ];
+  # Make KVM modules optional to avoid failure on systems without VT-x/AMD-V
+  boot.kernelModules = [ ];
   boot.extraModulePackages = [ ];
 
   # Note: fileSystems are defined by disko in hardware/vps.nix

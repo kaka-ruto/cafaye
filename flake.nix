@@ -15,15 +15,14 @@
       # Library for helper functions
       lib = nixpkgs.lib;
 
-      # Function to read user state with priority: /etc -> local -> example
-      readUserState = path: 
+      # Function to read user state with priority: local -> example
+      # Absolute etcPath is avoided during pure evaluation to prevent host contamination
+      readUserState = repoPath: 
         let
-          etcPath = "/etc/cafaye/user-state.json";
-          localPath = ./user/user-state.json;
-          examplePath = ./user/user-state.json.example;
+          localPath = repoPath + "/user/user-state.json";
+          examplePath = repoPath + "/user/user-state.json.example";
         in
-          if builtins.pathExists etcPath then builtins.fromJSON (builtins.readFile etcPath)
-          else if builtins.pathExists localPath then builtins.fromJSON (builtins.readFile localPath)
+          if builtins.pathExists localPath then builtins.fromJSON (builtins.readFile localPath)
           else builtins.fromJSON (builtins.readFile examplePath);
 
       userState = readUserState ./.;
@@ -44,6 +43,7 @@
             gum
             sops
             age
+            check-jsonschema
           ];
           shellHook = ''
             echo "☕ Cafaye OS Development Shell"
@@ -65,7 +65,11 @@
           individualChecks = lib.optionalAttrs pkgs.stdenv.isLinux {
             core-boot = runTest ./tests/core/boot.nix;
             core-network = runTest ./tests/core/network.nix;
-            core-security = runTest ./tests/core/security.nix;
+            core-security = runTest ./tests/integration/security/default.nix;
+            core-security-ssh = runTest ./tests/integration/security/ssh.nix;
+            core-security-kernel = runTest ./tests/integration/security/kernel.nix;
+            core-security-firewall = runTest ./tests/integration/security/firewall.nix;
+            core-security-sudo = runTest ./tests/integration/security/sudo.nix;
             cli-main = runTest ./tests/cli/main.nix;
             cli-debug = runTest ./tests/cli/debug.nix;
             cli-doctor = runTest ./tests/cli/doctor.nix;
@@ -76,6 +80,25 @@
             modules-frameworks = runTest ./tests/modules/frameworks.nix;
             modules-editors = runTest ./tests/modules/editors.nix;
             modules-editors-distributions = runTest ./tests/modules/editors-distributions.nix;
+
+            # Granular checks with forced states
+            modules-ruby = pkgs.testers.runNixOSTest (import ./tests/modules/languages.nix { 
+              inherit pkgs inputs; 
+              userState = userState // { languages = { ruby = true; }; }; 
+            });
+            modules-rust = pkgs.testers.runNixOSTest (import ./tests/modules/languages.nix { 
+              inherit pkgs inputs; 
+              userState = userState // { languages = { rust = true; }; }; 
+            });
+            modules-nodejs = pkgs.testers.runNixOSTest (import ./tests/modules/languages.nix { 
+              inherit pkgs inputs; 
+              userState = userState // { languages = { nodejs = true; }; }; 
+            });
+            modules-postgres = pkgs.testers.runNixOSTest (import ./tests/modules/services.nix { 
+              inherit pkgs inputs; 
+              userState = userState // { services = { postgresql = true; }; }; 
+            });
+            interface-workload-aliases = runTest ./tests/interface/workload-aliases.nix;
           };
 
         packages = {
