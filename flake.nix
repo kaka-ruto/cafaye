@@ -35,35 +35,8 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         
-        # Helper to run tests without requiring KVM (Using software emulation TCG)
-        # This allows tests to run on standard VPS instances without nested virt.
-        runTest = testFile: pkgs.testers.runNixOSTest {
-          imports = [ (import testFile { inherit pkgs inputs userState; }) ];
-          # Configure QEMU for TCG by wrapping the binary to strip -enable-kvm
-          # We use symlinkJoin to ensure qemu-img and other tools are available
-          defaults.virtualisation.qemu.package = pkgs.lib.mkForce (pkgs.symlinkJoin {
-            name = "qemu-tcg-wrapper";
-            paths = [ pkgs.qemu ];
-            postBuild = ''
-              rm $out/bin/qemu-system-x86_64
-              cat <<'EOF' > $out/bin/qemu-system-x86_64
-#!/usr/bin/env bash
-args=("$@")
-new_args=()
-for arg in "''${args[@]}"; do
-  if [ "$arg" != "-enable-kvm" ]; then
-    new_args+=("$arg")
-  fi
-done
-exec ${pkgs.qemu}/bin/qemu-system-x86_64 "''${new_args[@]}"
-EOF
-              chmod +x $out/bin/qemu-system-x86_64
-            '';
-          });
-          defaults.virtualisation.qemu.options = [ "-cpu max" "-accel tcg" ];
-          defaults.virtualisation.graphics = false;
-          defaults.virtualisation.memorySize = 2048;
-        };
+        # Standard test runner
+        runTest = testFile: pkgs.testers.runNixOSTest (import testFile { inherit pkgs inputs userState; });
       in
       {
         devShells.default = pkgs.mkShell {

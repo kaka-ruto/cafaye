@@ -74,11 +74,10 @@ The Forge is equipped with an auto-shutdown script (`/usr/local/bin/caf-autoshut
 
 ## 🔧 Troubleshooting
 
-### KVM vs TCG
-*   **KVM (Hardware Accelerated)**: Local Linux or GCP with Nested Virt. Tests run at ~95% native speed.
-*   **TCG (Software Emulation)**: macOS or standard VPS. Tests run ~10x slower but will always work.
-
-Our `flake.nix` contains a **Universal QEMU Wrapper** that automatically detects the environment and falls back to TCG if `/dev/kvm` is missing.
+### KVM & Hardware Acceleration
+Cafaye OS integration tests require **KVM (Hardware Acceleration)** to run at acceptable speeds.
+*   **GCP Forge**: Ensure **Nested Virtualization** is enabled in the instance settings.
+*   **Local Linux**: Ensure `/dev/kvm` is accessible to your user.
 
 ### Missing Nix
 The `caf-test` script will prompt to install the **Determinate Nix Installer** if it doesn't find `nix` in your PATH. This is a non-destructive multi-user install.
