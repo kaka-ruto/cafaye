@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Cafaye Keys: Convert SSH key to age key for SOPS
+# Usage: caf-keys-age
+
+SSH_KEY="$HOME/.ssh/id_ed25519.pub"
+if [[ ! -f "$SSH_KEY" ]]; then
+    SSH_KEY="$HOME/.ssh/id_rsa.pub"
+fi
+
+if [[ ! -f "$SSH_KEY" ]]; then
+    echo "❌ No SSH public key found at ~/.ssh/id_ed25519.pub or ~/.ssh/id_rsa.pub"
+    echo "💡 Run 'ssh-keygen -t ed25519' to generate one."
+    exit 1
+fi
+
+# Convert to age using ssh-to-age
+AGE_KEY=$(ssh-to-age < "$SSH_KEY")
+echo "$AGE_KEY"

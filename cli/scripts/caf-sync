@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Cafaye Sync: Sync state between nodes via Git
+# Usage: caf-sync [push|pull]
+
+CAFAYE_DIR="$HOME/.config/cafaye"
+if [[ ! -d "$CAFAYE_DIR" ]]; then
+    CAFAYE_DIR="$(pwd)"
+fi
+
+cd "$CAFAYE_DIR"
+
+command="$1"
+
+case "$command" in
+    push)
+        echo "📤 Syncing changes to Git Source of Truth..."
+        git add -A || true
+        # Check if there are changes to commit
+        if ! git diff-index --quiet HEAD --; then
+            git commit -m "Sync: environment update from $(hostname)"
+        fi
+        git push origin master
+        echo "✅ Changes pushed."
+        ;;
+    pull)
+        echo "📥 Pulling updates from Git Source of Truth..."
+        git pull --rebase origin master
+        echo "🔨 Applying changes..."
+        caf-system-rebuild
+        echo "✅ Sync complete."
+        ;;
+    *)
+        echo "Usage: caf-sync [push|pull]"
+        exit 1
+        ;;
+esac

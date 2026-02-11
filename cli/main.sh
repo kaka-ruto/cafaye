@@ -288,6 +288,17 @@ case "$1" in
     apply)
         caf-system-rebuild
         ;;
+    sync)
+        caf-sync "$2"
+        ;;
+    fleet)
+        shift
+        caf-fleet "$@"
+        ;;
+    test)
+        shift
+        caf-test "$@"
+        ;;
     backup)
         if [[ "$2" == "status" ]]; then
             echo "📊 Backup Status"
@@ -307,6 +318,9 @@ case "$1" in
         echo "  config          Open interactive configuration"
         echo "  doctor          Check system health"
         echo "  apply           Apply state changes (rebuild)"
+        echo "  sync [push/pull] Sync state with Git source of truth"
+        echo "  fleet [status/add/apply] Manage remote nodes"
+        echo "  test [--nix]    Run syntax or behavioral tests"
         echo "  backup status   Show backup repository status"
         echo ""
         echo "Run without arguments for interactive menu."

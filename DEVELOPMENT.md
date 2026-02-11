@@ -46,22 +46,12 @@ This document describes the behaviors we expect from the Cafaye installer. We de
 │   ├── nvim/              # Neovim config
 │   ├── zsh/               # Zsh config
 │   └── git/               # Git config
-├── tests/                 # ALL TESTS
+├── tests/                 # AUTOMATIC TEST DISCOVERY
 │   ├── modules/           # Module tests (1:1 mapping with modules/)
-│   │   ├── languages/
-│   │   │   └── ruby.nix   # Tests modules/languages/ruby.nix
-│   │   ├── frameworks/
-│   │   │   └── rails.nix  # Tests modules/frameworks/rails.nix
-│   │   ├── editors/
-│   │   │   ├── neovim.nix              # Tests modules/editors/neovim.nix
-│   │   │   └── neovim/                 # Tests subdirectory modules
-│   │   │       ├── lazyvim.nix         # Tests modules/editors/neovim/lazyvim.nix
-│   │   │       └── astronvim.nix       # Tests modules/editors/neovim/astronvim.nix
-│   │   └── ...            # Mirrors modules/ structure exactly
-│   ├── installation/      # Installer behavior tests
-│   ├── cli/               # CLI command tests
-│   ├── integration/       # Integration scenario tests
-│   └── core/              # Core functionality tests
+│   ├── fixtures/          # Shared test data (ignored by discovery)
+│   ├── lib/               # Test helper code (ignored by discovery)
+│   ├── test-helper.nix    # Global test configuration and fixes
+│   └── ...                # Any .nix file in tests/ is a test target
 ├── logs/                  # Installation and operation logs
 ├── .git/                  # Git repository for backup
 └── install.sh             # Installer script (can be from Cafaye repo or user's fork)
@@ -109,6 +99,41 @@ Besides modules, we also test:
 
 **Subdirectory Support:**
 Modules can have subdirectories for variants. Tests follow the same structure.
+
+## Testing Infrastructure
+
+Cafaye uses a "Rails-style" testing architecture where tests are automatically discovered and can range from simple data fixtures to complex behavioral simulations.
+
+### The `caf test` Command
+
+The primary interface for testing the runtime is the `caf test` command.
+
+| Command | Description |
+| :--- | :--- |
+| `caf test` | Runs the full suite (Linting + All Behavioral Tests). |
+| `caf test --lint` | Runs fast static analysis (Syntax checks, Shellcheck, Flake evaluation). |
+| `caf test <path>` | Runs a specific test or suite (e.g., `modules/languages/ruby`). |
+| `caf test languages` | Runs a shorthand suite (e.g., all language modules). |
+
+### Hybrid Test Formats
+
+The test discovery logic (`flake.nix`) automatically detects the format of your `.nix` test files:
+
+1. **Pure Data (Unit Tests)**: Simply returns a `userState` attribute set. Ideal for verifying that a configuration state is valid.
+   ```nix
+   { languages.ruby = true; }
+   ```
+
+2. **Functional Modules (Behavioral Tests)**: A standard Nix function taking `{pkgs, ...}`. Allows for complex overrides, mock files, or custom activation logic.
+
+3. **Direct Derivations (Integration Tests)**: Returns a full derivation (e.g., using `pkgs.testers.runNixOSTest`). Used for multi-node VM testing and installer verification.
+
+### Test Discovery Rules
+
+- **Automatic**: Any `.nix` file in `tests/` (recursively) is exposed as a test target.
+- **Mapped Names**: Slashes are mapped to dots for Nix attributes (e.g., `tests/modules/languages/ruby.nix` becomes `modules.languages.ruby`). The CLI accepts both.
+- **Exclusions**: Files in `tests/fixtures/` and `tests/lib/`, or named `test-helper.nix`, are ignored by discovery to prevent partial files from clobbering the test list.
+- **Global Fixes**: `tests/test-helper.nix` is automatically injected into every discovered test, providing global fixes like disabling font-linking on Darwin sandbox environments.
 
 ## Installation Pattern
 
@@ -588,6 +613,49 @@ Press Enter to start coding...
 - Show connection instructions clearly
 - Show Tailscale IP for access
 - Remind about auto-shutdown if enabled
+
+---
+
+## Fleet Management (Local & Remote Sync)
+
+**Philosophy:**
+- **Independent Nodes**: Each machine is an autonomous actor. It does not depend on a central server to function.
+- **Git as Source of Truth**: `~/.config/cafaye` is a Git repository synced via a private remote (GitHub/GitLab).
+- **Awareness via Registry**: Nodes use an encrypted "Fleet Registry" to know about each other without tight coupling.
+
+### Terminology:
+- **Local**: Your primary workstation (usually macOS or Linux Desktop).
+- **Remote**: Any VPS or secondary machine (usually Linux via SSH/Tailscale).
+
+### 1. The Fleet Registry (`secrets/fleet.yaml`)
+Sensitive metadata about your nodes (IPs, provider info, roles) is stored in a SOPS-encrypted file.
+- **Security**: Uses machine SSH public keys (converted to age) for encryption.
+- **Privacy**: IPs, hostnames, and provider details are encrypted in the Git repo.
+- **Independent Config**: The registry is used for orchestration only. nix configuration remains node-local.
+
+### 2. Registration Flow (Local-Involved)
+1. **Remote Node**: Finishes installation and provides its Public SSH Key.
+2. **Local Machine**: User runs `caf fleet add <name> --key "<key>" --ip "<ip>"`.
+   - Local machine adds the node to the encrypted registry.
+   - Local machine adds the node's key to the SOPS recipient list (`.sops.yaml`).
+   - Local machine re-encrypts the registry and pushes to Git.
+3. **Remote Node**: Runs `caf sync pull`. It can now decrypt the registry because its key was authorized by Local.
+
+### 3. Sync & Apply Behaviors
+- **`caf sync push`**: Auto-commits pending state changes and pushes to the Git remote.
+- **`caf sync pull`**: Pulls latest changes from Git, handles merges, and triggers `caf apply`.
+- **`caf fleet status`**: Displays a dashboard of all nodes, their roles, Tailscale IPs, and sync status.
+- **`caf fleet apply`**: (Orchestration) Uses SSH to trigger `caf sync pull` on all remote nodes simultaneously.
+
+### 4. Fleet Behavioral Tests
+
+**Test THAT:**
+- **SOPS**: The registry `secrets/fleet.yaml` is unreadable/invalid if the key is not in `.sops.yaml`.
+- **Encryption**: Sensitive fields (like IP) are not plain-text in the raw Git version of the file.
+- **Registration**: Adding a node correctly updates the recipient list and the registry file.
+- **Independent State**: Changing a setting on Node A and syncing does NOT overwrite machine-specific `local-user.nix` on Node B.
+- **Sync Loop**: `caf sync pull` on a remote correctly detects new commits and triggers a Home Manager rebuild.
+- **SSH Loop**: `caf fleet apply` correctly attempts to connect to remotes listed in the registry.
 
 ---
 

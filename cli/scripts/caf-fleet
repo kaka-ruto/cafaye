@@ -1,0 +1,93 @@
+#!/bin/bash
+
+# Cafaye Fleet Management
+# Usage: caf-fleet [status|add|apply]
+
+CAFAYE_DIR=$(git rev-parse --show-toplevel 2>/dev/null || echo "$HOME/.config/cafaye")
+cd "$CAFAYE_DIR" || exit 1
+
+command="$1"
+
+# Identify the SSH key for SOPS
+SSH_PRIVATE_KEY=""
+[[ -f "$HOME/.ssh/id_ed25519" ]] && SSH_PRIVATE_KEY="$HOME/.ssh/id_ed25519"
+[[ -z "$SSH_PRIVATE_KEY" && -f "$HOME/.ssh/id_rsa" ]] && SSH_PRIVATE_KEY="$HOME/.ssh/id_rsa"
+
+# Ensure SOPS_AGE_KEY is set
+if [[ -n "$SSH_PRIVATE_KEY" && -z "$SOPS_AGE_KEY" ]]; then
+    if command -v ssh-to-age &> /dev/null; then
+        export SOPS_AGE_KEY=$(ssh-to-age -private-key -i "$SSH_PRIVATE_KEY" 2>/dev/null)
+    fi
+fi
+
+# Fallback if still empty
+if [[ -z "$SOPS_AGE_KEY" ]]; then
+    export SOPS_AGE_KEY=$(nix --extra-experimental-features "nix-command flakes" shell nixpkgs#ssh-to-age --command ssh-to-age -private-key -i "$SSH_PRIVATE_KEY" 2>/dev/null)
+fi
+
+run_sops() {
+    if command -v sops &> /dev/null; then
+        sops "$@"
+    else
+        nix --extra-experimental-features "nix-command flakes" shell nixpkgs#sops --command sops "$@"
+    fi
+}
+
+show_fleet_status() {
+    echo "📋 Cafaye Fleet Dashboard"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    [[ ! -f "secrets/fleet.yaml" ]] && { echo "Registry empty."; return; }
+
+    echo "Nodes:"
+    # Use JSON output for jq
+    DATA=$(run_sops -d --output-type json secrets/fleet.yaml 2>/dev/null)
+    if [[ -z "$DATA" ]]; then
+         echo "❌ Unable to decrypt/parse fleet registry."
+    else
+         echo "$DATA" | jq -r '.fleet | to_entries[] | "  - \(.key): \(.value.tailscale_ip) (\(.value.role))"'
+    fi
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+
+add_fleet_node() {
+    name="$2"; key="$3"; ip="$4"; role="${5:-remote}"
+    echo "💾 Adding node '$name' to fleet..."
+    
+    if [[ -f ".sops.yaml" ]] && ! grep -q "$key" .sops.yaml; then
+        echo "🔑 Authorizing node key in .sops.yaml..."
+        [[ "$(uname -s)" == "Darwin" ]] && sed -i "" "/- \"age1/a\\
+          - \"$key\"" .sops.yaml || sed -i "/- \"age1/a \          - \"$key\"" .sops.yaml
+    fi
+
+    echo "🔓 Decrypting registry..."
+    # Always work in JSON for better manipulation
+    run_sops -d --output-type json secrets/fleet.yaml > fleet.tmp 2>/dev/null || echo '{"fleet": {}}' > fleet.tmp
+    jq ".fleet[\"$name\"] = { \"tailscale_ip\": \"$ip\", \"role\": \"$role\", \"hostname\": \"$name\" }" fleet.tmp > fleet.new
+    
+    echo "🔒 Re-encrypting registry..."
+    run_sops -e --input-type json --output-type yaml fleet.new > secrets/fleet.yaml
+    rm -f fleet.tmp fleet.new
+    echo "✅ Node '$name' added."
+}
+
+fleet_apply() {
+    echo "🚀 Orchestrating fleet-wide apply..."
+    remotes=$(run_sops -d --output-type json secrets/fleet.yaml 2>/dev/null | jq -r '.fleet | to_entries[] | select(.value.role == "remote") | .value.tailscale_ip')
+    [[ -z "$remotes" ]] && { echo "No remote nodes found."; return; }
+
+    SSH_OPT=""
+    [[ -f "$HOME/.ssh/cafaye" ]] && SSH_OPT="-i $HOME/.ssh/cafaye"
+
+    for remote in $remotes; do
+        echo "🛠️  Syncing $remote..."
+        ssh $SSH_OPT -o ConnectTimeout=5 "$remote" "caf sync pull" || echo "❌ Failed: $remote"
+    done
+}
+
+case "$command" in
+    status) show_fleet_status ;;
+    add) add_fleet_node "$@" ;;
+    apply) fleet_apply ;;
+    *) echo "Usage: caf fleet [status|add|apply]"; exit 1 ;;
+esac

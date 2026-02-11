@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# CLI wrapper for the test suite
+bash "$HOME/.config/cafaye/bin/test.sh" "$@"

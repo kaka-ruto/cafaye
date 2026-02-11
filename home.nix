@@ -11,6 +11,7 @@
     ./modules/interface/theme.nix
     ./modules/interface/cli.nix
     ./modules/editors/neovim.nix
+    ./modules/core/sops.nix
     
     # Optional modules based on userState
     ./modules/languages/ruby.nix

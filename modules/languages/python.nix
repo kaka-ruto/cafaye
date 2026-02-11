@@ -9,7 +9,7 @@ in
       python3
       python3Packages.pip
       python3Packages.virtualenv
-      poetry
+      # poetry # FIXME: Currently broken on aarch64-darwin in nixpkgs-unstable
     ]
   );
 }

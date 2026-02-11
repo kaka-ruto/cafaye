@@ -1,0 +1,9 @@
+# .sops.yaml: Configuration for SOPS encryption
+creation_rules:
+  - path_regex: secrets/.*\.yaml$
+    key_groups:
+      - age:
+          # You should replace this with your actual age public key
+          # Use 'caf-sops-init' to set this up (to be implemented)
+          - "age1l6hpztjvaelwflewj5wrra8w4pw8gr7ss32zrvpj4lrhuvnxcqtqca2khw"
+          - "age10f3f5l5fraw46pcawdwynp7euksn4evsphx5kwy0h3uvkw2v039s5e0uzd"
