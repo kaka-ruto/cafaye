@@ -1,323 +1,538 @@
-# ☕ Cafaye OS
+# ☕ Cafaye
 
-> An AI-first developer OS that turns any cheap VPS into a secure, cloud-native powerhouse accessible from any device.
+> The first Development Runtime built for collaboration between humans and AI. Accessible from any device, with autonomous agents that keep working when you don't.
+
+## What is Cafaye?
+
+**Cafaye is a Development Runtime**—not an operating system, not just a set of config files, but a complete development environment that runs wherever you need it.
+
+Think of it as your development environment's home: whether on your laptop, a VPS in the cloud, or both. It packages your tools, configurations, and AI agents into a reproducible, declarative environment that follows you everywhere.
+
+### Key Differences
+
+| Traditional Setup                          | Cafaye                             |
+| ------------------------------------------ | ---------------------------------- |
+| "Works on my machine"                      | Works on _any_ machine             |
+| Hours configuring new laptop               | One command, identical environment |
+| AI tools run only when you're at your desk | Autonomous agents work 24/7        |
+| Environment drifts over time               | Fully reproducible                 |
+| Locked to one device                       | Access from phone, tablet, laptop  |
 
 ## 🚀 Quick Start
 
-**Two simple steps:**
+### Option 1: Local Machine (Mac or Ubuntu)
 
 ```bash
-# Step 1: SSH into your fresh VPS
-ssh root@<your-vps-ip>
-
-# Step 2: Run the installer
-bash <(curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh)
+# One command to set up your development environment
+curl -fsSL https://cafaye.sh | bash
 ```
 
-That's it! The installer will:
+That's it! You'll get:
 
-1. Install Nix (multi-user)
-2. Clone Cafaye
-3. Install NixOS
+- Pre-configured terminal (Zsh, Zellij, Starship, etc)
+- Your choice of editors (Neovim, VS Code, Helix, etc)
+- Language runtimes (Ruby, Python, Node, Go, Rust, etc)
+- AI tools (Claude Code, Antigravity, Codex, Aider, etc) ready to go
+- Beautiful Catppuccin theming throughout(more themes to come)
 
-**After installation:**
+### Option 2: Self-Hosted VPS (24/7 Access)
+
 ```bash
-# Your VPS reboots into NixOS
-# SSH in again and configure:
+# SSH into your fresh Ubuntu VPS
 ssh root@<your-vps-ip>
-caf-setup
+
+# Run the installer
+curl -fsSL https://cafaye.sh | bash
 ```
 
-**📚 Need help?** Check out the [VPS Installation Guide](docs/VPS-INSTALL.md) for detailed instructions, troubleshooting tips, and manual installation steps.
+Your VPS becomes a Development Runtime accessible from any device:
 
----
+- SSH from your laptop
+- Browser-based VS Code from your iPad
+- Terminal sessions that persist across disconnections
+- AI agents that continue working while you're offline
 
-## 🆚 Why Cafaye Over Omarchy?
-
-| Aspect | Omarchy | Cafaye |
-|--------|---------|--------|
-| **One-liner install** | ❌ Clone manually | ✅ `bash <(curl)` |
-| **Pre-requisites** | Git + existing Arch | Auto-installs Nix |
-| **Target** | Desktop | VPS/Server |
-| **Access** | Local machine | SSH + Browser anywhere |
-| **Graphics** | GPU required | Headless |
-| **Security** | Local firewall | Zero-trust (Tailscale) |
-| **Cost** | Your hardware | $5/month VPS |
+**📚 Need help?** Check out the [Installation Guide](docs/INSTALL.md) for detailed instructions.
 
 ---
 
 ## 💎 The Philosophy
 
-1.  **The "Omarchy" Experience**
-    All the polish of Omarchy's desktop, delivered through SSH. Zellij provides tiling windows, Starship delivers a rich prompt, and Catppuccin makes it beautiful. Your terminal _is_ your desktop.
+### 1. **Human-AI Collaboration**
 
-2.  **AI-Native & Agent-Ready**
-    Cafaye doesn't just run AI; it orchestrates it. Ollama runs local models, Aider enables AI pair programming, and Continue integrates with your IDE. API keys are securely managed, and everything works in harmony.
+Cafaye orchestrates collaboration between you and AI agents. Use Aider for pair programming, Ollama for local models, and autonomous agents that handle repetitive tasks. The runtime is designed so agents can work alongside you or continue independently.
 
-3.  **Absolute Reproducibility**
-    Powered by Nix Flakes, your entire server is defined as code. Move to a new VPS? Run one command. Your languages, tools, themes, and configurations are reconstructed exactly as they were.
+### 2. **Perfect Reproducibility**
 
-4.  **Zero-Trust Security**
-    No open ports. No exposed services. Everything—SSH, VS Code Server, AI dashboards—is locked behind Tailscale. Access your powerhouse from a phone in a cafe or a laptop at home, securely.
+Powered by Nix and Home Manager, your entire environment is declared as code. Move to a new machine? Run one command. Your tools, themes, aliases, and configurations are reconstructed exactly as they were. No more "works on my machine."
 
-5.  **Accessible From Anywhere**
-    A browser and Tailscale are all you need. Full VS Code in your browser, persistent terminal sessions that survive disconnects, and mobile-friendly workflows.
+### 3. **Access From Any Device**
+
+Your Development Runtime runs in the cloud (or locally) and is accessible via SSH or browser from:
+
+- Your MacBook Pro
+- Your iPad at the coffee shop
+- Your phone on the train
+- Any device with a terminal or browser
+
+### 4. **Always On**
+
+When hosted on a VPS, your environment never sleeps:
+
+- Long-running builds continue
+- AI agents process tasks overnight
+- Terminal sessions persist across disconnections
+- Pick up exactly where you left off from any device
+
+### 5. **Zero Configuration**
+
+No need to learn Nix. Edit simple JSON files or use the interactive `caf` CLI. The system handles the complexity—you just declare what you want.
+
+---
+
+## 🆚 Why Cafaye?
+
+### vs. Traditional Dotfiles
+
+| Aspect              | Dotfiles                     | Cafaye                            |
+| ------------------- | ---------------------------- | --------------------------------- |
+| **Setup time**      | Hours of debugging           | 5 minutes, works guaranteed       |
+| **Reproducibility** | "It worked on my old laptop" | Identical on Mac, Ubuntu, or VPS  |
+| **AI integration**  | Manual installation          | Built-in agents and orchestration |
+| **Multi-device**    | Copy files manually          | Access from anywhere              |
+| **Rollback**        | Hope you have backups        | One command to previous state     |
+
+### vs. GitHub Codespaces
+
+| Aspect             | Codespaces                | Cafaye                             |
+| ------------------ | ------------------------- | ---------------------------------- |
+| **Cost**           | $0.18/hour                | Free (bring your own VPS) or local |
+| **Customization**  | Limited container configs | Full system customization with Nix |
+| **AI agents**      | Not supported             | First-class autonomous agents      |
+| **Portability**    | GitHub only               | Any VPS provider or local machine  |
+| **Data ownership** | Microsoft cloud           | Your infrastructure                |
+
+### vs. Omarchy/Omakub
+
+| Aspect           | Omarchy/Omakub      | Cafaye                         |
+| ---------------- | ------------------- | ------------------------------ |
+| **Base**         | Desktop Linux       | Ubuntu/Nix (local or remote)   |
+| **Access**       | Local machine only  | Any device via SSH/browser     |
+| **Availability** | When laptop is open | 24/7 on VPS                    |
+| **AI focus**     | Desktop tools       | Agent orchestration & autonomy |
+| **Scope**        | Personal setup      | Personal + team collaboration  |
+
+---
 
 ## 📂 Project Structure
 
 ```text
 .
-├── flake.nix        # System orchestrator & dependency manager
-├── devbox.json      # Local development environment
-├── install.sh       # One-liner VPS bootstrap script
-├── version          # Current Cafaye version
+├── install.sh              # One-command installer
+├── cli/                    # The "caf" CLI (TUI with gum)
+│   └── scripts/            # Individual caf-* commands
 │
-├── core/            # IMMUTABLE ENGINE
-│   ├── boot.nix     # Kernel, ZRAM, GRUB
-│   ├── network.nix  # Tailscale & DNS
-│   └── security.nix # Firewall, SSH via Tailscale only
+├── core/                   # System configuration
+│   ├── nix/               # Nix package manager setup
+│   └── auto-shutdown.nix  # Cost-saving automation
 │
-├── interface/       # THE OMARCHY VIBE
-│   ├── terminal/    # Zsh, Zellij, Starship
-│   ├── tools.nix    # CLI tools (zoxide, eza, bat, fd, ripgrep, fzf)
-│   └── theme.nix    # Global theme management
+├── modules/               # The building blocks
+│   ├── languages/         # Ruby, Python, Node, Go, Rust
+│   ├── frameworks/        # Rails, Django, Next.js templates
+│   ├── services/          # PostgreSQL, Redis, Docker
+│   ├── editors/           # Neovim, VS Code Server, Helix
+│   └── ai/                # Ollama, Aider integration
 │
-├── modules/         # THE LEGO BLOCKS
-│   ├── languages/   # Runtimes: Ruby, Python, Node, Rust
-│   ├── frameworks/  # Stacks: Rails, Django, Next.js
-│   ├── services/    # Daemons: PostgreSQL, Redis, Docker
-│   ├── editors/     # Neovim, Helix, VS Code Server
-│   │   └── distributions/nvim/  # AstroNvim, LazyVim, NvChad
-│   └── ai/          # Ollama, Aider, Continue
+├── interface/             # The Omarchy-inspired aesthetic
+│   ├── terminal/          # Zsh, Zellij, Starship configs
+│   ├── themes/            # Catppuccin and other themes
+│   └── tools.nix          # Modern CLI tools (zoxide, eza, bat)
 │
-├── config/          # DEFAULT CONFIGURATIONS
-│   ├── terminal/    # zsh, zellij, starship, git, btop, lazygit, fastfetch
-│   ├── editors/     # Editor configs (defaults + distributions)
-│   ├── themes/      # Catppuccin colors & tool-specific themes
-│   ├── templates/   # Theme templates with {{ color }} placeholders
-│   └── cafaye/      # User extensibility
-│       ├── hooks/       # post-update, theme-set, rebuild-complete
-│       ├── extensions/  # User menu overrides
-│       └── branding/    # ASCII logo, about text
+├── config/                # Default configurations
+│   ├── terminal/          # Shell configs, git, btop
+│   ├── editors/           # Editor defaults
+│   └── themes/            # Theme files and templates
 │
-├── cli/             # THE "CAF" CLI (TUI with gum)
-├── user/            # THE STATE (JSON-based user choices)
-├── secrets/         # ENCRYPTED SECRETS (sops-nix)
-├── tests/           # THE MIRROR (1:1 test mapping)
-└── .github/         # THE FACTORY (CI/CD & Cachix)
+├── user/                  # User state (JSON-based)
+│   ├── user-state.json    # Your environment choices
+│   └── user-state.schema.json  # Validation schema
+│
+├── tests/                 # Test suite
+│   ├── install/         # Installation tests
+│   ├── core/              # Core functionality tests
+│   └── modules/           # Module-specific tests
+│
+└── docs/                  # Documentation
+    ├── INSTALL.md         # Installation guide
+    ├── SETUP.md           # Configuration guide
+    └── VPS.md     # VPS-specific instructions
 ```
+
+---
 
 ## 🚀 Key Features
 
 ### Easy to Use
 
-- **The `caf` CLI**: A beautiful TUI menu (inspired by `omarchy-menu`). Install Rails with one click—Ruby and PostgreSQL are configured automatically.
-- **No Nix Knowledge Required**: Edit JSON, run `caf apply`. That's it.
-- **Docker Databases**: One command to spin up MySQL, PostgreSQL, Redis, MongoDB.
+- **The `caf` CLI**: A beautiful TUI menu. Add Rails? One click—Ruby and PostgreSQL configure automatically.
+- **No Nix Knowledge Required**: Edit JSON, run `caf apply`. The system handles the Nix complexity.
+- **Docker Services**: One command to spin up PostgreSQL, Redis, MySQL, MongoDB.
+- **Auto-Shutdown**: Built-in cost-saving for VPS instances—powers off after inactivity.
 
-### Easy to Extend
+### AI-Native
 
-- **Hook System**: Add custom scripts for `post-update`, `theme-set`, `rebuild-complete`.
-- **Menu Extensions**: Override or extend the `caf` menu with your own options.
-- **Modular Architecture**: Add a language runtime in one `.nix` file.
+- **AI Coding Agents**: Ready for Claude Code, Codex, Aider, OpenCode, Antigravity, and more
+- **Autonomous Agents**: Run agents that continue working when you're offline
+- **Ollama**: Local LLM hosting for privacy and offline work
+- **Agent Orchestration**: Schedule tasks, run background jobs, automate workflows
+- **Easy to Add**: One command to install any AI tool: `caf install claude-code`
 
-## 🚀 Post-Installation
+### Beautiful & Productive
 
-Once the installer detaches and the VPS reboots, Cafaye OS will generate its own secure host keys. Because these differ from the original Ubuntu keys, your first connection attempt might show a scary warning: **"REMOTE HOST IDENTIFICATION HAS CHANGED!"**
+- **Catppuccin Mocha**: Stunning theme throughout all tools
+- **Zellij**: Tiling terminal that feels like a window manager
+- **Starship Prompt**: Git status, Tailscale connection, active AI model—at a glance
+- **Modern CLI Stack**: zoxide, eza, bat, fd, ripgrep, fzf, btop, lazygit—all pre-configured
 
-Don't panic! This is expected. Run the following on your local machine to refresh the connection:
+### Safe & Reproducible
 
-```bash
-# Clear the old host identity
-ssh-keygen -R <vps-ip-or-alias>
+- **Declarative Configuration**: Your entire environment in Git
+- **Atomic Updates**: Changes apply only if they work—automatic rollback on failure
+- **Versioned Packages**: Exact versions locked, reproducible across machines
+- **Secret Management**: API keys encrypted with sops, injected at runtime
 
-# Connect to your new Cafaye OS
-ssh root@<vps-ip-or-alias>
-```
+### Multi-Device Access
+
+- **SSH**: Native terminal access from any device
+- **Browser IDE**: VS Code Server accessible from phones, tablets, laptops
+- **Persistent Sessions**: Zellij sessions survive disconnections—resume anywhere
+- **Tailscale Integration**: Secure mesh VPN, no open ports needed
 
 ---
 
-### Beautiful
+## 🛠 Installation Options
 
-- **Catppuccin Mocha**: The same stunning theme from Omarchy, everywhere.
-- **Starship Prompt**: Git status, Tailscale connection, active AI model—all at a glance.
-- **Zellij**: Tiling terminal that feels like a window manager.
-- **Fastfetch**: Beautiful system info on every login.
-
-### Developer Luxury
-
-- **Modern CLI Tools**: zoxide, eza, bat, fd, ripgrep, fzf, btop, lazygit—all pre-configured.
-- **Git Config**: Sensible aliases and settings (rebase on pull, auto setup remote).
-- **Theme Templates**: `{{ color }}` placeholders for consistent theming across tools.
-
-### Safe & Secure
-
-- **Zero Open Ports**: Tailscale mesh VPN only. No firewall rules to manage.
-- **Encrypted Secrets**: API keys stored with sops-nix, encrypted at rest.
-- **Immutable Infrastructure**: NixOS means no configuration drift.
-
-### Fast & Powerful
-
-- **Binary Caching**: Cachix pre-builds everything. A $5 VPS installs in minutes.
-- **ZRAM**: Efficient memory compression for RAM-constrained instances.
-- **Optimized for VPS**: KVM/QEMU guest tweaks out of the box.
-
-### Accessible From Anywhere
-
-- **Browser IDE**: VS Code Server accessible over Tailscale from any device.
-- **Persistent Sessions**: Zellij sessions survive disconnects. Resume on any device.
-- **Mobile Friendly**: SSH from your phone, pick up where you left off.
-
-## 🛠 For AI Developers
-
-When developing Cafaye, reference the local Omarchy repository (`../omarchy/`):
-
-1.  **Command Patterns**: Mirror `omarchy-*` naming with `caf-*` prefix
-2.  **Menu Design**: Study `../omarchy/bin/omarchy-menu` for TUI inspiration
-3.  **Theme Colors**: Use `../omarchy/themes/catppuccin/colors.toml`
-4.  **Prompt Config**: Adapt `../omarchy/config/starship.toml`
-5.  **Mirror Testing**: Every module in `modules/` needs a test in `tests/`
-
-## 🏗 Install on VPS
-
-**Two simple steps:**
+### Local Installation (Mac or Ubuntu)
 
 ```bash
-# Step 1: SSH into your fresh VPS
-ssh root@<your-vps-ip>
+# Install on your MacBook or Ubuntu desktop
+curl -fsSL https://cafaye.sh | bash
 
-# Step 2: Run the installer
-bash <(curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh)
-```
-
-The installer will:
-
-1. Detect Debian/Ubuntu
-2. Install Nix (multi-user)
-3. Clone Cafaye
-4. Install NixOS
-5. VPS reboots into Cafaye OS
-
-**After installation:**
-
-```bash
-# SSH into your new Cafaye OS
-ssh root@<your-vps-ip>
-
-# Configure your development environment
+# Configure your environment
 caf-setup
 ```
 
----
+Perfect for:
 
-**What you'll need:**
-- A fresh VPS (Ubuntu 24.04 or Debian 12)
+- Personal development machine
+- Syncing environment across multiple computers
+- Trying Cafaye before committing to a VPS
+
+### VPS Installation (24/7 Runtime)
+
+```bash
+# SSH into your fresh Ubuntu VPS
+ssh root@<your-vps-ip>
+
+# Install Cafaye
+curl -fsSL https://cafaye.sh | bash
+
+# Configure
+ssh root@<your-vps-ip>
+caf-setup
+```
+
+Perfect for:
+
+- Development from any device
+- Running AI agents 24/7
+- Team collaboration
+- Consistent environment across team members
+
+**Requirements:**
+
+- Fresh VPS with Ubuntu 22.04/24.04 or Debian 12
 - At least 2GB RAM (1GB works with ZRAM)
 - Root SSH access
+
+**Recommended VPS Providers:**
+
+- Hetzner Cloud (€5/month, excellent value)
+- DigitalOcean ($6/month, great docs)
+- AWS/GCP/Azure (if you have credits)
 
 ---
 
 ## 💻 Local Development
 
 **Prerequisites:**
+
 - Devbox (manages Nix environment)
 - Docker (for full integration tests)
 
 **Steps:**
 
-1. **Install Devbox (if not already installed):**
+1. **Install Devbox:**
+
    ```bash
    curl -fsSL https://get.jetpack.io/devbox | bash
    ```
 
-2. **Clone and enter the development environment:**
+2. **Clone and enter development environment:**
+
    ```bash
    git clone https://github.com/kaka-ruto/cafaye
    cd cafaye
-   devbox shell       # macOS/Linux dev environment
-   nix flake check    # Run the test suite
+   devbox shell
    ```
 
-3. **Run full integration tests in Docker (Recommended before pushing):**
+3. **Run tests:**
+
    ```bash
+   # Fast syntax check
+   bash bin/test.sh
+
+   # Full integration tests
    devbox run test-full
    ```
-   Or manually (force amd64 to match VPS architecture):
-   ```bash
-   docker build --platform linux/amd64 -t cafaye-factory .
-   docker run --platform linux/amd64 --rm -it cafaye-factory
-   ```
 
- ## 🧪 Testing
- 
- Cafaye has comprehensive testing built in. Tests run in CI on every push, and you can run them locally too.
- 
- ### Quick Local Testing (No VMs, ~10 seconds)
- 
- Run the local test script before pushing to CI:
- 
- ```bash
- ./bin/test-local.sh
- ```
- 
- This validates Nix syntax, script syntax, JSON state, and module imports without booting VMs.
- 
- ### Monitor CI Status
- 
- Use the `caf-factory-check` CLI to monitor your CI/CD builds:
- 
- ```bash
- # Check latest CI run
- caf-factory-check --latest
- 
- # Check specific commit
- caf-factory-check --commit abc1234
- 
- # View error logs inline
- caf-factory-check --logs
- 
- # Watch CI continuously
- caf-factory-check --watch
- 
- # Check current commit status
- caf-factory-check --commit $(git rev-parse --short HEAD)
- ```
- 
- ### Run Individual Tests
- 
- For focused debugging, run specific tests:
- 
- ```bash
- # Unified tests (what CI runs - fast)
- nix build .#checks.x86_64-linux.core-unified
- nix build .#checks.x86_64-linux.cli-unified
- nix build .#checks.x86_64-linux.modules-unified
- 
- # Individual tests (for debugging specific components)
- nix build .#individualChecks.x86_64-linux.core-boot
- nix build .#individualChecks.x86_64-linux.cli-main
- nix build .#individualChecks.x86_64-linux.modules-languages
- ```
- 
- ### Full Integration Tests (Docker)
- 
- Run complete VM tests in isolation:
- 
- ```bash
- # Using devbox (recommended)
- devbox run test-full
- 
- # Or manually with Docker
- docker build --platform linux/amd64 -t cafaye-factory .
- docker run --platform linux/amd64 --rm -it cafaye-factory
- ```
- 
- ## 📖 Documentation
- 
- - **[Installation Guide](docs/INSTALL.md)** - How to install on a VPS
-  - **[Setup Guide](docs/SETUP.md)** - Configuration wizard details
- - **[Contributing](CONTRIBUTING.md)** - Development guidelines
- - **[DEVELOPMENT.md](DEVELOPMENT.md)** - Detailed roadmap with phase checklists
- - **[AGENTS.md](AGENTS.md)** - AI developer instructions
- - **[CHANGELOG.md](CHANGELOG.md)** - Version history
- - **[RELEASING.md](RELEASING.md)** - How to cut a release
+---
+
+## 🧪 Testing
+
+Cafaye has comprehensive testing built-in:
+
+### Quick Local Testing
+
+```bash
+# Validate syntax and structure (~10 seconds)
+bash bin/test.sh
+```
+
+### Full Integration Tests
+
+```bash
+# Run complete VM tests in Docker
+devbox run test-full
+```
+
+### Individual Tests
+
+```bash
+# Test specific modules
+nix build .#checks.x86_64-linux.modules-languages-ruby
+nix build .#checks.x86_64-linux.modules-frameworks-rails
+```
+
+---
+
+## 📖 Documentation
+
+- **[Installation Guide](docs/INSTALL.md)** - Detailed installation instructions
+- **[Setup Guide](docs/SETUP.md)** - Configuration and customization
+- **[VPS Installation](docs/VPS-INSTALL.md)** - VPS-specific setup
+- **[Contributing](CONTRIBUTING.md)** - How to contribute
+- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development roadmap
+- **[AGENTS.md](AGENTS.md)** - AI developer instructions
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history
+
+---
+
+## 🔧 Extensible & Customizable
+
+**Cafaye provides the foundation. You bring your tools.**
+
+### AI Agents Galore
+
+Cafaye is designed to host any AI coding agent:
+
+```bash
+# Install any AI tool you prefer
+caf install claude-code    # Anthropic's Claude Code
+caf install codex          # OpenAI's Codex CLI  
+caf install aider          # Aider.chat pair programming
+caf install opencode       # OpenCode AI agent
+caf install antigravity    # Antigravity AI
+# ... and any other agent you discover
+```
+
+**Your AI agents, your choice.** We don't lock you into one solution.
+
+### Add Any Tool
+
+Missing something? The Nix ecosystem has 80,000+ packages:
+
+```bash
+# One-command install from 80,000+ Nix packages
+caf install rust-analyzer
+caf install cargo-watch
+caf install websocat
+# ... literally anything
+```
+
+Or add to your `home.nix` for declarative management:
+
+```nix
+{ config, pkgs, ... }: {
+  home.packages = with pkgs; [
+    # Cafaye provides the basics
+    ruby nodejs neovim zellij
+    
+    # You add the rest
+    claude-code
+    rust-analyzer
+    your-custom-tool
+  ];
+}
+```
+
+### Custom Scripts & Hooks
+
+```bash
+# Run custom scripts on events
+caf hook add post-update "./scripts/notify-slack.sh"
+
+# Extend the menu
+caf menu add "Deploy Staging" "./scripts/deploy.sh staging"
+```
+
+### Not Opinionated About Your Stack
+
+**We don't force choices:**
+- ❌ Not "you must use Neovim"
+- ✅ "Use Neovim, VS Code, or Helix—your call"
+
+- ❌ Not "you must use PostgreSQL"  
+- ✅ "PostgreSQL, MySQL, SQLite—we set up what you want"
+
+- ❌ Not "you must use our AI"
+- ✅ "Claude, GPT, local models—bring your own AI"
+
+**Cafaye is the runway. You choose the plane.**
+
+## 💾 Save, Sync & Restore Your Environment
+
+**Your environment is yours. Save it, move it, share it.**
+
+### Export Your Environment
+
+```bash
+# Export your complete environment configuration
+caf export ~/my-cafaye-backup.tar.gz
+
+# What's included:
+# - ~/.config/home-manager/ (all your configs)
+# - ~/.config/cafaye/ (Cafaye settings)
+# - ~/.zshrc, ~/.gitconfig (dotfiles)
+# - List of installed packages
+# - Custom themes and modifications
+```
+
+### Import During Installation
+
+```bash
+# Fresh machine? Restore your exact environment
+curl -fsSL https://cafaye.sh | bash -s -- --import ~/my-cafaye-backup.tar.gz
+
+# Or after installation:
+caf import ~/my-cafaye-backup.tar.gz
+```
+
+### Store in Git (Recommended)
+
+Your environment is declarative—perfect for version control:
+
+```bash
+# Your configs live in ~/.config/home-manager/
+cd ~/.config/home-manager
+
+git init
+git add .
+git commit -m "My perfect dev environment"
+git push origin main
+
+# On any new machine:
+git clone https://github.com/yourusername/cafaye-env ~/.config/home-manager
+caf apply
+```
+
+### Migration Examples
+
+**Laptop → VPS:**
+```bash
+# On your laptop
+caf export ~/backup.tar.gz
+scp ~/backup.tar.gz vps:~/
+
+# On your VPS
+curl -fsSL https://cafaye.sh | bash -s -- --import ~/backup.tar.gz
+# Same environment, now running 24/7
+```
+
+**VPS → New VPS:**
+```bash
+# Export from old VPS
+caf export ~/backup.tar.gz
+
+# Download and upload to new VPS
+# Then install with import
+```
+
+**Mac → Ubuntu:**
+```bash
+# Works across operating systems!
+# Export on Mac, import on Ubuntu
+# Your shell, editors, and tools transfer perfectly
+```
+
+### The Config File
+
+Everything is defined in `~/.config/home-manager/home.nix`:
+
+```nix
+{ config, pkgs, ... }: {
+  # Your exact tool versions
+  home.packages = with pkgs; [
+    ruby_3_3
+    nodejs_20
+    neovim
+    zellij
+    # ... every tool you use
+  ];
+  
+  # Your exact configurations
+  programs.zsh.shellAliases = {
+    gs = "git status";
+    deploy = "./scripts/deploy.sh production";
+  };
+  
+  # Your dotfiles
+  home.file.".config/nvim/init.lua".source = ./nvim/init.lua;
+}
+```
+
+**This is infrastructure as code for your development environment.**
+
+---
+
+## 🆓 Open Source & Free
+
+**Cafaye is completely free and open source.**
+
+- Self-host on your own VPS (pay only for the VPS)
+- Run locally on your Mac or Linux machine
+- No managed service (yet)
+- No subscription fees
+- Apache 2.0 License
+
+**Future:** We may offer managed hosting and team features in the future, but the core platform will always be free and open source.
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+---
+
+Built with ☕ and Nix. The future of development is autonomous.

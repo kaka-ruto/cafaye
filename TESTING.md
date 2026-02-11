@@ -1,122 +1,279 @@
-# Cafaye OS Testing Framework
+# Cafaye Testing Framework
 
-Cafaye OS uses a tiered testing architecture designed for speed, reliability, and comprehensive system verification. The framework is unified under a single entry point: `cli/scripts/caf-test`.
+Cafaye uses a tiered testing architecture designed for speed, reliability, and comprehensive verification. All tests are unified under the `caf-test` entry point.
 
-## 🏗 Architecture: The Test Pyramid
+## Testing Architecture
 
-To avoid the "100 VMs" problem, we categorize tests into distinct layers:
+We categorize tests into distinct layers to avoid the "100 VMs" problem:
 
 ### Layer 0 & 1: Unit & Logic (Fast)
-*   **System**: Runs directly on the host (Linux/macOS).
-*   **Engine**: [BATS-core](https://github.com/bats-core/bats-core).
-*   **Scope**: Shell script logic, JSON state manipulation, and TUI wizard flows (via mocking).
-*   **Location**: `tests/unit/`
+*   **System:** Runs directly on the host (Linux/macOS).
+*   **Engine:** [BATS-core](https://github.com/bats-core/bats-core) for bash, Nix evaluation for Nix code.
+*   **Scope:** Shell script logic, JSON state manipulation, and module logic in isolation.
+*   **Location:** `tests/unit/`
+*   **Speed:** Seconds
 
 ### Layer 2 & 3: Integration & System (Comprehensive)
-*   **System**: Runs inside a NixOS VM using QEMU.
-*   **Engine**: NixOS Testing Framework (Python driver).
-*   **Scope**: Kernel boot, systemd services, networking, and full stack integration (Rails, Docker, etc.).
-*   **Location**: `tests/core/`, `tests/cli/`, `tests/modules/`, `tests/integration/`
+*   **System:** Runs inside a NixOS VM using QEMU.
+*   **Engine:** NixOS Testing Framework (Python driver).
+*   **Scope:** Kernel boot, systemd services, networking, and full stack integration (Rails, Docker, multi-module scenarios).
+*   **Location:** `tests/core/`, `tests/cli/`, `tests/modules/`, `tests/integration/`
+*   **Speed:** Minutes
+
+### Layer 4: Real-World Tests (Final Validation)
+*   **System:** Actual VPS provisioning.
+*   **Scope:** Fresh Ubuntu/macOS installation, full user workflows, backup/restore.
+*   **Location:** `tests/integration/real-world/`
+*   **Speed:** Hours
+*   **Frequency:** Before releases, not every commit
 
 ---
 
-## 🛠 Usage
+## Usage
 
-The `caf-test` script is the unified entry point for all tests. It automatically handles dependency bootstrapping (BATS, Nix).
+The `caf-test` script is the unified entry point for all tests.
 
-### Local vs. Remote Workflow
-Cafaye OS is designed for a **remote-first** development cycle. You can run tests locally on your Mac, or offload them to the **GCP Forge** for maximum speed.
+### Commands
 
-```bash
-# Append --remote to ANY command to run it on the Forge
-caf-test unit --remote
-caf-test integration core-boot --remote
-```
-
-### Basic Commands
 ```bash
 # --- Unit Tests (Logic & State) ---
 caf-test unit                            # Run all unit tests locally
 caf-test unit tests/unit/cli/state.bats  # Run a specific unit test file
-caf-test unit --remote                   # Run all unit tests on the Forge
+caf-test unit --remote                   # Run on remote forge
 
-# --- Integration Tests (NixOS VMs) ---
-caf-test integration                     # Run all unified integration tests
-caf-test integration core-boot           # Run a specific check (e.g., boot logic)
-caf-test integration modules-languages   # Test language installations
+# --- Integration Tests (VMs) ---
+caf-test integration                     # Run all integration tests
+caf-test integration core                # Test core functionality
+caf-test integration modules-ruby        # Test specific module
+
+# --- Real-World Tests (VPS) ---
+caf-test real-world                      # Full VPS provisioning tests
 
 # --- Shortcut Suites ---
-caf-test core          # Run 'core-unified' (Fast system verify)
-caf-test modules       # Run 'modules-unified' (Verify all dev tools)
-caf-test all           # Run EVERYTHING (Unit + Core)
+caf-test lint           # Static analysis only (fastest)
+caf-test core           # Core integration tests
+caf-test modules        # All module tests
+caf-test all            # Everything (slow)
 ```
 
----
+### Local vs. Remote
 
-## 🐞 Debugging & Reliability
-
-### 1. Interactive VM Debugging
-If an integration test is failing, you can launch it in **Interactive Mode**. This boots the VM and gives you a Python shell to control it.
+Run tests locally for fast feedback, or on the remote forge for comprehensive testing:
 
 ```bash
-caf-test integration core-boot --debug
+# Append --remote to run on the forge
+caf-test unit --remote
+caf-test integration core --remote
+caf-test real-world --remote
 ```
-**In the shell:**
-*   `test_script()`: Runs the entire test logic once.
-*   `machine.shell()`: Opens a real root shell inside the running NixOS VM.
-*   `machine.succeed("systemctl status tailscaled")`: Run commands manually.
 
-### 2. State Validation (The Guard)
-Cafaye OS uses a strict JSON schema for its state. The `caf-state-write` script automatically validates any change against `user/user-state.schema.json`.
+---
 
-*   **Test this**: Try running `caf-state-write core.tailscale_enabled "maybe"`. It will be rejected because it expects a boolean.
-*   **Manual Check**: `nix shell nixpkgs#check-jsonschema --command check-jsonschema --schemafile user/user-state.schema.json user/user-state.json`
+## Test Directory Structure
 
-### 3. Granular Targeting
-Avoid running the entire OS suite if you're only working on one module. We have "forced-state" targets for common modules:
+```text
+tests/
+├── unit/                    # BATS tests (Local, fast)
+│   ├── cli/                 # CLI logic tests
+│   ├── lib/                 # Library function tests
+│   └── installer/           # Installer logic tests
+│
+├── core/                    # Core system tests
+│   └── unified.nix          # Boot, Network, basic services
+│
+├── modules/                 # Module tests
+│   ├── languages/           # Language runtime tests
+│   ├── services/            # Service tests
+│   └── unified.nix          # All modules combined
+│
+├── cli/                     # CLI integration tests
+│   └── unified.nix          # CLI tool verification
+│
+└── integration/             # Integration scenarios
+    ├── stacks/              # Full stack tests (Rails, Django, etc.)
+    ├── security/            # Security tests
+    └── real-world/          # Actual VPS tests
+```
+
+---
+
+## Debugging
+
+### Interactive VM Debugging
+
+If an integration test fails, run it in interactive mode:
 
 ```bash
-caf-test integration modules-ruby      # Only tests Ruby installation
-caf-test integration modules-rust      # Only tests Rust
-caf-test integration modules-postgres  # Only tests PostgreSQL
+caf-test integration core --debug
+```
+
+**In the interactive shell:**
+*   `test_script()`: Run the test logic once.
+*   `machine.shell()`: Open a root shell inside the VM.
+*   `machine.succeed("command")`: Run commands manually.
+
+### State Validation
+
+Cafaye uses strict JSON schema validation. Test it:
+
+```bash
+# This should fail (wrong type)
+caf-state-write core.tailscale_enabled "maybe"
+
+# This should pass
+caf-state-write core.tailscale_enabled true
+```
+
+Manual validation:
+```bash
+nix shell nixpkgs#check-jsonschema --command check-jsonschema \
+  --schemafile user/user-state.schema.json \
+  user/user-state.json
 ```
 
 ---
 
-## ☁️ GCP High-Performance Forge
+## GCP High-Performance Forge
 
-For comprehensive integration testing with hardware acceleration (KVM), we use a dedicated **GCP Forge**.
+For comprehensive testing with hardware acceleration (KVM).
 
-### 1. Creation Checklist
-Create an instance in GCP with the following specs:
-*   **Machine Type**: `n2-standard-8` (8 vCPUs, 32GB RAM).
-*   **Disk**: 200GB Balanced PD.
-*   **OS**: Ubuntu 24.04 LTS.
-*   **Crucial**: Enable **Nested Virtualization** (found under *Advanced Configuration -> CPU Platform and Customization*).
+### Setup
 
-### 2. Auto-Shutdown (Credit Saver)
-The Forge is equipped with an auto-shutdown script (`/usr/local/bin/caf-autoshutdown`) that terminates the instance if it has been idle for 1 hour (no SSH sessions and low CPU load). This ensures your $300 credits last for months.
+**Requirements:**
+*   **Machine Type:** `n2-standard-8` (8 vCPUs, 32GB RAM)
+*   **Disk:** 200GB Balanced PD
+*   **OS:** Ubuntu 24.04 LTS
+*   **Nested Virtualization:** Must be enabled
 
-### 3. Running Remote Tests
-1.  **SSH into the Forge**: Use your local `cafaye` key.
-    ```bash
-    ssh kaka@<GCP_IP>
-    ```
-2.  **Sync & Run**:
-    ```bash
-    cd ~/cafaye-dev
-    git pull origin master
-    caf-test all
-    ```
+### Auto-Shutdown
+
+The forge has an auto-shutdown script (`/usr/local/bin/caf-autoshutdown`) that terminates the instance after 1 hour of inactivity (no SSH sessions, low CPU). This preserves credits.
+
+### Running Remote Tests
+
+```bash
+# SSH into the forge
+ssh user@<FORGE_IP>
+
+# Sync and run
+cd ~/cafaye-dev
+git pull origin master
+caf-test all
+```
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### KVM & Hardware Acceleration
-Cafaye OS integration tests require **KVM (Hardware Acceleration)** to run at acceptable speeds.
-*   **GCP Forge**: Ensure **Nested Virtualization** is enabled in the instance settings.
-*   **Local Linux**: Ensure `/dev/kvm` is accessible to your user.
+
+Integration tests require KVM for acceptable speeds.
+
+**GCP Forge:** Ensure Nested Virtualization is enabled in instance settings.
+
+**Local Linux:** Ensure `/dev/kvm` is accessible:
+```bash
+sudo usermod -aG kvm $USER
+# Log out and back in
+```
 
 ### Missing Nix
-The `caf-test` script will prompt to install the **Determinate Nix Installer** if it doesn't find `nix` in your PATH. This is a non-destructive multi-user install.
+
+The `caf-test` script will prompt to install Nix if not found. This is non-destructive.
+
+### Test Timeouts
+
+If tests timeout:
+- Check available RAM (need 4GB+ free)
+- Check disk space (need 20GB+ free)
+- Try running specific tests instead of `all`
+
+---
+
+## Writing Tests
+
+### Unit Test Example (BATS)
+
+```bash
+#!/usr/bin/env bats
+# tests/unit/cli/state.bats
+
+@test "state write updates JSON" {
+  run caf-state-write languages.ruby true
+  [ "$status" -eq 0 ]
+  
+  run jq -r '.languages.ruby' user/user-state.json
+  [ "$output" = "true" ]
+}
+```
+
+### Integration Test Example (Nix)
+
+```nix
+# tests/modules/languages/ruby.nix
+{ pkgs, ... }:
+
+pkgs.testers.runNixOSTest {
+  name = "ruby-module";
+  
+  nodes.machine = { ... }: {
+    imports = [ ../../modules/languages/ruby.nix ];
+    
+    _module.args.userState = {
+      languages.ruby = true;
+    };
+  };
+  
+  testScript = ''
+    machine.wait_for_unit("default.target")
+    
+    # Test Ruby is installed
+    machine.succeed("which ruby")
+    machine.succeed("ruby --version | grep '3.3'")
+    
+    # Test gems work
+    machine.succeed("gem list")
+    
+    print("✓ Ruby module tests passed")
+  '';
+}
+```
+
+### Real-World Test Example (Bash)
+
+```bash
+#!/usr/bin/env bash
+# tests/integration/real-world/vps-install.sh
+
+set -e
+
+VPS_IP="${1:-}"
+
+echo "Testing VPS installation on $VPS_IP"
+
+# Run installer
+ssh root@$VPS_IP "curl -fsSL https://cafaye.sh | bash"
+
+# Verify installation
+ssh root@$VPS_IP "which caf"
+ssh root@$VPS_IP "which zellij"
+ssh root@$VPS_IP "ruby --version"
+
+echo "✓ VPS installation test passed"
+```
+
+---
+
+## Test Checklist
+
+Before submitting a PR:
+
+- [ ] `./bin/test.sh` passes locally
+- [ ] New features have tests
+- [ ] Tests cover both success and failure cases
+- [ ] Documentation updated if needed
+- [ ] Commit messages are clear
+
+For major changes:
+- [ ] `caf-test integration --remote` passes
+- [ ] `caf-test real-world --remote` passes (if applicable)

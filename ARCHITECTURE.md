@@ -1,104 +1,150 @@
-# 🏗️ Cafaye OS: Architectural Blueprint
+# 🏗️ Cafaye: Architectural Blueprint
 
-Cafaye OS is built using a **Vertical Layering** strategy. Instead of building horizontal features, we build complete "stacks" of functionality that are independently testable and verifiable. This ensures that the foundation is rock-solid before we build the user-facing developer experience on top.
+Cafaye is built using a **modular, layered architecture**. Each layer is independently testable, composable, and extensible. This ensures the foundation is rock-solid before building user-facing features on top.
 
 ---
 
-## 층 (Layers) Overview
+## Architecture Layers
 
-### 🧱 Layer 0: The Bootstrap (Foundation)
-**Goal:** Transform a raw Linux VPS into a bootable, NixOS-powered Cafaye instance.
+### Layer 0: Infrastructure (Foundation)
+**Goal:** Provide the runtime environment on any supported system.
 
 - **Components:**
     - `install.sh`: The one-liner bootstrap script.
-    - `hardware/vps.nix`: Disk partitioning via `disko` (GPT/EFI).
-    - `core/boot.nix`: GRUB, ZRAM, and Kernel optimizations.
-- **How to Build:**
-    - Run `curl install.sh | bash` on a fresh Debian/Ubuntu VPS.
+    - `core/nix.nix`: Nix package manager installation and configuration.
+    - `core/home-manager.nix`: Home Manager setup for user environments.
+- **Supported Platforms:**
+    - Ubuntu 22.04/24.04 LTS
+    - macOS 14.0+
+    - Debian 12
 - **How to Test:**
-    - **Fast Test:** `nix-build .#individualChecks.x86_64-linux.core-boot`
-    - **Success Criteria:** The system reboots, partitions are correctly mounted (`/`, `/boot`), and the SSH daemon is listening.
-- **Integration:** Provides the physical/virtual filesystem and boot environment for all upper layers.
-- **Testing:**
-    - Use `caf-test installer` to verify the bootstrap logic and TUI wizard.
-    - Tests run on the VPS in a persistent directory (`~/cafaye-dev`) to allow rapid iteration.
+    - **Fast Test:** `nix-build .#checks.x86_64-linux.installer`
+    - **Success Criteria:** Nix installs, Home Manager activates, basic tools available.
+- **Integration:** Provides the package management and user environment foundation.
 
 ---
 
-### ⚙️ Layer 1: The Orchestration (State & CLI)
-**Goal:** Provide a "No-Nix" user experience where configuration is managed via a familiar TUI.
+### Layer 1: Core Runtime (State & Configuration)
+**Goal:** Provide a declarative, reproducible user experience.
 
 - **Components:**
-    - `user/state.json`: The single source of truth for user choices (moved to `/etc/cafaye/state.json`).
-    - `cli/`: The `caf` command-line interface (built with `gum`).
-    - `caf-apply`: The bridge that triggers Nix rebuilds based on JSON changes.
+    - `user/state.json`: User preferences and choices.
+    - `home-manager/`: Home Manager configuration files.
+    - `caf-apply`: Bridge that applies configuration changes.
 - **How to Build:**
-    - The `cli` package is defined in `cli/package.nix` and included in `environment.systemPackages`.
+    - Home Manager configuration is generated from `user/state.json`.
 - **How to Test:**
     - **Step-by-Step:**
-        1. Run `caf-state-write "languages.rust" "true"`.
-        2. Run `caf-system-rebuild`.
-        3. Run `rustc --version`.
-    - **Success Criteria:** JSON modifications are atomical, and rebuilds correctly reflect those choices in the system environment.
-- **Integration:** Reads from Layer 0 (filesystem) and provides variables for Layer 3 (Workloads).
+        1. Edit `user/state.json` to enable Ruby.
+        2. Run `caf apply`.
+        3. Run `ruby --version`.
+    - **Success Criteria:** Configuration changes apply atomically and correctly.
+- **Integration:** Reads from Layer 0 and provides the base for Layer 2 modules.
 
 ---
 
-### 🛡️ Layer 2: Hardening (Security & Connectivity)
-**Goal:** Implement "Zero-Trust" SSH and encrypted secrets management.
+### Layer 2: Modules (Building Blocks)
+**Goal:** Provide composable, reusable functionality.
 
 - **Components:**
-    - `core/security.nix`: Firewall rules (close all public ports).
-    - `core/network.nix`: Tailscale mesh integration.
-    - `core/sops.nix`: Secrets encryption via `sops-nix`.
+    - `modules/languages/`: Ruby, Python, Node, Go, Rust.
+    - `modules/frameworks/`: Rails, Django, Next.js templates.
+    - `modules/services/`: PostgreSQL, Redis, Docker.
+    - `modules/editors/`: Neovim, VS Code, Helix.
+    - `modules/ai/`: Claude Code, Aider, Ollama, Codex support.
 - **How to Build:**
-    - Tailscale is enabled by default via `user-state.json`.
+    - Each module is a conditional Home Manager import based on `user/state.json`.
 - **How to Test:**
-    - **External Test:** Attempt `ssh root@<public-ip>` (Should Timeout/Refuse).
-    - **Internal Test:** `ssh root@<tailscale-ip>` (Should Succeed).
-    - **Secrets Test:** `caf-secrets set OPENAI_KEY '...'` followed by verifying the node can decrypt it.
-- **Integration:** Wraps Layer 1 and 0 in a secure tunnel.
+    - **Unit Tests:** `nix-build .#checks.x86_64-linux.modules-languages-ruby`.
+    - **Integration Test:** Enable multiple modules and verify they work together.
+- **Integration:** Composable units that users mix and match.
 
 ---
 
-### 🚀 Layer 3: The Workload (Developer Experience)
-**Goal:** Deliver the "Omarchy Vibe" — beautiful, pre-configured dev tools.
+### Layer 3: Interface (Developer Experience)
+**Goal:** Deliver the beautiful, productive terminal experience.
 
 - **Components:**
-    - `modules/languages/`: Ruby, Python, Go, Rust.
-    - `modules/frameworks/`: Rails, Django, Next.js.
-    - `interface/terminal/`: Zellij, Starship, Zsh themes.
-- **How to Build:**
-    - Each module is a conditional NixOS import based on `userState`.
+    - `interface/terminal/`: Zellij, Starship, Zsh, themes.
+    - `cli/`: The `caf` command-line interface (TUI with gum).
 - **How to Test:**
-    - **Unit Tests:** `nix-build .#checks.x86_64-linux.modules-unified`.
-    - **Functional Test:** Spin up a Rails server and verify it's accessible over the Tailscale sidecar.
-- **Integration:** The final "Product" layer that the user actually interacts with for their daily work.
+    - **Unit Tests:** CLI logic and state management.
+    - **Integration Tests:** Full terminal environment verification.
+- **Integration:** The final layer users interact with daily.
 
 ---
 
-## ⛓️ Inter-Layer Communication Map
+### Layer 4: AI Agent Runtime (Future)
+**Goal:** Enable AI agents to work autonomously.
 
-1.  **User Input** (`caf` CLI) -> Writes to `/etc/cafaye/state.json`.
-2.  **System Rebuild** (`caf apply`) -> Triggers `nixos-rebuild switch --flake .#cafaye`.
-3.  **Nix Evaluation** (`flake.nix`) -> Reads `state.json` -> Imports relevant `modules/`.
-4.  **Hardware Application** (`disko` / `boot.nix`) -> Ensures the underlying VPS matches the config.
-
----
-
-## 🧪 Testing Philosophy
-
-1.  **Local (macOS):** Syntax checking and "Dry Run" evaluations using `nix-instantiate`.
-2.  **VPS (CI/CD):** 
-    - Full VM integration tests using `nixos-test`.
-    - Real-world "Factory" builds where a fresh VPS is provisioned and checked.
-3.  **The "Live Mirror":** Every `module/` must have a corresponding `tests/` file that maps 1:1.
+- **Components:**
+    - `modules/agents/runtime.nix`: Agent sandbox and execution environment.
+    - `modules/agents/orchestrator.nix`: Task scheduling and management.
+- **Status:** Planned for Phase 2.
 
 ---
 
-## 🛠 Hardware Abstraction (Architecture)
+## Communication Flow
 
-To ensure Cafaye runs on both **Intel (x86_64)** and **Apple/Graviton (aarch64)**:
-- All modules must be architecture-agnostic.
-- `flake.nix` uses `flake-utils.lib.eachSystem` to generate packages for both.
-- The `nixosConfigurations` entrypoint detects the hardware during the `install.sh` phase.
+1.  **User Input** (`caf` CLI) → Updates `user/state.json`.
+2.  **Generation** (`caf apply`) → Generates Home Manager config from state.
+3.  **Evaluation** (Home Manager + Nix) → Builds user environment.
+4.  **Activation** → New environment activated, old preserved for rollback.
+
+---
+
+## Testing Philosophy
+
+1.  **Static Analysis:** Syntax checking and evaluation (instant).
+2.  **Unit Tests:** Module logic in isolation (fast).
+3.  **Integration Tests:** Full VM tests with NixOS (comprehensive).
+4.  **Real-World Tests:** Actual VPS provisioning (final validation).
+
+---
+
+## Hardware Abstraction
+
+Cafaye supports both **Intel (x86_64)** and **Apple Silicon (aarch64)**:
+- All modules are architecture-agnostic where possible.
+- Architecture-specific packages handled by Nix.
+- Tested on both local machines and cloud VPS instances.
+
+---
+
+## Extensibility
+
+**Adding a new module:**
+```nix
+# modules/languages/crystal.nix
+{ config, pkgs, lib, userState, ... }:
+
+let
+  enabled = userState.languages.crystal or false;
+in
+{
+  meta = {
+    name = "Crystal";
+    description = "Crystal programming language";
+    category = "languages";
+  };
+  
+  config = lib.mkIf enabled {
+    home.packages = [ pkgs.crystal ];
+  };
+}
+```
+
+**Adding a test:**
+```nix
+# tests/modules/languages/crystal.nix
+{ pkgs, ... }:
+
+pkgs.testers.runNixOSTest {
+  name = "crystal-module";
+  testScript = ''
+    machine.succeed("crystal --version")
+  '';
+}
+```
+
+Modules are auto-discovered from the `modules/` directory.

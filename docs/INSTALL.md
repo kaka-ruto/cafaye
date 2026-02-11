@@ -1,200 +1,191 @@
-# Installing Cafaye OS
+# Installing Cafaye
 
-Cafaye OS transforms any fresh VPS into a cloud development powerhouse using NixOS.
+Cafaye provides a reproducible development environment that works on your local machine or a VPS.
 
 ## 🚀 Quick Start
 
-**Two simple steps:**
+### Option 1: Local Machine (macOS or Ubuntu)
 
 ```bash
-# Step 1: SSH into your fresh VPS
+# One command installs everything
+curl -fsSL https://cafaye.sh | bash
+```
+
+### Option 2: VPS (24/7 Access)
+
+```bash
+# SSH into your fresh VPS
 ssh root@<your-vps-ip>
 
-# Step 2: Run the installer
-curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
+# Run the installer
+curl -fsSL https://cafaye.sh | bash
 ```
 
 The installer will:
-1. Install Nix (multi-user)
-2. Clone Cafaye
-3. Install NixOS
+1. Install Nix package manager
+2. Install Home Manager
+3. Set up your development environment
+4. Configure your chosen tools
 
 ---
 
 ## 📋 Prerequisites
 
+### Local Installation
+
 | Requirement | Details |
 |------------|---------|
-| **VPS** | Ubuntu 24.04 or Debian 12 (fresh install) |
-| **RAM** | 2GB+ recommended (1GB works with ZRAM) |
+| **OS** | macOS 14.0+ or Ubuntu 22.04/24.04 |
+| **RAM** | 4GB+ recommended |
+| **Shell** | Bash or Zsh |
+| **Git** | Required for version control |
+
+### VPS Installation
+
+| Requirement | Details |
+|------------|---------|
+| **VPS** | Ubuntu 22.04/24.04 or Debian 12 (fresh install) |
+| **RAM** | 2GB+ recommended (1GB works with swap) |
 | **SSH** | Root access with SSH key authentication |
-| **Disk** | Any supported disk device |
+| **Disk** | 20GB+ free space |
 
 ---
 
-## ☁️ Supported VPS Providers
+## ☁️ Recommended VPS Providers
 
-| Provider | Plan | RAM | Price/mo |
-|----------|------|-----|----------|
-| Hetzner | CAX11 | 4GB | €4.38 |
-| Hetzner | CPX11 | 2GB | €3.29 |
-| DigitalOcean | Basic | 2GB | $4.00 |
-| Vultr | Basic | 1GB | $3.50 |
-
----
-
-## 🔧 After Installation
-
-After the VPS reboots into NixOS:
-
-```bash
-# SSH into your new Cafaye OS
-ssh root@<your-vps-ip>
-
-# Configure your development environment
-caf-setup
-```
-
-The installer auto-detects your provider and sets the correct disk device.
+| Provider | Plan | RAM | Price/mo | Notes |
+|----------|------|-----|----------|-------|
+| Hetzner | CAX11 | 4GB | €4.38 | Best value, EU locations |
+| Hetzner | CPX11 | 2GB | €3.29 | Intel processors |
+| DigitalOcean | Basic | 2GB | $4.00 | Good documentation |
+| Vultr | Basic | 1GB | $3.50 | Cheap entry point |
 
 ---
 
-## 📦 What the Installer Asks
+## 🔧 Installation Process
 
-1. **VPS Connection**
-   - IP address
-   - SSH user (usually `root`)
-   - SSH port (usually `22`)
+The installer is interactive and will guide you through:
 
-2. **SSH Keys**
-   - Add from SSH agent
-   - Add from file
-   - Paste manually
+### 1. Development Preset
 
-3. **Tailscale** (optional but recommended)
-   - Configure during installation with auth key
-   - Or skip and configure later
-   - See TailScale section below for details
+Choose your stack:
+- **Ruby on Rails Developer** - Ruby, PostgreSQL, Rails
+- **Python Django Developer** - Python, PostgreSQL, Django
+- **Node.js/React Developer** - Node.js, npm/yarn, React tools
+- **Go Backend Developer** - Go, standard tools
+- **Rust Systems Developer** - Rust, Cargo
+- **Full-Stack Developer** - Multiple languages
+- **Custom Configuration** - Pick and choose
 
-4. **Development Preset**
-   - Ruby on Rails Developer
-   - Python Django Developer
-   - Node.js/React Developer
-   - Go Backend Developer
-   - Rust Systems Developer
-   - Full-Stack Developer
-   - Custom Configuration
+### 2. Code Editor
 
-5. **Code Editor**
-   - Neovim (LazyVim, AstroNvim, NvChad)
-   - Helix
-   - VS Code Server
+Select your preferred editor:
+- **Neovim** - With LazyVim, AstroNvim, or NvChad
+- **VS Code** - Via code-server for remote access
+- **Helix** - Modern modal editor
+
+### 3. AI Tools (Optional)
+
+Enable AI coding assistants:
+- **Aider** - AI pair programming
+- **Ollama** - Local LLM hosting
+- Or skip and add later with `caf install`
+
+### 4. SSH Keys
+
+The installer will:
+- Detect existing SSH keys
+- Import them for server access
+- Set up secure authentication
 
 ---
 
-## ☁️ TailScale Setup
+## ☁️ Tailscale Setup (Optional but Recommended)
 
-TailScale is **optional but recommended** for secure, zero-trust access.
+Tailscale provides secure, zero-trust access to your VPS.
 
-### During Installation
+### During VPS Installation
 
-The installer asks if you want to configure TailScale:
+The installer asks about Tailscale:
 
 1. **Have an account?** → Enter your auth key
-2. **Need an account?** → Opens TailScale signup in browser
-3. **Skip** → Configure later manually
+2. **Need an account?** → Visit tailscale.com to sign up
+3. **Skip** → Configure manually later
 
 **Auth key format:** `tskey-auth-xxxxx...`
 
-Get a reusable auth key at:
-- https://login.tailscale.com/admin/settings/keys
+Get a reusable auth key at: https://login.tailscale.com/admin/settings/keys
 
-### After Installation
-
-**If you skipped TailScale during install:**
-
-```bash
-# SSH into your server
-ssh root@<your-vps-ip>
-
-# Configure TailScale
-sudo tailscale up --auth-key=tskey-auth-xxxxx
-```
-
-**If you already have a TailScale account:**
-```bash
-# Generate auth key (web UI)
-# https://login.tailscale.com/admin/settings/keys
-
-# Connect
-sudo tailscale up --auth-key=tskey-auth-xxxxx
-```
-
-### Benefits of TailScale
+### Benefits
 
 | Benefit | Description |
 |--------|-------------|
-| **Zero open ports** | SSH only via TailScale VPN |
+| **Zero open ports** | SSH only via Tailscale VPN |
 | **Access from anywhere** | Phone, laptop, tablet |
 | **End-to-end encryption** | All traffic encrypted |
-| **Easy file sharing** | Truebit integration |
-| **No firewall rules** | TailScale handles access control |
+| **No firewall rules** | Tailscale handles access |
 
-### Without TailScale
+### Without Tailscale
 
-If you don't use TailScale, Cafaye still works:
-- SSH accessible from any IP (bootstrap mode can be disabled)
+Cafaye works without Tailscale:
+- SSH accessible directly (less secure)
 - All features work normally
-- Less secure by default
-
----
-
-## 🔐 Security
-
-By default, Cafaye uses **bootstrap mode** during installation to allow SSH from any IP. After setup:
-
-1. Run `caf-setup` to configure your system
-2. The installer will ask to disable bootstrap mode
-3. **Bootstrap mode is automatically disabled** for security
-
-After that, SSH is only accessible via Tailscale.
+- Use strong passwords and SSH keys
 
 ---
 
 ## 📖 Post-Installation
 
-After the installer completes:
+After installation completes:
 
 ```bash
-# SSH into your new server
-ssh root@<your-vps-ip>
+# Your environment is ready!
+# All tools are installed and configured
 
-# Run first-run setup
-caf-setup
+# Start coding
+nvim                    # Launch Neovim
+code-server             # Launch VS Code in browser
 
-# Your system is ready!
-nvim        # Start coding
-zellij      # Tiling terminal
-caf         # Main menu
+# Terminal multiplexing
+zellij                  # Tiling terminal
+
+# Main menu
+caf                     # Interactive configuration menu
+```
+
+### First Steps
+
+```bash
+# Check what's installed
+caf doctor              # Verify installation
+
+# View configuration
+cat ~/.config/home-manager/home.nix
+
+# Make changes
+caf config              # Interactive configuration
+# or edit directly:
+nano ~/.config/home-manager/home.nix
+
+# Apply changes
+caf apply
 ```
 
 ---
 
-## 🛠 Manual Installation (Advanced)
+## 💾 Backup Your Environment
 
-If you need more control:
+After setting up, export your configuration:
 
 ```bash
-# Clone the repository
-git clone https://github.com/kaka-ruto/cafaye
-cd cafaye
+# Create backup
+caf export ~/cafaye-backup.tar.gz
 
-# Edit configuration
-cp user/user-state.json.example user/user-state.json
-nano user/user-state.json
-
-# Run installer
-./install.sh
+# Store in safe location (Git recommended)
+cd ~/.config/home-manager
+git init
+git add .
+git commit -m "My Cafaye environment"
 ```
 
 ---
@@ -204,36 +195,72 @@ nano user/user-state.json
 ### Installation Fails
 
 ```bash
-# Check SSH connectivity
-ssh root@<your-vps-ip>
+# Check system requirements
+uname -m              # Should be x86_64 or aarch64
+cat /etc/os-release   # Should show Ubuntu/Debian
 
-# Verify disk device
-ssh root@<your-vps-ip> lsblk
+# Check available space
+df -h
 
 # Check logs
 cat /tmp/cafaye-install.log
 ```
 
-### Can't Connect After Reboot
+### Nix Installation Issues
 
-1. Wait 2 minutes for the system to reboot
-2. Check with your VPS provider's console
-3. Verify Tailscale status: `tailscale status`
+If Nix fails to install:
+```bash
+# Check for existing Nix
+which nix
 
-### Need to Reconfigure
+# Remove old Nix if needed
+rm -rf ~/.nix /nix
+
+# Retry installer
+curl -fsSL https://cafaye.sh | bash
+```
+
+### Permission Denied
+
+Ensure you're running as the correct user:
+```bash
+# For VPS: Should be root or user with sudo
+whoami
+
+# For local: Regular user (not root)
+whoami  # Should show your username
+```
+
+---
+
+## 🛠 Manual Installation (Advanced)
+
+For more control:
 
 ```bash
-# Edit configuration
-sudo nano /etc/cafaye/user-state.json
+# Clone repository
+git clone https://github.com/kaka-ruto/cafaye
+cd cafaye
 
-# Rebuild system
-caf-system-rebuild
+# Install Nix if not present
+curl -L https://nixos.org/nix/install | sh
+. ~/.nix-profile/etc/profile.d/nix.sh
+
+# Copy example configuration
+cp user/user-state.json.example user/user-state.json
+
+# Edit configuration
+nano user/user-state.json
+
+# Run installer
+./install.sh
 ```
 
 ---
 
 ## 📚 More Information
 
-- [Setup Guide](SETUP.md)
-- [Documentation](../README.md)
+- [Setup Guide](SETUP.md) - Configuration details
+- [Architecture](../ARCHITECTURE.md) - System design
+- [Development](../DEVELOPMENT.md) - Contributing guide
 - [GitHub](https://github.com/kaka-ruto/cafaye)
