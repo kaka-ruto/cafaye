@@ -1,157 +1,87 @@
 {
-  description = "Cafaye OS: The cloud-native developer powerhouse";
+  description = "Cafaye: The first Development Runtime built for collaboration between humans and AI";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
-    sops-nix.url = "github:Mic92/sops-nix";
-    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     flake-utils.url = "github:numtide/flake-utils";
-    disko.url = "github:nix-community/disko";
-    disko.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, sops-nix, flake-utils, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, flake-utils, ... }@inputs:
     let
       # Library for helper functions
       lib = nixpkgs.lib;
 
-      # Function to read user state with priority: local -> example
-      # Absolute etcPath is avoided during pure evaluation to prevent host contamination
+      # Function to read user state with priority: environment.json -> user/user-state.json.example
       readUserState = repoPath: 
         let
-          localPath = repoPath + "/user/user-state.json";
+          envPath = repoPath + "/environment.json";
           examplePath = repoPath + "/user/user-state.json.example";
         in
-          if builtins.pathExists localPath then builtins.fromJSON (builtins.readFile localPath)
-          else builtins.fromJSON (builtins.readFile examplePath);
+          if builtins.pathExists envPath then builtins.fromJSON (builtins.readFile envPath)
+          else if builtins.pathExists examplePath then builtins.fromJSON (builtins.readFile examplePath)
+          else {};
 
-      userState = readUserState ./.;
-
-      # Supported systems for development shells
       supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
     in
     flake-utils.lib.eachSystem supportedSystems (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        
-        # Standard test runner
-        runTest = testFile: pkgs.testers.runNixOSTest (import testFile { inherit pkgs inputs userState; });
+        userState = readUserState ./.;
       in
       {
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             gum
-            sops
-            age
-            check-jsonschema
+            jq
+            git
           ];
           shellHook = ''
-            echo "☕ Cafaye OS Development Shell"
+            echo "☕ Cafaye Development Shell"
           '';
         };
 
-        # Evaluation checks for the dev systems
-        # Note: runNixOSTest only works on Linux, so we only add it there
-         checks = lib.optionalAttrs pkgs.stdenv.isLinux {
-            core-unified = runTest ./tests/core/unified.nix;
-            cli-unified = runTest ./tests/cli/unified.nix;
-            modules-unified = runTest ./tests/modules/unified.nix;
-            
-            integration-setup = runTest ./tests/integration/setup.nix;
-            integration-rails = runTest ./tests/integration/rails.nix;
-          };
-          
-          # Individual tests
-          individualChecks = lib.optionalAttrs pkgs.stdenv.isLinux {
-            core-boot = runTest ./tests/core/boot.nix;
-            core-network = runTest ./tests/core/network.nix;
-            core-security = runTest ./tests/integration/security/default.nix;
-            core-security-ssh = runTest ./tests/integration/security/ssh.nix;
-            core-security-kernel = runTest ./tests/integration/security/kernel.nix;
-            core-security-firewall = runTest ./tests/integration/security/firewall.nix;
-            core-security-sudo = runTest ./tests/integration/security/sudo.nix;
-            cli-main = runTest ./tests/cli/main.nix;
-            cli-debug = runTest ./tests/cli/debug.nix;
-            cli-doctor = runTest ./tests/cli/doctor.nix;
-            cli-factory = runTest ./tests/cli/factory.nix;
-            interface-terminal = runTest ./tests/interface/terminal.nix;
-            modules-languages = runTest ./tests/modules/languages.nix;
-            modules-services = runTest ./tests/modules/services.nix;
-            modules-frameworks = runTest ./tests/modules/frameworks.nix;
-            modules-editors = runTest ./tests/modules/editors.nix;
-            modules-editors-distributions = runTest ./tests/modules/editors-distributions.nix;
-
-            # Granular checks with forced states
-            modules-ruby = pkgs.testers.runNixOSTest (import ./tests/modules/languages.nix { 
-              inherit pkgs inputs; 
-              userState = userState // { languages = { ruby = true; }; }; 
-            });
-            modules-rust = pkgs.testers.runNixOSTest (import ./tests/modules/languages.nix { 
-              inherit pkgs inputs; 
-              userState = userState // { languages = { rust = true; }; }; 
-            });
-            modules-nodejs = pkgs.testers.runNixOSTest (import ./tests/modules/languages.nix { 
-              inherit pkgs inputs; 
-              userState = userState // { languages = { nodejs = true; }; }; 
-            });
-            modules-postgres = pkgs.testers.runNixOSTest (import ./tests/modules/services.nix { 
-              inherit pkgs inputs; 
-              userState = userState // { services = { postgresql = true; }; }; 
-            });
-            integration-security-penetration = runTest ./tests/integration/security/penetration.nix;
-            integration-app-deployment = runTest ./tests/integration/app-deployment.nix;
-            integration-rails = runTest ./tests/integration/rails.nix;
-            integration-dev-ux = runTest ./tests/integration/dev-ux.nix;
-            interface-workload-aliases = runTest ./tests/interface/workload-aliases.nix;
-            integration-installer-kexec = runTest ./tests/integration/installer/kexec.nix;
-          };
-
-        packages = {
-          default = pkgs.callPackage ./cli/package.nix { };
-
-          dockerImage = pkgs.dockerTools.buildImage {
-            name = "cafaye";
-            tag = "latest";
-            copyToRoot = pkgs.buildEnv {
-              name = "image-root";
-              paths = [ 
-                (pkgs.callPackage ./cli/package.nix { })
-                pkgs.bashInteractive 
-                pkgs.coreutils
-                pkgs.git
-                pkgs.gum
-                pkgs.jq
-                pkgs.fzf
-                pkgs.ripgrep
-                pkgs.bat
-                pkgs.eza
-                pkgs.zoxide
-              ];
-            };
-            config = { 
-              Cmd = [ "bash" ]; 
-              Env = [ "PATH=/bin:/usr/bin" ];
-            };
-          };
+        checks = {
+          # Evaluation tests for modules
+          ruby-module = (import ./tests/modules/languages/ruby.nix { inherit pkgs inputs; home-module = ./home.nix; }).activationPackage;
+          tools-module = (import ./tests/modules/interface/tools.nix { inherit pkgs inputs; home-module = ./home.nix; }).activationPackage;
         };
 
-        apps = {
-          debug-vm = {
-            type = "app";
-            program = "${self.nixosConfigurations.cafaye.config.system.build.vm}/bin/run-cafaye-vm";
-          };
-        };
+        # Helper to generate a configuration for a specific user
+        # Usage: nix run .#homeConfigurations.YOUR_SYSTEM.YOUR_USER.activationPackage
       }
     ) // {
-      nixosModules.cafaye = ./default.nix;
-
-      # NixOS configuration generator for different architectures
-      nixosConfigurations.cafaye = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux"; # Default to x86_64
-        specialArgs = { inherit inputs userState; };
-        modules = [
-          self.nixosModules.cafaye
-        ];
+      # Home Manager configurations generator
+      # For simplicity, we can provide a function or use a standard naming convention
+      homeConfigurations = {
+        # Default configuration for the installer
+        # The installer will likely use `nix build .#homeConfigurations.default.activationPackage`
+        # and we need to make it work for the current system.
+        # However, flakes are usually static. 
+        # So we define common ones.
+        "x86_64-linux" = home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages."x86_64-linux";
+          modules = [ ./home.nix ];
+          extraSpecialArgs = { inherit inputs; userState = readUserState ./.; };
+        };
+        "aarch64-linux" = home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages."aarch64-linux";
+          modules = [ ./home.nix ];
+          extraSpecialArgs = { inherit inputs; userState = readUserState ./.; };
+        };
+        "x86_64-darwin" = home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages."x86_64-darwin";
+          modules = [ ./home.nix ];
+          extraSpecialArgs = { inherit inputs; userState = readUserState ./.; };
+        };
+        "aarch64-darwin" = home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages."aarch64-darwin";
+          modules = [ ./home.nix ];
+          extraSpecialArgs = { inherit inputs; userState = readUserState ./.; };
+        };
       };
     };
 }
