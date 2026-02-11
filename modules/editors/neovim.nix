@@ -6,7 +6,7 @@ in
 {
   programs.neovim = {
     enable = enabled;
-    defaultEditor = userState.editors.default == "neovim";
+    defaultEditor = (userState.editors.default or "neovim") == "neovim";
     viAlias = true;
     vimAlias = true;
     

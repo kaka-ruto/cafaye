@@ -9,6 +9,15 @@ echo ""
 
 ISSUES=0
 
+# Check Cafaye configuration
+echo -n "Checking Cafaye configuration... "
+if [[ -f "$HOME/.config/cafaye/environment.json" && -f "$HOME/.config/cafaye/settings.json" ]]; then
+  echo "✓ Found environment.json & settings.json"
+else
+  echo "⚠ Missing configuration files in ~/.config/cafaye"
+  ((ISSUES++))
+fi
+
 # Check NixOS/Home Manager generation
 echo -n "Checking Environment generation... "
 if [ -L /nix/var/nix/profiles/system ]; then

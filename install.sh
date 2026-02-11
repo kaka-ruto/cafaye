@@ -250,8 +250,37 @@ execute_phase() {
 
     # 3. Save state
     if [[ ! -f "$CAFAYE_DIR/environment.json" ]]; then
-        echo "📝 Saving environment preferences..."
+        echo "📝 Saving environment choices..."
         cat > "$CAFAYE_DIR/environment.json" <<EOF
+{
+  "interface": {
+    "theme": "$(echo "$THEME_CHOICE" | tr '[:upper:]' '[:lower:]')",
+    "terminal": {
+      "shell": "zsh"
+    }
+  },
+  "editors": {
+    "default": "$(echo "$EDITOR_CHOICE" | tr '[:upper:]' '[:lower:]')",
+    "neovim": $([[ "$EDITOR_CHOICE" == "Neovim" ]] && echo true || echo false),
+    "distributions": {
+      "nvim": {
+        "lazyvim": $([[ "$NVIM_DISTRO" == "LazyVim (recommended)" ]] && echo true || echo false),
+        "astronvim": $([[ "$NVIM_DISTRO" == "AstroNvim" ]] && echo true || echo false),
+        "nvchad": $([[ "$NVIM_DISTRO" == "NvChad" ]] && echo true || echo false)
+      }
+    }
+  },
+  "languages": {},
+  "frameworks": {},
+  "services": {},
+  "ai": {}
+}
+EOF
+    fi
+
+    if [[ ! -f "$CAFAYE_DIR/settings.json" ]]; then
+        echo "📝 Saving tool settings..."
+        cat > "$CAFAYE_DIR/settings.json" <<EOF
 {
   "core": {
     "vps": $([[ "$IS_VPS" == "yes" ]] && echo true || echo false),
@@ -274,23 +303,6 @@ execute_phase() {
     "type": "$BACKUP_TYPE",
     "url": "$REPO_URL",
     "strategy": "$PUSH_STRATEGY"
-  },
-  "interface": {
-    "theme": "$(echo "$THEME_CHOICE" | tr '[:upper:]' '[:lower:]')",
-    "terminal": {
-      "shell": "zsh"
-    }
-  },
-  "editors": {
-    "default": "$(echo "$EDITOR_CHOICE" | tr '[:upper:]' '[:lower:]')",
-    "neovim": $([[ "$EDITOR_CHOICE" == "Neovim" ]] && echo true || echo false),
-    "distributions": {
-      "nvim": {
-        "lazyvim": $([[ "$NVIM_DISTRO" == "LazyVim (recommended)" ]] && echo true || echo false),
-        "astronvim": $([[ "$NVIM_DISTRO" == "AstroNvim" ]] && echo true || echo false),
-        "nvchad": $([[ "$NVIM_DISTRO" == "NvChad" ]] && echo true || echo false)
-      }
-    }
   }
 }
 EOF
@@ -315,6 +327,13 @@ EOF
         if [[ -f "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]]; then
             . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
         fi
+    fi
+
+    # Ensure flakes are enabled
+    echo "⚙️  Enabling Nix flakes..."
+    mkdir -p "$HOME/.config/nix"
+    if [[ ! -f "$HOME/.config/nix/nix.conf" || ! $(grep "experimental-features" "$HOME/.config/nix/nix.conf") ]]; then
+        echo "experimental-features = nix-command flakes" >> "$HOME/.config/nix/nix.conf"
     fi
 
     # 6. Apply Home Manager configuration

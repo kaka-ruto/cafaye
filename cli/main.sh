@@ -250,10 +250,72 @@ show_about() {
     show_main_menu
 }
 
-# Start
-if [[ -n "$1" ]]; then
-    # Handle direct commands if any
-    echo "Direct commands not yet implemented"
-else
-    show_main_menu
-fi
+# Handle direct commands
+case "$1" in
+    install)
+        if [[ -n "$2" ]]; then
+            # Direct tool installation eg: caf install ruby
+            tool="$2"
+            # Map tool to state key (simplified for MVP)
+            case "$tool" in
+                ruby) caf-state-write "languages.ruby" "true" ;;
+                python) caf-state-write "languages.python" "true" ;;
+                nodejs) caf-state-write "languages.nodejs" "true" ;;
+                go) caf-state-write "languages.go" "true" ;;
+                rust) caf-state-write "languages.rust" "true" ;;
+                rails) caf-state-write "frameworks.rails" "true" ;;
+                django) caf-state-write "frameworks.django" "true" ;;
+                nextjs) caf-state-write "frameworks.nextjs" "true" ;;
+                postgresql) caf-state-write "services.postgresql" "true" ;;
+                redis) caf-state-write "services.redis" "true" ;;
+                docker) caf-state-write "dev_tools.docker" "true" ;;
+                *) echo "Unknown tool: $tool"; exit 1 ;;
+            esac
+            echo "✅ $tool enabled in state."
+            if gum confirm "Apply changes now?"; then
+                caf-system-rebuild
+            fi
+        else
+            show_install_menu
+        fi
+        ;;
+    config)
+        show_main_menu
+        ;;
+    doctor)
+        caf-system-doctor
+        ;;
+    apply)
+        caf-system-rebuild
+        ;;
+    backup)
+        if [[ "$2" == "status" ]]; then
+            echo "📊 Backup Status"
+            cd "$HOME/.config/cafaye"
+            git status
+            echo ""
+            echo "Remote: $(git remote -v | grep fetch | awk '{print $2}')"
+        else
+            echo "Usage: caf backup status"
+        fi
+        ;;
+    --help|-h)
+        echo "Cafaye CLI"
+        echo ""
+        echo "Commands:"
+        echo "  install [tool]  Install a tool (ruby, rails, etc.)"
+        echo "  config          Open interactive configuration"
+        echo "  doctor          Check system health"
+        echo "  apply           Apply state changes (rebuild)"
+        echo "  backup status   Show backup repository status"
+        echo ""
+        echo "Run without arguments for interactive menu."
+        ;;
+    *)
+        if [[ -n "$1" ]]; then
+            echo "Unknown command: $1"
+            exit 1
+        fi
+        show_main_menu
+        ;;
+esac

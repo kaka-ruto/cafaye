@@ -15,15 +15,19 @@
       # Library for helper functions
       lib = nixpkgs.lib;
 
-      # Function to read user state with priority: environment.json -> user/user-state.json.example
+      # Function to read user state from split config files
       readUserState = repoPath: 
         let
           envPath = repoPath + "/environment.json";
+          settingsPath = repoPath + "/settings.json";
           examplePath = repoPath + "/user/user-state.json.example";
+          
+          env = if builtins.pathExists envPath then builtins.fromJSON (builtins.readFile envPath) else {};
+          settings = if builtins.pathExists settingsPath then builtins.fromJSON (builtins.readFile settingsPath) else {};
+          example = if builtins.pathExists examplePath then builtins.fromJSON (builtins.readFile examplePath) else {};
         in
-          if builtins.pathExists envPath then builtins.fromJSON (builtins.readFile envPath)
-          else if builtins.pathExists examplePath then builtins.fromJSON (builtins.readFile examplePath)
-          else {};
+          # Priority: environment/settings > example
+          lib.recursiveUpdate example (lib.recursiveUpdate settings env);
 
       supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
     in
@@ -45,9 +49,24 @@
         };
 
         checks = {
-          # Evaluation tests for modules
+          # Languages
           ruby-module = (import ./tests/modules/languages/ruby.nix { inherit pkgs inputs; home-module = ./home.nix; }).activationPackage;
+          python-module = (import ./tests/modules/languages/python.nix { inherit pkgs inputs; home-module = ./home.nix; }).activationPackage;
+          nodejs-module = (import ./tests/modules/languages/nodejs.nix { inherit pkgs inputs; home-module = ./home.nix; }).activationPackage;
+          rust-module = (import ./tests/modules/languages/rust.nix { inherit pkgs inputs; home-module = ./home.nix; }).activationPackage;
+          go-module = (import ./tests/modules/languages/go.nix { inherit pkgs inputs; home-module = ./home.nix; }).activationPackage;
+
+          # Editors
+          neovim-module = (import ./tests/modules/editors/neovim.nix { inherit pkgs inputs; home-module = ./home.nix; }).activationPackage;
+          helix-module = (import ./tests/modules/editors/helix.nix { inherit pkgs inputs; home-module = ./home.nix; }).activationPackage;
+
+          # Services
+          postgresql-module = (import ./tests/modules/services/postgresql.nix { inherit pkgs inputs; home-module = ./home.nix; }).activationPackage;
+          redis-module = (import ./tests/modules/services/redis.nix { inherit pkgs inputs; home-module = ./home.nix; }).activationPackage;
+
+          # Interface
           tools-module = (import ./tests/modules/interface/tools.nix { inherit pkgs inputs; home-module = ./home.nix; }).activationPackage;
+          zellij-module = (import ./tests/modules/interface/terminal/zellij.nix { inherit pkgs inputs; home-module = ./home.nix; }).activationPackage;
         };
 
         # Helper to generate a configuration for a specific user

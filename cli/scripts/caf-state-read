@@ -3,13 +3,20 @@
 # Reads a value from environment.json
 # Usage: caf-state-read "languages.ruby"
 
-if [[ -z "$STATE_FILE" ]]; then
-    # New location as per DEVELOPMENT.md
-    STATE_FILE="$HOME/.config/cafaye/environment.json"
+key="$1"
+prefix=$(echo "$key" | cut -d'.' -f1)
 
-    if [[ ! -f "$STATE_FILE" ]]; then
-        # Local development fallback
-        STATE_FILE="$(git rev-parse --show-toplevel 2>/dev/null)/environment.json"
+if [[ "$prefix" == "core" || "$prefix" == "git" || "$prefix" == "backup" ]]; then
+    STATE_FILE="$HOME/.config/cafaye/settings.json"
+else
+    STATE_FILE="$HOME/.config/cafaye/environment.json"
+fi
+
+if [[ ! -f "$STATE_FILE" ]]; then
+    # Local development fallback
+    REPO_DIR="$(git rev-parse --show-toplevel 2>/dev/null)"
+    if [[ -n "$REPO_DIR" ]]; then
+        STATE_FILE="$REPO_DIR/$(basename "$STATE_FILE")"
     fi
 fi
 

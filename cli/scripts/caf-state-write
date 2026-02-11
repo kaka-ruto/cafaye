@@ -1,22 +1,27 @@
 #!/bin/bash
 
-# Writes a value to environment.json
+# Writes a value to environment.json or settings.json
 # Usage: caf-state-write "languages.ruby" "true"
-
-if [[ -z "$STATE_FILE" ]]; then
-    STATE_FILE="$HOME/.config/cafaye/environment.json"
-
-    if [[ ! -f "$STATE_FILE" ]]; then
-        STATE_FILE="$(git rev-parse --show-toplevel 2>/dev/null)/environment.json"
-    fi
-fi
 
 key="$1"
 value="$2"
+prefix=$(echo "$key" | cut -d'.' -f1)
 
-# Ensure file exists
+if [[ "$prefix" == "core" || "$prefix" == "git" || "$prefix" == "backup" ]]; then
+    STATE_FILE="$HOME/.config/cafaye/settings.json"
+else
+    STATE_FILE="$HOME/.config/cafaye/environment.json"
+fi
+
 if [[ ! -f "$STATE_FILE" ]]; then
-    echo "{}" > "$STATE_FILE"
+    # Local development fallback
+    REPO_DIR="$(git rev-parse --show-toplevel 2>/dev/null)"
+    if [[ -n "$REPO_DIR" && -f "$REPO_DIR/$(basename "$STATE_FILE")" ]]; then
+        STATE_FILE="$REPO_DIR/$(basename "$STATE_FILE")"
+    else
+        mkdir -p "$(dirname "$STATE_FILE")"
+        echo "{}" > "$STATE_FILE"
+    fi
 fi
 
 # Simple type detection for boolean/numbers
@@ -35,6 +40,6 @@ mv "$tmp" "$STATE_FILE"
 CAFAYE_DIR=$(dirname "$STATE_FILE")
 if [[ -d "$CAFAYE_DIR/.git" ]]; then
     cd "$CAFAYE_DIR"
-    git add environment.json
+    git add "$(basename "$STATE_FILE")"
     git commit -m "Change $key to $value" || true
 fi
