@@ -1,14 +1,13 @@
-{ config, pkgs, userState, ... }:
+{ config, pkgs, lib, userState, ... }:
 
 let
   enabled = (userState.languages.ruby or false) || (userState.frameworks.rails or false);
 in
 {
-  environment.systemPackages = pkgs.lib.optionals enabled (
+  home.packages = lib.optionals enabled (
     with pkgs; [
       ruby
-      bundler
-      rake
+      # bundler & rake (included in ruby)
     ]
   );
 }
