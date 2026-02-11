@@ -160,7 +160,7 @@ plan_phase() {
     
     if [[ "$BACKUP_TYPE" == "GitHub (recommended)" ]] || [[ "$BACKUP_TYPE" == "GitLab" ]]; then
         while true; do
-            REPO_URL=$(gum input --placeholder "https://$(echo "$BACKUP_TYPE" | tr '[:upper:]' '[:lower:]' | cut -d' ' -f1).com/user/cafaye" --header "Full $BACKUP_TYPE Repository URL (Required)")
+            REPO_URL=$(gum input --placeholder "https://github.com/user/cafaye" --header "GitHub Repository URL (e.g., https://github.com/user/cafaye)")
             if [[ "$REPO_URL" == https://* ]]; then
                 break
             else
