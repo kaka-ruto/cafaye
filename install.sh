@@ -10,6 +10,8 @@ REPO_DIR="/root/cafaye"
 LOG_FILE="/var/log/cafaye-install.log"
 
 # --- Basics ---
+exec > >(tee -a "$LOG_FILE") 2>&1
+
 cat << "EOF"
   ☕ Cafaye OS: The "Self-Driving" Bootstrap
   -----------------------------------------
@@ -46,10 +48,12 @@ echo "Before we start, I need to:"
 echo " 1. Install bootstrap tools: git, jq, gum (TUI engine)"
 echo " 2. Clone the Cafaye repository"
 echo ""
-read -p "Ready to prepare the system? [y/N] " confirm
-if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-    echo "Setup cancelled. No changes were made."
-    exit 0
+if [[ "$NON_INTERACTIVE" != "true" ]]; then
+    read -p "Ready to prepare the system? [y/N] " confirm
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        echo "Setup cancelled. No changes were made."
+        exit 0
+    fi
 fi
 
 # 1. Install dependencies for the Wizard
@@ -101,8 +105,15 @@ fi
 
 # 2. Clone the repository
 if [[ -d "$REPO_DIR" ]]; then
-    echo "Updating existing Cafaye repository..."
-    cd "$REPO_DIR" && run_cmd git pull origin master
+    echo "Existing Cafaye directory found at $REPO_DIR"
+    cd "$REPO_DIR"
+    if [[ -d .git ]]; then
+        echo "Updating existing Cafaye repository..."
+        git config --global --add safe.directory "$REPO_DIR" || true
+        run_cmd git pull origin master
+    else
+        echo "Note: $REPO_DIR is not a git repository. Skipping update."
+    fi
 else
     echo "Cloning Cafaye repository..."
     run_cmd git clone "$REPO_URL" "$REPO_DIR"
@@ -111,9 +122,32 @@ fi
 cd "$REPO_DIR"
 chmod +x installer/*.sh
 
-# 3. Running the Wizard (Interactively)
-# Ensure gum from /tmp is found if it was installed there
-PATH="$PATH" bash ./installer/cafaye-wizard.sh || exit 1
+# 3. Running the Wizard
+if [[ "$NON_INTERACTIVE" == "true" ]]; then
+    echo "⚡ Generating default configuration (non-interactive)..."
+    STATE_FILE="/tmp/cafaye-initial-state.json"
+    cp user/user-state.json.example "$STATE_FILE"
+    
+    # Auto-detect disk
+    disk=$(lsblk -dn -o NAME,TYPE | grep "disk" | head -n1 | awk '{print "/dev/"$1}')
+    echo "   Target Disk: $disk"
+    jq ".core.boot.grub_device = \"$disk\"" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+    
+    # Auto-import keys
+    if [[ -f /root/.ssh/authorized_keys ]]; then
+        echo "   Importing SSH keys..."
+        keys_json=$(cat /root/.ssh/authorized_keys | jq -R . | jq -s .)
+        jq ".core.authorized_keys = $keys_json" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+    fi
+    
+    # Enable bootstrap mode to allow SSH after first boot
+    jq '.core.security.bootstrap_mode = true' "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+    
+    echo "✅ Configuration generated."
+else
+    # Ensure gum from /tmp is found if it was installed there
+    PATH="$PATH" bash ./installer/cafaye-wizard.sh || exit 1
+fi
 
 # 4. Prepare for Detached Execution
 echo "Setting up localhost SSH for automated installation..."
@@ -128,7 +162,11 @@ chmod 600 /root/.ssh/authorized_keys
 if [[ -f /etc/ssh/sshd_config ]]; then
     sed -i 's/#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
     sed -i 's/PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
-    systemctl restart sshd || systemctl restart ssh || true
+    if systemctl is-active --quiet sshd; then
+        systemctl restart sshd
+    elif systemctl is-active --quiet ssh; then
+        systemctl restart ssh
+    fi
 fi
 
 # 5. Launch Background Execution

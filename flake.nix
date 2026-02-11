@@ -103,6 +103,7 @@
             integration-rails = runTest ./tests/integration/rails.nix;
             integration-dev-ux = runTest ./tests/integration/dev-ux.nix;
             interface-workload-aliases = runTest ./tests/interface/workload-aliases.nix;
+            integration-installer-kexec = runTest ./tests/integration/installer/kexec.nix;
           };
 
         packages = {
@@ -142,18 +143,14 @@
         };
       }
     ) // {
+      nixosModules.cafaye = ./default.nix;
+
       # NixOS configuration generator for different architectures
       nixosConfigurations.cafaye = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux"; # Default to x86_64
         specialArgs = { inherit inputs userState; };
         modules = [
-          inputs.disko.nixosModules.disko
-          inputs.sops-nix.nixosModules.sops
-          ./hardware/vps.nix
-          ./core
-          ./interface
-          ./modules
-          ./cli
+          self.nixosModules.cafaye
         ];
       };
     };

@@ -44,21 +44,24 @@ else
     import_keys=false
 fi
 
-# 3. Features & Modules
-echo -e "🛠️  ${CYAN}Default Stack:${NC}"
-choice=$(gum choose --no-limit --cursor "👉 " --header "Select additional modules to enable now" \
+# 3. Development Environment
+echo -e "🛠️  ${CYAN}Development Stack:${NC}"
+choices=$(gum choose --no-limit --header "Select tools & frameworks to pre-install:" \
     "🐳 Docker" \
-    "🐘 PostgreSQL" \
-    "🐬 MySQL" \
     "🛤️  Ruby on Rails" \
-    "⚛️  Next.js" \
-    "🦀 Rust")
+    "🟢 Node.js" \
+    "🐬 MySQL" \
+    "🐘 PostgreSQL" \
+    "🦊 Redis") || exit 1
+
+echo "   Selected: $(echo "$choices" | tr '\n' ', ' | sed 's/, $//')"
+echo ""
 
 # 4. Final Review
 echo -e "🚀 ${CYAN}Final Review:${NC}"
 echo "   Target: $disk"
 echo "   Keys:   $import_keys"
-echo "   Stack:  $choice"
+echo "   Stack:  $(echo "$choices" | tr '\n' ' ')"
 echo ""
 
 if gum confirm "Start the background installation? (You can disconnect after this)"; then
@@ -70,21 +73,21 @@ if gum confirm "Start the background installation? (You can disconnect after thi
     echo "Updating disk..."
     jq ".core.boot.grub_device = \"$disk\"" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update disk"; exit 1; }
     
+    # Update tools based on choices
+    echo "Configuring stack..."
+    [[ "$choices" == *"Docker"* ]] && jq ".dev_tools.docker = true" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+    [[ "$choices" == *"Ruby on Rails"* ]] && jq ".frameworks.rails = true | .languages.ruby = true" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+    [[ "$choices" == *"Node.js"* ]] && jq ".languages.nodejs = true" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+    [[ "$choices" == *"MySQL"* ]] && jq ".services.mysql = true" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+    [[ "$choices" == *"PostgreSQL"* ]] && jq ".services.postgresql = true" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+    [[ "$choices" == *"Redis"* ]] && jq ".services.redis = true" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+    
     # Update keys
     if [[ "$import_keys" == "true" ]]; then
        echo "Updating keys..."
        keys_json=$(cat /root/.ssh/authorized_keys | jq -R . | jq -s .)
        jq ".core.authorized_keys = $keys_json" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update keys"; exit 1; }
     fi
-    
-    # Update modules
-    echo "Updating modules..."
-    [[ "$choice" == *"Docker"* ]] && (jq ".dev_tools.docker = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Docker"; exit 1; })
-    [[ "$choice" == *"PostgreSQL"* ]] && (jq ".services.postgresql = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update PostgreSQL"; exit 1; })
-    [[ "$choice" == *"MySQL"* ]] && (jq ".services.mysql = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update MySQL"; exit 1; })
-    [[ "$choice" == *"Rails"* ]] && (jq ".frameworks.rails = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Rails"; exit 1; })
-    [[ "$choice" == *"Next.js"* ]] && (jq ".frameworks.nextjs = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Next.js"; exit 1; })
-    [[ "$choice" == *"Rust"* ]] && (jq ".languages.rust = true" "$STATE_FILE" > "$STATE_FILE.tmp" && cp "$STATE_FILE.tmp" "$STATE_FILE" && rm "$STATE_FILE.tmp" || { echo "Failed to update Rust"; exit 1; })
 
     echo "✅ Configuration generated at $STATE_FILE"
     exit 0

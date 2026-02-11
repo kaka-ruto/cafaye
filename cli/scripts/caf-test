@@ -7,8 +7,8 @@ BATS_DIR="$CACHE_DIR/bats-core"
 BATS_BIN="$BATS_DIR/bin/bats"
 
 # Configuration for Remote Forge
-FORGE_HOST="cafaye"
-FORGE_DIR="~/cafaye-dev"
+FORGE_HOST="${FORGE_HOST:-cafaye}"
+FORGE_DIR="${FORGE_DIR:-~/cafaye-dev}"
 
 # --- Bootstrap BATS ---
 ensure_bats() {
