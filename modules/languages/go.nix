@@ -1,8 +1,5 @@
-{ config, pkgs, userState, ... }:
-
-let
-  enabled = userState.languages.go or false;
-in
+{ config, pkgs, lib, userState, ... }:
 {
-  environment.systemPackages = pkgs.lib.optional enabled pkgs.go;
+  # Stub for go.nix
+  home.packages = [];
 }

@@ -1,19 +1,5 @@
-{ config, pkgs, userState, ... }:
-
-let
-  enabled = userState.frameworks.rails or false;
-in
+{ config, pkgs, lib, userState, ... }:
 {
-  environment.systemPackages = pkgs.lib.optionals enabled (
-    with pkgs; [
-      libyaml
-      vips
-      pkg-config
-      libxml2
-      libxslt
-      readline
-      sqlite
-      rubyPackages.rails
-    ]
-  );
+  # Stub for rails.nix
+  home.packages = [];
 }

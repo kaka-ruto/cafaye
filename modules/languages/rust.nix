@@ -1,8 +1,5 @@
-{ config, pkgs, userState, ... }:
-
-let
-  enabled = userState.languages.rust or false;
-in
+{ config, pkgs, lib, userState, ... }:
 {
-  environment.systemPackages = pkgs.lib.optional enabled pkgs.rustup;
+  # Stub for rust.nix
+  home.packages = [];
 }

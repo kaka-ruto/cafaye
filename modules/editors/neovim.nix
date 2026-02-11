@@ -1,12 +1,16 @@
-{ config, pkgs, userState, ... }:
+{ config, pkgs, lib, userState, ... }:
 
 let
   enabled = userState.editors.neovim or false;
 in
 {
-  environment.systemPackages = pkgs.lib.optionals enabled (
-    with pkgs; [
-      neovim
+  programs.neovim = {
+    enable = enabled;
+    defaultEditor = userState.editors.default == "neovim";
+    viAlias = true;
+    vimAlias = true;
+    
+    extraPackages = with pkgs; [
       git
       gcc
       gnumake
@@ -16,10 +20,7 @@ in
       ripgrep
       fd
       tree-sitter
-    ]
-  );
-
-  # Symlink default config if it doesn't exist (handled by CLI scripts usually, 
-  # but we can provide a system-wide default or home-manager style link)
-  # For now, we'll let the caf-config-init handle it to allow user customization.
+      lua-language-server
+    ];
+  };
 }

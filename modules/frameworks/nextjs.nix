@@ -1,13 +1,5 @@
-{ config, pkgs, userState, ... }:
-
-let
-  enabled = userState.frameworks.nextjs or false;
-in
+{ config, pkgs, lib, userState, ... }:
 {
-  environment.systemPackages = pkgs.lib.optionals enabled (
-    with pkgs; [
-      vips
-      pkg-config
-    ]
-  );
+  # Stub for nextjs.nix
+  home.packages = [];
 }

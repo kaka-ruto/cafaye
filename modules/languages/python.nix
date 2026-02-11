@@ -1,10 +1,10 @@
-{ config, pkgs, userState, ... }:
+{ config, pkgs, lib, userState, ... }:
 
 let
   enabled = (userState.languages.python or false) || (userState.frameworks.django or false);
 in
 {
-  environment.systemPackages = pkgs.lib.optionals enabled (
+  home.packages = lib.optionals enabled (
     with pkgs; [
       python3
       python3Packages.pip
