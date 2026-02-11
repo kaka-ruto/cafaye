@@ -34,9 +34,11 @@ This document describes the behaviors we expect from the Cafaye installer. We de
 │   │   ├── redis.nix
 │   │   └── ...
 │   ├── editors/           # Code editors
-│   │   ├── neovim.nix
-│   │   ├── neovim-lazyvim.nix
-│   │   └── ...
+│   │   ├── neovim.nix     # Base Neovim module
+│   │   └── neovim/        # Neovim distributions (subdirectory)
+│   │       ├── lazyvim.nix
+│   │       ├── astronvim.nix
+│   │       └── nvchad.nix
 │   └── ai/                # AI tools
 │       ├── claude-code.nix
 │       └── ...
@@ -50,6 +52,11 @@ This document describes the behaviors we expect from the Cafaye installer. We de
 │   │   │   └── ruby.nix   # Tests modules/languages/ruby.nix
 │   │   ├── frameworks/
 │   │   │   └── rails.nix  # Tests modules/frameworks/rails.nix
+│   │   ├── editors/
+│   │   │   ├── neovim.nix              # Tests modules/editors/neovim.nix
+│   │   │   └── neovim/                 # Tests subdirectory modules
+│   │   │       ├── lazyvim.nix         # Tests modules/editors/neovim/lazyvim.nix
+│   │   │       └── astronvim.nix       # Tests modules/editors/neovim/astronvim.nix
 │   │   └── ...            # Mirrors modules/ structure exactly
 │   └── installation/      # Tests for installer behavior
 ├── logs/                  # Installation and operation logs
@@ -71,6 +78,9 @@ This document describes the behaviors we expect from the Cafaye installer. We de
 
 **Test Structure (1:1 Mapping):**
 For every module at `modules/<category>/<name>.nix`, there MUST be a test at `tests/modules/<category>/<name>.nix`. This ensures every module has test coverage and tests are easy to find.
+
+**Subdirectory Support:**
+Modules can have subdirectories for variants (e.g., `modules/editors/neovim/` contains different Neovim distributions). Tests follow the same structure: `tests/editors/neovim/lazyvim.nix` tests `modules/editors/neovim/lazyvim.nix`.
 
 ## Installation Pattern
 
