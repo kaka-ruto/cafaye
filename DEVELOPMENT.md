@@ -857,89 +857,89 @@ All in `~/.config/cafaye/`:
 
 ### Pre-Install
 
-- [ ] Logo display
-- [ ] System detection
-- [ ] Requirements validation
-- [ ] Error messages
+- [x] Logo display
+- [x] System detection
+- [x] Requirements validation
+- [x] Error messages
 
 ### Plan Phase
 
-- [ ] Welcome message
-- [ ] Git identity detection/collection
-- [ ] Backup strategy (GitHub walkthrough)
-- [ ] Secure access (Tailscale setup)
-- [ ] Editor selection (with distribution submenu)
-- [ ] Theme selection
-- [ ] SSH keys (VPS only)
-- [ ] Auto-shutdown (VPS only)
+- [x] Welcome message
+- [x] Git identity detection/collection
+- [x] Backup strategy (GitHub walkthrough - manual URL)
+- [x] Secure access (Tailscale setup)
+- [x] Editor selection (with distribution submenu)
+- [x] Theme selection
+- [x] SSH keys (VPS only)
+- [x] Auto-shutdown (VPS only)
 
 ### Confirm Phase
 
-- [ ] Summary generation
-- [ ] Summary display
-- [ ] Confirmation prompt
-- [ ] Modify/restart/exit options
+- [x] Summary generation
+- [x] Summary display
+- [x] Confirmation prompt
+- [x] Modify/restart/exit options
 
 ### Execute Phase
 
-- [ ] Progress tracking
-- [ ] Step-by-step execution
-- [ ] Error handling
-- [ ] Warning display
-- [ ] Time estimation
+- [x] Progress tracking
+- [x] Step-by-step execution
+- [x] Error handling
+- [x] Warning display
+- [x] Time estimation
 
 ### Backup Initialization
 
-- [ ] Git repo initialization
-- [ ] Git identity configuration
-- [ ] Remote configuration
-- [ ] Initial commit
-- [ ] Push (if strategy is immediate)
+- [x] Git repo initialization
+- [x] Git identity configuration
+- [x] Remote configuration
+- [x] Initial commit
+- [x] Push (if strategy is immediate)
 
 ### Post-Install
 
-- [ ] Success screen
-- [ ] Tool addition examples
-- [ ] Quick start commands
-- [ ] Documentation links
+- [x] Success screen
+- [x] Tool addition examples
+- [x] Quick start commands
+- [x] Documentation links
 
 ### Technical
 
-- [ ] TUI elements
-- [ ] Single directory structure
-- [ ] State persistence
-- [ ] Logging
-- [ ] Signal handling
-- [ ] Idempotency
-- [ ] Exit codes
+- [x] TUI elements
+- [x] Single directory structure
+- [x] State persistence
+- [x] Logging
+- [x] Signal handling
+- [x] Idempotency
+- [x] Exit codes
 
 ### Module System
 
-- [ ] Module template at `modules/_template.nix`
-- [ ] Module auto-discovery from `modules/` directory
-- [ ] Each module self-contained with meta information
-- [ ] Dependency resolution between modules
+- [x] Module template at `modules/_template.nix`
+- [x] Module auto-discovery from `modules/` directory
+- [x] Each module self-contained with meta information
+- [x] Dependency resolution between modules (handled by Nix)
 
 ### Test Structure (1:1 Mapping)
 
-- [ ] Tests directory mirrors modules directory exactly
-- [ ] Every module has corresponding test file
-- [ ] Test path: `tests/modules/<category>/<name>.nix` for `modules/<category>/<name>.nix`
-- [ ] Module creation template includes test file template
-- [ ] CI enforces 1:1 mapping (fails if module lacks test)
+- [x] Tests directory mirrors modules directory exactly
+- [x] Every module has corresponding test file
+- [x] Test path: `tests/modules/<category>/<name>.nix` for `modules/<category>/<name>.nix`
+- [x] Module creation template includes test file template (commented)
+- [x] CI enforces 1:1 mapping (verified via nix flake check)
 
 ### Testing (Installation Only)
 
-- [ ] Installation flow tests
-- [ ] Git identity collection tests
-- [ ] Backup setup tests
-- [ ] Secure access tests
-- [ ] Editor selection tests
-- [ ] Confirmation tests
-- [ ] Execution tests
-- [ ] Backup initialization tests
-- [ ] Error handling tests
-- [ ] Idempotency tests
+- [x] Installation flow tests
+- [x] Git identity collection tests
+- [x] Backup setup tests
+- [x] Secure access tests
+- [x] Editor selection tests
+- [x] Confirmation tests
+- [x] Execution tests
+- [x] Backup initialization tests
+- [x] Error handling tests
+- [x] Idempotency tests
 
 ---
 
