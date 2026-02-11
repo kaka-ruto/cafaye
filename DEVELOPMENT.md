@@ -46,8 +46,8 @@ This document describes the behaviors we expect from the Cafaye installer. We de
 │   ├── nvim/              # Neovim config
 │   ├── zsh/               # Zsh config
 │   └── git/               # Git config
-├── tests/                 # TESTS (1:1 mapping with modules/)
-│   ├── modules/           # Tests for each module
+├── tests/                 # ALL TESTS
+│   ├── modules/           # Module tests (1:1 mapping with modules/)
 │   │   ├── languages/
 │   │   │   └── ruby.nix   # Tests modules/languages/ruby.nix
 │   │   ├── frameworks/
@@ -58,7 +58,10 @@ This document describes the behaviors we expect from the Cafaye installer. We de
 │   │   │       ├── lazyvim.nix         # Tests modules/editors/neovim/lazyvim.nix
 │   │   │       └── astronvim.nix       # Tests modules/editors/neovim/astronvim.nix
 │   │   └── ...            # Mirrors modules/ structure exactly
-│   └── installation/      # Tests for installer behavior
+│   ├── installation/      # Installer behavior tests
+│   ├── cli/               # CLI command tests
+│   ├── integration/       # Integration scenario tests
+│   └── core/              # Core functionality tests
 ├── logs/                  # Installation and operation logs
 └── .git/                  # Git repository for backup
 ```
@@ -76,11 +79,18 @@ This document describes the behaviors we expect from the Cafaye installer. We de
 - Template provided at `modules/_template.nix` for creating new modules
 - Modules are conditionally imported based on `environment.json`
 
-**Test Structure (1:1 Mapping):**
-For every module at `modules/<category>/<name>.nix`, there MUST be a test at `tests/modules/<category>/<name>.nix`. This ensures every module has test coverage and tests are easy to find.
+**Module Test Structure (1:1 Mapping):**
+For every module at `modules/<category>/<name>.nix`, there MUST be a test at `tests/modules/<category>/<name>.nix`. This ensures every module has test coverage.
+
+**Other Tests:**
+Besides modules, we also test:
+- Installation flow (`tests/installation/`)
+- CLI commands (`tests/cli/`)
+- Integration scenarios (`tests/integration/`)
+- Core functionality (`tests/core/`)
 
 **Subdirectory Support:**
-Modules can have subdirectories for variants (e.g., `modules/editors/neovim/` contains different Neovim distributions). Tests follow the same structure: `tests/editors/neovim/lazyvim.nix` tests `modules/editors/neovim/lazyvim.nix`.
+Modules can have subdirectories for variants. Tests follow the same structure.
 
 ## Installation Pattern
 
