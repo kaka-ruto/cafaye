@@ -61,6 +61,8 @@ check_idempotency() {
                 ;;
         esac
     fi
+}
+
 # --- Visual Elements ---
 BRAND_COLOR="#cba6f7" # Mauve
 TEXT_COLOR="#cdd6f4"  # Text
@@ -75,8 +77,6 @@ show_logo() {
     -----------------------------------------------------------------------
 EOF
     echo -e "\033[0m"
-}
-
 }
 detect_system() {
     echo "🔍 Detecting system..."
@@ -392,10 +392,6 @@ show_success() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
 
-# --- Main Flow Start ---
-show_logo
-detect_system
-check_idempotency
 # --- Main Flow Start ---
 show_logo
 detect_system
