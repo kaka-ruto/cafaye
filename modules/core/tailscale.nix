@@ -1,7 +1,7 @@
-{ pkgs, userState, ... }:
+{ pkgs, lib, userState, ... }:
 
 {
-  home.packages = with pkgs; [
-    tailscale
+  home.packages = lib.mkIf (userState.core.tailscale.enabled or false) [
+    pkgs.tailscale
   ];
 }

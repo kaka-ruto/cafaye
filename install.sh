@@ -158,8 +158,15 @@ plan_phase() {
     # 2. Backup Strategy
     BACKUP_TYPE=$(gum choose --header "Where would you like to back up your environment?" "GitHub (recommended)" "GitLab" "Local only" "Skip for now")
     
-    if [[ "$BACKUP_TYPE" == "GitHub (recommended)" ]]; then
-        REPO_URL=$(gum input --placeholder "GitHub Repository URL (e.g., github.com/user/cafaye-env)")
+    if [[ "$BACKUP_TYPE" == "GitHub (recommended)" ]] || [[ "$BACKUP_TYPE" == "GitLab" ]]; then
+        while true; do
+            REPO_URL=$(gum input --placeholder "https://$(echo "$BACKUP_TYPE" | tr '[:upper:]' '[:lower:]' | cut -d' ' -f1).com/user/cafaye" --header "Full $BACKUP_TYPE Repository URL (Required)")
+            if [[ "$REPO_URL" == https://* ]]; then
+                break
+            else
+                echo -e "${RED}⚠️  Please provide a full URL starting with https://${NC}"
+            fi
+        done
     fi
 
     PUSH_STRATEGY=$(gum choose --header "Push Strategy" "Push immediately" "Push daily (recommended)" "Push manually")
