@@ -19,10 +19,39 @@ This document describes the behaviors we expect from the Cafaye installer. We de
 ├── home.nix               # Home Manager configuration
 ├── environment.json       # User's environment choices
 ├── settings.json          # Tool settings (backup strategy, etc.)
+├── modules/               # MODULE CONFIGURATIONS (1:1 test mapping)
+│   ├── _template.nix      # Template for new modules
+│   ├── languages/         # Language runtimes
+│   │   ├── ruby.nix
+│   │   ├── python.nix
+│   │   └── ...
+│   ├── frameworks/        # Web frameworks
+│   │   ├── rails.nix
+│   │   ├── django.nix
+│   │   └── ...
+│   ├── services/          # Background services
+│   │   ├── postgresql.nix
+│   │   ├── redis.nix
+│   │   └── ...
+│   ├── editors/           # Code editors
+│   │   ├── neovim.nix
+│   │   ├── neovim-lazyvim.nix
+│   │   └── ...
+│   └── ai/                # AI tools
+│       ├── claude-code.nix
+│       └── ...
 ├── dotfiles/              # Custom tool configurations
 │   ├── nvim/              # Neovim config
 │   ├── zsh/               # Zsh config
 │   └── git/               # Git config
+├── tests/                 # TESTS (1:1 mapping with modules/)
+│   ├── modules/           # Tests for each module
+│   │   ├── languages/
+│   │   │   └── ruby.nix   # Tests modules/languages/ruby.nix
+│   │   ├── frameworks/
+│   │   │   └── rails.nix  # Tests modules/frameworks/rails.nix
+│   │   └── ...            # Mirrors modules/ structure exactly
+│   └── installation/      # Tests for installer behavior
 ├── logs/                  # Installation and operation logs
 └── .git/                  # Git repository for backup
 ```
@@ -33,6 +62,15 @@ This document describes the behaviors we expect from the Cafaye installer. We de
 - Simple to clone/restore on new machines
 - Clear ownership (Cafaye manages everything)
 - No confusion about where settings live
+
+**Module System:**
+- Each module in `modules/` is self-contained
+- Each module has a corresponding test in `tests/modules/` with identical path
+- Template provided at `modules/_template.nix` for creating new modules
+- Modules are conditionally imported based on `environment.json`
+
+**Test Structure (1:1 Mapping):**
+For every module at `modules/<category>/<name>.nix`, there MUST be a test at `tests/modules/<category>/<name>.nix`. This ensures every module has test coverage and tests are easy to find.
 
 ## Installation Pattern
 
@@ -829,6 +867,21 @@ All in `~/.config/cafaye/`:
 - [ ] Signal handling
 - [ ] Idempotency
 - [ ] Exit codes
+
+### Module System
+
+- [ ] Module template at `modules/_template.nix`
+- [ ] Module auto-discovery from `modules/` directory
+- [ ] Each module self-contained with meta information
+- [ ] Dependency resolution between modules
+
+### Test Structure (1:1 Mapping)
+
+- [ ] Tests directory mirrors modules directory exactly
+- [ ] Every module has corresponding test file
+- [ ] Test path: `tests/modules/<category>/<name>.nix` for `modules/<category>/<name>.nix`
+- [ ] Module creation template includes test file template
+- [ ] CI enforces 1:1 mapping (fails if module lacks test)
 
 ### Testing (Installation Only)
 
