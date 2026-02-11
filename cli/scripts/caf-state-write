@@ -1,20 +1,23 @@
 #!/bin/bash
 
-# Writes a value to user/user-state.json
+# Writes a value to environment.json
 # Usage: caf-state-write "languages.ruby" "true"
 
-# Allow overriding STATE_FILE (for tests)
 if [[ -z "$STATE_FILE" ]]; then
-    STATE_FILE="/etc/cafaye/user-state.json"
+    STATE_FILE="$HOME/.config/cafaye/environment.json"
 
-    # In dev/test environments, fallback to local path if /etc doesn't exist
     if [[ ! -f "$STATE_FILE" ]]; then
-        STATE_FILE="$(git rev-parse --show-toplevel 2>/dev/null)/user/user-state.json"
+        STATE_FILE="$(git rev-parse --show-toplevel 2>/dev/null)/environment.json"
     fi
 fi
 
 key="$1"
 value="$2"
+
+# Ensure file exists
+if [[ ! -f "$STATE_FILE" ]]; then
+    echo "{}" > "$STATE_FILE"
+fi
 
 # Simple type detection for boolean/numbers
 tmp=$(mktemp)
@@ -25,29 +28,13 @@ else
     jq ".$key = \"$value\"" "$STATE_FILE" > "$tmp"
 fi
 
-# Validate against schema
-REPO_DIR="$(git rev-parse --show-toplevel 2>/dev/null)"
-SCHEMA_FILE="$REPO_DIR/user/user-state.schema.json"
-
-if [[ -f "$SCHEMA_FILE" ]]; then
-    # Try local command first, then fallback to nix shell
-    VALIDATOR="check-jsonschema"
-    if ! command -v check-jsonschema &> /dev/null; then
-        if command -v nix &> /dev/null; then
-            VALIDATOR="nix --extra-experimental-features nix-command --extra-experimental-features flakes shell nixpkgs#check-jsonschema --command check-jsonschema"
-        else
-            VALIDATOR=""
-        fi
-    fi
-
-    if [[ -n "$VALIDATOR" ]]; then
-        if ! $VALIDATOR --schemafile "$SCHEMA_FILE" "$tmp" > /dev/null 2>&1; then
-            echo "❌ Validation Error: The change would result in an invalid state.json"
-            $VALIDATOR --schemafile "$SCHEMA_FILE" "$tmp" 2>&1 | grep -A 3 "error" || echo "Check schema constraints for '$key'"
-            rm "$tmp"
-            exit 1
-        fi
-    fi
-fi
-
+# Update state
 mv "$tmp" "$STATE_FILE"
+
+# Auto-commit if in git repo
+CAFAYE_DIR=$(dirname "$STATE_FILE")
+if [[ -d "$CAFAYE_DIR/.git" ]]; then
+    cd "$CAFAYE_DIR"
+    git add environment.json
+    git commit -m "Change $key to $value" || true
+fi

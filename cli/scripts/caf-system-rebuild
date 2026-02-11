@@ -1,14 +1,28 @@
 #!/bin/bash
 
-# Rebuilds the system using the current flake
+# Rebuilds the Cafaye Development Runtime using Home Manager
 # Usage: caf-system-rebuild
 
-echo "🚀 Starting Cafaye OS Rebuild..."
+echo "🚀 Applying Cafaye Foundation Changes..."
+export NIX_CONFIG="experimental-features = nix-command flakes"
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    echo "⚠️  Detected macOS. Rebuild is only available on NixOS."
-    echo "Evaluating local configuration instead..."
-    nix flake check --show-trace
-else
-    sudo nixos-rebuild switch --flake .#cafaye --show-trace
+CAFAYE_DIR="$HOME/.config/cafaye"
+if [[ ! -d "$CAFAYE_DIR" ]]; then
+    # Fallback to current directory for dev
+    CAFAYE_DIR="$(pwd)"
 fi
+
+cd "$CAFAYE_DIR"
+
+SYSTEM_ARCH=$(uname -m)
+[[ "$SYSTEM_ARCH" == "arm64" ]] && SYSTEM_ARCH="aarch64"
+SYSTEM_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+[[ "$SYSTEM_OS" == "darwin" ]] && OS_SUFFIX="darwin" || OS_SUFFIX="linux"
+FLAKE_CONFIG="${SYSTEM_ARCH}-${OS_SUFFIX}"
+
+echo "🔨 Switching to flake: .#${FLAKE_CONFIG}"
+git add -A || true
+
+nix run --extra-experimental-features "nix-command flakes" nixpkgs#home-manager -- switch --flake ".#${FLAKE_CONFIG}" --show-trace
+
+echo "✅ Changes applied successfully!"

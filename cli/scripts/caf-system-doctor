@@ -9,11 +9,14 @@ echo ""
 
 ISSUES=0
 
-# Check NixOS generation
-echo -n "Checking NixOS generation... "
+# Check NixOS/Home Manager generation
+echo -n "Checking Environment generation... "
 if [ -L /nix/var/nix/profiles/system ]; then
-  GEN=$(readlink /nix/var/nix/profiles/system | grep -oP 'system-\K[0-9]+')
-  echo "✓ Generation $GEN"
+  GEN=$(readlink /nix/var/nix/profiles/system | grep -oE 'system-[0-9]+' | cut -d- -f2)
+  echo "✓ NixOS Generation $GEN"
+elif command -v home-manager &> /dev/null; then
+  GEN=$(home-manager generations | head -n 1 | awk '{print $5}')
+  echo "✓ HM Generation $GEN"
 else
   echo "⚠ Unable to determine generation"
   ((ISSUES++))
@@ -21,17 +24,16 @@ fi
 
 # Check Tailscale
 echo -n "Checking Tailscale... "
-if systemctl is-active --quiet tailscaled; then
-  TS_STATUS=$(tailscale status --json 2>/dev/null | jq -r '.BackendState' 2>/dev/null || echo "unknown")
-  if [ "$TS_STATUS" = "Running" ]; then
-    echo "✓ Connected"
+if command -v tailscale &> /dev/null; then
+  TS_STATUS=$(tailscale status --short 2>/dev/null || echo "Not connected")
+  if [[ "$TS_STATUS" != "Not connected" ]]; then
+    echo "✓ $TS_STATUS"
   else
-    echo "⚠ Not connected (state: $TS_STATUS)"
+    echo "⚠ Not connected"
     ((ISSUES++))
   fi
 else
-  echo "⚠ Service not running"
-  ((ISSUES++))
+  echo "○ Not installed"
 fi
 
 # Check disk space

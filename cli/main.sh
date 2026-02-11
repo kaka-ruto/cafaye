@@ -153,28 +153,20 @@ show_system_health() {
         echo "🌐 Tailscale: $ts_status"
     fi
     
-    # Check ZRAM
-    if caf-cmd-present zramctl; then
-        zram_status=$(zramctl --noheadings | wc -l)
-        if [[ $zram_status -gt 0 ]]; then
-            echo "🧠 ZRAM: Enabled"
-        else
-            echo "🧠 ZRAM: Disabled"
-        fi
-    fi
-    
     # Check Docker
     if caf-cmd-present docker; then
-        if systemctl is-active --quiet docker; then
+        if docker info >/dev/null 2>&1; then
             echo "🐳 Docker: Active"
         else
-            echo "🐳 Docker: Inactive"
+            echo "🐳 Docker: Inactive (or no permission)"
         fi
     fi
 
-    # Check NixOS generation
-    gen=$(readlink /nix/var/nix/profiles/system | cut -d- -f2)
-    echo "📌 Current Generation: $gen"
+    # Check Home Manager generation
+    if command -v home-manager &> /dev/null; then
+        gen=$(home-manager generations | head -n 1 | awk '{print $5}')
+        echo "📌 HM Generation: $gen"
+    fi
     
     echo "------------------------"
 }
@@ -248,7 +240,12 @@ toggle_framework() {
 }
 
 show_about() {
-    fastfetch --config /etc/cafaye/fastfetch/config.jsonc
+    if caf-cmd-present fastfetch; then
+        fastfetch --config ~/.config/cafaye/fastfetch/config.jsonc
+    else
+        caf-logo-show
+        echo "Cafaye Development Runtime"
+    fi
     read -p "Press enter to return..."
     show_main_menu
 }

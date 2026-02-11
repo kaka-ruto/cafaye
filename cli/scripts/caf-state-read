@@ -1,17 +1,21 @@
 #!/bin/bash
 
-# Reads a value from user/user-state.json
+# Reads a value from environment.json
 # Usage: caf-state-read "languages.ruby"
 
-# Allow overriding STATE_FILE (for tests)
 if [[ -z "$STATE_FILE" ]]; then
-    STATE_FILE="/etc/cafaye/user-state.json"
+    # New location as per DEVELOPMENT.md
+    STATE_FILE="$HOME/.config/cafaye/environment.json"
 
-    # In dev/test environments, fallback to local path if /etc doesn't exist
     if [[ ! -f "$STATE_FILE" ]]; then
-        STATE_FILE="$(git rev-parse --show-toplevel 2>/dev/null)/user/user-state.json"
+        # Local development fallback
+        STATE_FILE="$(git rev-parse --show-toplevel 2>/dev/null)/environment.json"
     fi
 fi
 
 key="$1"
-jq -r ".$key" "$STATE_FILE"
+if [[ -f "$STATE_FILE" ]]; then
+    jq -r ".$key" "$STATE_FILE"
+else
+    echo "null"
+fi
