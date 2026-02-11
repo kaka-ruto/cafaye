@@ -174,10 +174,55 @@ plan_phase() {
     # 4. Theme selection
     THEME_CHOICE=$(gum choose --header "Choose Your Theme" "Catppuccin Mocha" "Tokyo Night" "Gruvbox")
 
-    # 5. Secure Access (Tailscale)
-    SET_TAILSCALE=$(gum confirm "Set up Tailscale for secure access?" && echo "yes" || echo "no")
-    if [[ "$SET_TAILSCALE" == "yes" ]]; then
-        TAILSCALE_KEY=$(gum input --password --placeholder "Enter Tailscale Auth Key (optional)")
+    # 5. Secure Access (Tailscale) - REFINED ONBOARDING
+    show_logo
+    echo -e "${BLUE}🔐 Secure Remote Access (Tailscale)${NC}"
+    echo "Tailscale creates a secure, private network between all your Cafaye nodes."
+    echo "It allows you to sync your fleet and access your data from anywhere"
+    echo "without opening any firewall ports or managing complex VPNs."
+    echo ""
+    echo "💡 ${GREEN}Highly Recommended${NC} if you plan to use a VPS or multiple machines."
+    echo ""
+
+    TS_ACTION=$(gum choose "Set up Tailscale now (Recommended)" "I'll do it later" "What is Tailscale?")
+    
+    if [[ "$TS_ACTION" == "What is Tailscale?" ]]; then
+        gum style --border normal --margin "1 2" --padding "1 2" --foreground 212 \
+            "Tailscale is a zero-config VPN. It creates a 'Tailnet' where all your" \
+            "devices get a private 100.x.x.x IP address. It's built on WireGuard," \
+            "is end-to-end encrypted, and works through any NAT or Firewall."
+        TS_ACTION=$(gum choose "Set up Tailscale now" "Skip for now")
+    fi
+
+    SET_TAILSCALE="no"
+    if [[ "$TS_ACTION" == *"Set up Tailscale"* ]]; then
+        HAS_ACCOUNT=$(gum confirm "Do you already have a Tailscale account?" --affirmative "Yes, let's connect" --negative "No, not yet" && echo "yes" || echo "no")
+        
+        if [[ "$HAS_ACCOUNT" == "no" ]]; then
+            echo -e "\n${BLUE}Let's get you set up (it's free for personal use):${NC}"
+            echo "1. Go to: https://login.tailscale.com/start"
+            echo "2. Create your account using Google, GitHub, or Microsoft."
+            echo "3. Go to Settings -> Keys."
+            echo "4. Generate an 'Auth Key' (Reusable is recommended for fleet use)."
+            echo ""
+            
+            READY=$(gum choose "I've generated my key" "Skip Tailscale for now")
+            if [[ "$READY" == "Skip Tailscale for now" ]]; then
+                SET_TAILSCALE="no"
+            else
+                SET_TAILSCALE="yes"
+            fi
+        else
+            SET_TAILSCALE="yes"
+        fi
+
+        if [[ "$SET_TAILSCALE" == "yes" ]]; then
+            TAILSCALE_KEY=$(gum input --password --placeholder "Paste your Tailscale Auth Key (tskey-auth-...)" --header "Tailscale Connectivity")
+            if [[ -z "$TAILSCALE_KEY" ]]; then
+                echo "⚠️  No key provided, skipping Tailscale initialization."
+                SET_TAILSCALE="no"
+            fi
+        fi
     fi
 
     # 6. VPS-specific options (Prompt if Linux and looks like cloud, or always on Linux)
