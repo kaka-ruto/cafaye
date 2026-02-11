@@ -410,6 +410,45 @@ EOF
         fi
     fi
 
+    # 8. Tailscale Activation (Seamless setup)
+    if [[ "$SET_TAILSCALE" == "yes" ]]; then
+        echo -e "\n${BLUE}🔐 Finalizing Tailscale Setup...${NC}"
+        
+        # Install Tailscale if not present
+        if ! command -v tailscale &> /dev/null; then
+            echo "Installing Tailscale..."
+            if [[ "$OS" == "Darwin" ]]; then
+                if command -v brew &> /dev/null; then
+                    brew install tailscale
+                else
+                    echo "⚠️  Homebrew not found. Please install Tailscale for macOS manually: https://tailscale.com/download/mac"
+                fi
+            else
+                # Linux: Use the official install script
+                curl -fsSL https://tailscale.com/install.sh | sh
+            fi
+        fi
+
+        # Authenticate if key is provided
+        if [[ -n "$TAILSCALE_KEY" ]]; then
+            echo "Authenticating with Tailscale..."
+            # On Linux, tailscaled might need to be started first if it was just installed
+            if [[ "$OS" == "Linux" ]]; then
+                systemctl enable --now tailscaled || service tailscaled start || true
+            fi
+            
+            # Run 'up' with the key
+            # We use sudo for Linux to ensure it has permissions to create the tunnel
+            if [[ "$OS" == "Linux" ]]; then
+                sudo tailscale up --authkey "$TAILSCALE_KEY" --hostname "cafaye-$(whoami)-$(hostname)"
+            else
+                # macOS (CLI version)
+                tailscale up --authkey "$TAILSCALE_KEY" --hostname "cafaye-$(whoami)-$(hostname)"
+            fi
+            echo "✅ Tailscale is connected!"
+        fi
+    fi
+
     show_success
 }
 

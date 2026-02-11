@@ -12,6 +12,7 @@
     ./modules/interface/cli.nix
     ./modules/editors/neovim.nix
     ./modules/core/sops.nix
+    ./modules/core/tailscale.nix
     
     # Optional modules based on userState
     ./modules/languages/ruby.nix
