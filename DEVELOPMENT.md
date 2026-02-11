@@ -63,8 +63,26 @@ This document describes the behaviors we expect from the Cafaye installer. We de
 │   ├── integration/       # Integration scenario tests
 │   └── core/              # Core functionality tests
 ├── logs/                  # Installation and operation logs
-└── .git/                  # Git repository for backup
+├── .git/                  # Git repository for backup
+└── install.sh             # Installer script (can be from Cafaye repo or user's fork)
 ```
+
+**Installer Source:**
+Users can install from:
+1. **Official Cafaye repository** (default):
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
+   ```
+2. **User's own repository/fork** (customization):
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/user/my-cafaye/main/install.sh | bash
+   ```
+3. **Local file** (development/testing):
+   ```bash
+   ./install.sh
+   ```
+
+The installer clones the repository it comes from into `~/.config/cafaye/`, so users who install from their fork get their custom modules and configurations.
 
 **Why one directory:**
 
@@ -424,43 +442,50 @@ Installing Cafaye Foundation...
    - Create `~/.config/cafaye/` directory structure
    - Check permissions
 
-2. **Nix Installation** (1-2 minutes)
+2. **Repository Setup** (30 seconds)
+   - Clone the repository from where `install.sh` originated
+   - If installed from `https://cafaye.sh` → clones official repo
+   - If installed from user's fork → clones their fork
+   - If installed locally → uses local files
+   - This ensures custom modules and configs from forks are available
+
+3. **Nix Installation** (1-2 minutes)
    - Download Nix installer
    - Run multi-user installation
    - Configure nix.conf with flakes enabled
 
-3. **Home Manager Installation** (30 seconds)
+4. **Home Manager Installation** (30 seconds)
    - Install Home Manager
    - Configure Home Manager to use `~/.config/cafaye/`
    - Set up user profile
 
-4. **Foundation Tools Installation** (30 seconds)
+5. **Foundation Tools Installation** (30 seconds)
    - Download base packages
    - Install Zsh and Starship
    - Install terminal tools (zellij, fzf, zoxide, etc.)
    - Install selected editor
    - Install theme files
 
-5. **Configuration** (30 seconds)
+6. **Configuration** (30 seconds)
    - Generate `environment.json` with user choices
    - Generate `settings.json` with backup strategy
    - Generate `home.nix` from templates
    - Set up dotfiles structure
    - Configure shell
 
-6. **Backup Initialization** (20 seconds)
+7. **Backup Initialization** (20 seconds)
    - Initialize git repository in `~/.config/cafaye/`
    - Configure Git user identity
    - If GitHub selected, add remote and test connection
    - Create initial commit: "Initial Cafaye environment setup"
    - If push strategy is immediate, push to remote
 
-7. **Secure Access Setup** (if Tailscale selected, 20 seconds)
+8. **Secure Access Setup** (if Tailscale selected, 20 seconds)
    - Configure Tailscale with auth key
    - Verify connection
    - Display Tailscale IP
 
-8. **Verification** (10 seconds)
+9. **Verification** (10 seconds)
    - Verify tools installed correctly
    - Run smoke tests
    - Check for errors
