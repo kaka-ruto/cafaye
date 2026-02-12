@@ -2,7 +2,10 @@
 
 let
   userState = {
-    editors = { neovim = { nvchad = true;  }; };
+    editors = { 
+      neovim = true; 
+      distributions = { nvim = { nvchad = true; }; };
+    };
   };
 in
 inputs.home-manager.lib.homeManagerConfiguration {

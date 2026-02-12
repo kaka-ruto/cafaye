@@ -325,7 +325,7 @@ execute_phase() {
         find . -maxdepth 1 ! -name ".git" ! -name ".devbox" ! -name ".cache" ! -name "result" ! -name "environment.json" ! -name "local-user.nix" ! -name "." -exec cp -r {} "$CAFAYE_DIR/" \;
     else
         echo "Cloning Cafaye repository..."
-        git clone --depth 1 https://github.com/kaka-ruto/cafaye "$CAFAYE_DIR"
+        git clone --depth 1 https://github.com/cafaye/cafaye "$CAFAYE_DIR"
         rm -rf "$CAFAYE_DIR/.git" # Start with a fresh env repo
     fi
 

@@ -2,7 +2,10 @@
 
 let
   userState = {
-    editors = { neovim = { astronvim = true;  }; };
+    editors = { 
+      neovim = true; 
+      distributions = { nvim = { astronvim = true; }; };
+    };
   };
 in
 inputs.home-manager.lib.homeManagerConfiguration {

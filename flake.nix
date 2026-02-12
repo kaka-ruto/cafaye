@@ -70,20 +70,22 @@
                   currentAttrName = if relPath == "" then name else "${lib.replaceStrings ["/"] ["."] relPath}.${name}";
                 in
                 if type == "directory" then
-                  if name == "fixtures" || name == "lib" then {} 
+                  if name == "fixtures" || name == "lib" || name == "installer" then {} 
                   else findTests baseDir currentRelPath
                 else if type == "regular" && lib.hasSuffix ".nix" name 
-                        && name != "test-helper.nix" # Exclude helpers
+                        && name != "test-helper.nix" && name != "shell.nix" # Exclude helpers
                 then
                   let 
                     testName = lib.removeSuffix ".nix" currentAttrName;
                     imported = import (baseDir + "/${currentRelPath}");
                     
-                    # Case 1: Direct Derivation (e.g. runNixOSTest)
+                    # Case 1: Direct Derivation or Functional Config
                     # We try calling it with standard args if it's a function
                     result = if isFunction imported then 
-                               let call = (imported { inherit pkgs inputs lib; }); in
-                               if isDerivation call then call else null
+                               let call = (imported { inherit pkgs inputs lib; home-module = ./home.nix; }); in
+                               if isDerivation call then call 
+                               else if isAttrs call && call ? activationPackage then call.activationPackage
+                               else null
                              else if isDerivation imported then imported
                              else null;
 
@@ -129,13 +131,25 @@
             )
           );
 
-          # Shorthand for CLI
+          # Shorthand for CLI (wrapped in linkFarm for nix flake check)
           shorthandSuites = {
              modules = suites.modules or {};
-             languages = lib.filterAttrs (n: v: lib.hasPrefix "modules.languages." n) allTests;
-             editors = lib.filterAttrs (n: v: lib.hasPrefix "modules.editors." n) allTests;
-             services = lib.filterAttrs (n: v: lib.hasPrefix "modules.services." n) allTests;
-             interface = lib.filterAttrs (n: v: lib.hasPrefix "modules.interface." n) allTests;
+             languages = pkgs.linkFarm "cafaye-suite-languages" (
+               lib.mapAttrsToList (name: drv: { inherit name; path = drv; }) 
+                 (lib.filterAttrs (n: v: lib.hasPrefix "modules.languages." n) allTests)
+             );
+             editors = pkgs.linkFarm "cafaye-suite-editors" (
+               lib.mapAttrsToList (name: drv: { inherit name; path = drv; }) 
+                 (lib.filterAttrs (n: v: lib.hasPrefix "modules.editors." n) allTests)
+             );
+             services = pkgs.linkFarm "cafaye-suite-services" (
+               lib.mapAttrsToList (name: drv: { inherit name; path = drv; }) 
+                 (lib.filterAttrs (n: v: lib.hasPrefix "modules.services." n) allTests)
+             );
+             interface = pkgs.linkFarm "cafaye-suite-interface" (
+               lib.mapAttrsToList (name: drv: { inherit name; path = drv; }) 
+                 (lib.filterAttrs (n: v: lib.hasPrefix "modules.interface." n) allTests)
+             );
              installer = suites.installer or {};
           };
 
@@ -179,5 +193,8 @@
           extraSpecialArgs = { inherit inputs; userState = readUserState ./.; };
         };
       };
+      
+      # NixOS modules (stub for testing)
+      nixosModules.cafaye = { ... }: { };
     };
 }
