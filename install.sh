@@ -209,7 +209,7 @@ plan_phase() {
     echo "It allows you to sync your fleet and access your data from anywhere"
     echo "without opening any firewall ports or managing complex VPNs."
     echo ""
-    echo "💡 ${GREEN}Highly Recommended${NC} if you plan to use a VPS or multiple machines."
+    echo -e "💡 ${GREEN}Highly Recommended${NC} if you plan to use a VPS or multiple machines."
     echo ""
 
     TS_ACTION=$(gum choose "Set up Tailscale now (Recommended)" "I'll do it later" "What is Tailscale?")
