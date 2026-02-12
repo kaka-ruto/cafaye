@@ -30,5 +30,8 @@ in
         ${userConfig}
       '';
     };
+
+    # Link the theme script to the expected location
+    xdg.configFile."tmux/base16.sh".source = ../../../config/user/tmux/base16.sh;
   };
 }
