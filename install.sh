@@ -42,7 +42,7 @@ check_idempotency() {
             return
         fi
 
-        CHOICE=$(gum choose "Update existing foundation" "Reconfigure (run installer again)" "Exit")
+        CHOICE=$(gum choose "Update existing foundation" "Reconfigure (run installer again)" "Clean Install (Wipe & Start fresh)" "Exit")
         case "$CHOICE" in
             "Update existing foundation")
                 echo "🚀 Updating..."
@@ -54,6 +54,12 @@ check_idempotency() {
                 ;;
             "Reconfigure"*)
                 echo "🛠️  Starting reconfiguration..."
+                ;;
+            "Clean Install"*)
+                echo "⚠️  Wiping existing installation..."
+                TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+                mv "$HOME/.config/cafaye" "$HOME/.config/cafaye.bak.$TIMESTAMP"
+                echo "📁 Existing config backed up to ~/.config/cafaye.bak.$TIMESTAMP"
                 ;;
             "Exit")
                 exit 0
@@ -329,6 +335,9 @@ execute_phase() {
         rm -rf "$CAFAYE_DIR/.git" # Start with a fresh env repo
     fi
 
+    # Ensure scripts are executable
+    chmod +x "$CAFAYE_DIR/cli/scripts/"* 2>/dev/null || true
+
     cd "$CAFAYE_DIR"
 
     # 3. Save state
@@ -443,11 +452,24 @@ EOF
     # Pre-emptively backup files that cause HM activation to fail
     echo "🧹 Handling existing configuration files..."
     for f in ".zshrc" ".zshenv" ".config/btop/btop.conf"; do
-        if [[ -f "$HOME/$f" ]] && [[ ! -L "$HOME/$f" ]]; then
+        if [[ -e "$HOME/$f" ]] || [[ -L "$HOME/$f" ]]; then
+            # If it's already a symlink pointing to our store, we could skip it, 
+            # but moving it is safer for a clean install.
             echo "   Backing up $f to $f.backup"
             mv "$HOME/$f" "$HOME/$f.backup"
         fi
     done
+
+    # Pre-emptively remove conflicting profile packages
+    if command -v nix &> /dev/null; then
+        echo "🔍 Checking for conflicting Nix packages..."
+        for pkg in "sops" "ssh-to-age"; do
+            if nix profile list | grep -q "legacyPackages.*$pkg"; then
+                echo "   Removing conflicting package from profile: $pkg"
+                nix profile move "$pkg" 2>/dev/null || nix profile remove "$pkg" || true
+            fi
+        done
+    fi
 
     # 7. Apply Home Manager configuration
     echo "🏗️  Building your environment (this may take a minute)..."
