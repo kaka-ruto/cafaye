@@ -39,52 +39,81 @@ run_nix_target() {
     return $?
 }
 
+run_remote() {
+    local target="$1"
+    # Get VPS info from vps_deploy script if available, or use defaults
+    VPS_IP="34.10.103.233"
+    SSH_USER="kaka"
+    SSH_KEY="$HOME/.ssh/cafaye"
+
+    echo -e "\n${BLUE}☁️  Running Remote Test on Forge: $VPS_IP${NC}"
+    
+    # Sync current state
+    echo "📦 Syncing to forge..."
+    rsync -avz --exclude '.git' --exclude '.devbox' --exclude 'result' \
+          -e "ssh -i $SSH_KEY -o StrictHostKeyChecking=no" \
+          ./ $SSH_USER@$VPS_IP:~/cafaye-test-forge/
+    
+    # Run test command on forge
+    echo "🚀 Executing test on forge..."
+    ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no "$SSH_USER@$VPS_IP" "cd ~/cafaye-test-forge && ./bin/test.sh $target"
+    return $?
+}
+
 # --- Main Logic ---
 
-command="$1"
+TARGET=""
+REMOTE=false
 
-case "$command" in
-    "")
-        # Default: Run everything
-        run_syntax && run_nix_all
-        ;;
-    "--lint"|"--syntax")
-        run_syntax
-        ;;
-    "--nix"|"nix")
-        # Support 'caf test nix <target>' for legacy/explicit use
-        if [[ -n "$2" ]]; then
-            run_nix_target "$2"
-        else
-            run_nix_all
-        fi
-        ;;
-    "--help"|"-h")
-        echo "Usage: caf test [target] [options]"
-        echo ""
-        echo "Targets:"
-        echo "  (none)             Run all linting and behavioral tests"
-        echo "  <path>             Run specific test or suite (e.g. modules.languages.ruby)"
-        echo ""
-        echo "Options:"
-        echo "  --lint, --syntax   Run only static analysis (fast)"
-        echo "  --nix              Explicitly run all Nix behavioral tests"
-        echo ""
-        echo "Examples:"
-        echo "  caf test modules.languages       # Run all language module tests"
-        # shellcheck disable=SC2016
-        echo '  caf test modules/languages/ruby  # Paths are automatically mapped to dots'
-        echo "  caf test installer               # Run installer integration tests"
-        ;;
-    *)
-        # Primary targeted path: 'caf test modules.languages.ruby'
-        if [[ -n "$command" ]]; then
-            run_nix_target "$command"
-        else
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --remote) REMOTE=true ;;
+        --lint|--syntax) TARGET="--lint" ;;
+        --nix|nix) # Support 'caf test nix <target>'
+            if [[ -n "$2" && "$2" != "--remote" ]]; then
+                TARGET="$2"
+                shift
+            else
+                TARGET="all"
+            fi
+            ;;
+        --help|-h)
+            echo "Usage: caf test [target] [--remote]"
+            echo ""
+            echo "Options:"
+            echo "  --remote           Run the test on the remote GCP forge"
+            echo "  --lint, --syntax   Run only static analysis"
+            echo "  --nix              Run all Nix behavioral tests"
+            echo ""
+            echo "Targets:"
+            echo "  modules.languages.ruby"
+            echo "  installer"
+            exit 0
+            ;;
+        *)
+            if [[ -z "$TARGET" ]]; then
+                TARGET="$1"
+            fi
+            ;;
+    esac
+    shift
+done
+
+if [[ "$REMOTE" == "true" ]]; then
+    run_remote "$TARGET"
+else
+    case "$TARGET" in
+        "--lint")
+            run_syntax
+            ;;
+        "all"|"")
             run_syntax && run_nix_all
-        fi
-        ;;
-esac
+            ;;
+        *)
+            run_nix_target "$TARGET"
+            ;;
+    esac
+fi
 
 if [[ $? -eq 0 ]]; then
     echo -e "\n${GREEN}✅ Tests Passed!${NC}"

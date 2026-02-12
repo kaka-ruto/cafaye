@@ -15,13 +15,27 @@ in
       plugins = [ "git" "sudo" "docker" "direnv" ];
     };
 
-    shellAliases = lib.mkForce ({
+    shellAliases = {
       # Base shortcuts
       l = "eza -lh --icons";
       ls = "eza --icons";
       ll = "eza -alHh --icons";
       cat = "bat";
       top = "btop";
+      
+      # Git Aliases
+      gs = "git status";
+      ga = "git add";
+      gaa = "git add --all";
+      gc = "git commit -m";
+      gca = "git commit --amend";
+      gp = "git push";
+      gpl = "git pull";
+      gl = "git log --oneline --graph --decorate";
+      gd = "git diff";
+      gco = "git checkout";
+      gb = "git branch";
+      gst = "git status"; # Consistency
       
       # Cafaye CLI
       apply = "caf apply";
@@ -40,7 +54,7 @@ in
       n = "npm";
       nr = "npm run";
       ni = "npm install";
-    }));
+    });
 
     # Initialize starship and zoxide
     initContent = ''

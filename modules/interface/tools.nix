@@ -25,13 +25,4 @@
     enable = true;
     nix-direnv.enable = true;
   };
-
-  # Basic aliases to encourage using the new tools
-  home.shellAliases = {
-    ls = "eza --icons --group-directories-first";
-    ll = "eza -l --icons --group-directories-first";
-    la = "eza -la --icons --group-directories-first";
-    cat = "bat";
-    grep = "rg";
-  };
 }
