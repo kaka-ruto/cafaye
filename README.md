@@ -1,6 +1,6 @@
 # ☕ Cafaye
 
-> The first **Distributed Development Infrastructure**—sync your entire environment across all your machines, from laptop to cloud, with AI agents that keep working when you don't.
+> The **Distributed Development Infrastructure** with autonomous AI agents that keep working when you don't.
 
 ## What is Cafaye?
 
