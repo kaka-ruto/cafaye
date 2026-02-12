@@ -452,7 +452,7 @@ EOF
     FLAKE_CONFIG="${SYSTEM_ARCH}-${OS_SUFFIX}"
 
     # Use nix run instead of assuming home-manager is in path
-    nix run --extra-experimental-features "nix-command flakes" nixpkgs#home-manager -- switch --flake "$CAFAYE_DIR#$FLAKE_CONFIG" --show-trace
+    nix run --extra-experimental-features "nix-command flakes" nixpkgs#home-manager -- switch --flake "$CAFAYE_DIR#$FLAKE_CONFIG" -b backup --show-trace
 
     # 8. Tailscale Activation (Seamless setup)
     if [[ "$SET_TAILSCALE" == "yes" ]]; then
