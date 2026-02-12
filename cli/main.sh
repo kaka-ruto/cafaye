@@ -299,6 +299,10 @@ case "$1" in
         shift
         caf-test "$@"
         ;;
+    update)
+        shift
+        caf-update "$@"
+        ;;
     backup)
         if [[ "$2" == "status" ]]; then
             echo "📊 Backup Status"
@@ -321,6 +325,7 @@ case "$1" in
         echo "  sync [push/pull] Sync state with Git source of truth"
         echo "  fleet [status/add/apply] Manage remote nodes"
         echo "  test [--nix]    Run syntax or behavioral tests"
+        echo "  update          Update Cafaye foundation to latest version"
         echo "  backup status   Show backup repository status"
         echo ""
         echo "Run without arguments for interactive menu."
