@@ -210,6 +210,8 @@ plan_phase() {
     echo "without opening any firewall ports or managing complex VPNs."
     echo ""
     echo -e "💡 ${GREEN}Highly Recommended${NC} if you plan to use a VPS or multiple machines."
+    echo -e "   ${CYAN}Notice:${NC} Tailscale is free for personal use and we handle the installation."
+    echo "   You don't need to download any apps now."
     echo ""
 
     TS_ACTION=$(gum choose "Set up Tailscale now (Recommended)" "I'll do it later" "What is Tailscale?")
@@ -230,7 +232,7 @@ plan_phase() {
             echo -e "\n${BLUE}Let's get you set up (it's free for personal use):${NC}"
             echo "1. Go to: https://login.tailscale.com/start"
             echo "2. Create your account using Google, GitHub, or Microsoft."
-            echo "3. Go to Settings -> Keys."
+            echo "3. Go to Settings -> Keys (you can skip the 'Get Started' intro)."
             echo "4. Generate an 'Auth Key' (Reusable is recommended for fleet use)."
             echo ""
             
@@ -245,6 +247,9 @@ plan_phase() {
         fi
 
         if [[ "$SET_TAILSCALE" == "yes" ]]; then
+            echo -e "\n${CYAN}🛡️  Security Note:${NC} Your key is used for one-time authentication and"
+            echo "stored locally in your encrypted fleet metadata. It is never shared."
+            echo ""
             TAILSCALE_KEY=$(gum input --password --placeholder "Paste your Tailscale Auth Key (tskey-auth-...)" --header "Tailscale Connectivity")
             if [[ -z "$TAILSCALE_KEY" ]]; then
                 echo "⚠️  No key provided, skipping Tailscale initialization."
@@ -296,7 +301,7 @@ confirm_phase() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     
-    gum confirm "Ready to install the foundation?" || exit 3
+    gum confirm "Ready to fully install Cafaye?" || exit 3
 }
 
 # --- Phase 3: Execute ---
