@@ -64,19 +64,23 @@ check_idempotency() {
 }
 
 # --- Visual Elements ---
-BRAND_COLOR="#cba6f7" # Mauve
-TEXT_COLOR="#cdd6f4"  # Text
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
 
 show_logo() {
     clear
-    echo -e "\033[38;2;203;166;247m"
+    echo -e "${PURPLE}"
     cat << "EOF"
     ☕ Cafaye
     -----------------------------------------------------------------------
     The first Development Runtime built for collaboration between humans and AI
     -----------------------------------------------------------------------
 EOF
-    echo -e "\033[0m"
+    echo -e "${NC}"
 }
 detect_system() {
     echo "🔍 Detecting system..."
@@ -160,7 +164,7 @@ plan_phase() {
     
     if [[ "$BACKUP_TYPE" == "GitHub (recommended)" ]] || [[ "$BACKUP_TYPE" == "GitLab" ]]; then
         while true; do
-            REPO_URL=$(gum input --placeholder "https://github.com/user/cafaye" --header "GitHub Repository URL (e.g., https://github.com/user/cafaye)")
+            REPO_URL=$(gum input --placeholder "Enter full https:// URL..." --header "$BACKUP_TYPE Repository URL (e.g., https://$(echo "$BACKUP_TYPE" | tr '[:upper:]' '[:lower:]' | cut -d' ' -f1).com/user/cafaye)")
             if [[ "$REPO_URL" == https://* ]]; then
                 break
             else
