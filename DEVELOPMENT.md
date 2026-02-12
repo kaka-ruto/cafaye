@@ -1,14 +1,40 @@
-# Cafaye Installation Behavior Specification
+# Cafaye Behavior Specification
 
-**Cafaye is Distributed Development Infrastructure**—a fleet of synchronized development environments spanning your laptop, VPS, and desktop. This document describes the behaviors we expect from the Cafaye installer.
+**Cafaye is Distributed Development Infrastructure**—a fleet of synchronized development environments spanning your laptop, VPS, and desktop. This document describes the behaviors we expect from the Cafaye installer and post-setup experience.
 
 ## Philosophy
 
-**We install the foundation for distributed development.** The installer sets up the core infrastructure (Nix, Home Manager, shell, basic tools) that enables your environment to sync across machines via Git. Start with one node, grow to a fleet. Everything else—languages, frameworks, AI tools—is added later using `caf install <tool>`.
+**We install the foundation for distributed development.** The installer sets up the core infrastructure (Nix, Home Manager, Ghostty terminal, tmux workspace, Zsh, Neovim, lazygit) that enables your environment to sync across machines via Git. Start with one node, grow to a fleet. Everything else—languages, frameworks, AI tools—is added later using the searchable menu or `caf install <tool>`.
+
+**Menu-First Design:** Users should rarely need to type commands. All functionality is accessible via:
+
+- **Keyboard shortcuts** (Super+C for menu, Super+S for search, etc.)
+- **Searchable menus** (fuzzy find anything)
+- **Hierarchical navigation** (arrow keys, vim bindings)
+- Terminal commands are available but secondary
 
 **Single Node or Fleet:** Cafaye works perfectly with one machine. Add more when you need them. Use `caf fleet` commands to manage multiple nodes, or ignore them if you only have one.
 
 **Why:** This keeps installation fast (2-3 minutes), simple (minimal questions), and flexible (users add what they need, when they need it, on as many machines as they want).
+
+---
+
+## Table of Contents
+
+1. [Single Directory Structure](#single-directory-structure)
+2. [Testing Infrastructure](#testing-infrastructure)
+3. [Installation Pattern](#installation-pattern)
+4. [Pre-Installation Experience](#pre-installation-experience)
+5. [Phase 1: Plan](#phase-1-plan)
+6. [Phase 2: Confirm](#phase-2-confirm)
+7. [Phase 3: Execute](#phase-3-execute)
+8. [Post-Installation Experience](#post-installation-experience)
+9. [Post-Setup Behaviors](#post-setup-behaviors)
+10. [Fleet Management](#fleet-management)
+11. [Testing Behaviors](#testing-behaviors)
+12. [Implementation Checklist](#implementation-checklist)
+
+---
 
 ## Single Directory Structure
 
@@ -21,7 +47,7 @@
 ├── home.nix               # Home Manager configuration
 ├── environment.json       # User's environment choices
 ├── settings.json          # Tool settings (backup strategy, etc.)
-├── modules/               # MODULE CONFIGURATIONS (1:1 test mapping)
+├── modules/               # MODULE CONFIGURATIONS
 │   ├── _template.nix      # Template for new modules
 │   ├── languages/         # Language runtimes
 │   │   ├── ruby.nix
@@ -61,6 +87,7 @@
 
 **Installer Source:**
 Users can install from:
+
 1. **Official Cafaye repository** (default):
    ```bash
    curl -fsSL https://raw.githubusercontent.com/kaka-ruto/cafaye/master/install.sh | bash
@@ -84,6 +111,7 @@ The installer clones the repository it comes from into `~/.config/cafaye/`, so u
 - No confusion about where settings live
 
 **Module System:**
+
 - Each module in `modules/` is self-contained
 - Each module has a corresponding test in `tests/modules/` with identical path
 - Template provided at `modules/_template.nix` for creating new modules
@@ -94,6 +122,7 @@ For every module at `modules/<category>/<name>.nix`, there MUST be a test at `te
 
 **Other Tests:**
 Besides modules, we also test:
+
 - Installation flow (`tests/installation/`)
 - CLI commands (`tests/cli/`)
 - Integration scenarios (`tests/integration/`)
@@ -102,26 +131,42 @@ Besides modules, we also test:
 **Subdirectory Support:**
 Modules can have subdirectories for variants. Tests follow the same structure.
 
+---
+
 ## Testing Infrastructure
 
 Cafaye uses a "Rails-style" testing architecture where tests are automatically discovered and can range from simple data fixtures to complex behavioral simulations.
 
+**Testing Strategy:**
+
+Before any code is considered complete, it MUST pass:
+
+1. **Automated tests** - Run via `caf test` on both:
+   - [ ] Local macOS machine (development environment)
+   - [ ] GCP VPS (Ubuntu, production-like environment)
+2. **Manual testing** - Human verification on both:
+   - [ ] Local macOS machine
+   - [ ] GCP VPS via SSH
+
+All tests must pass on BOTH environments before merging.
+
 ### The `caf test` Command
 
-The primary interface for testing the runtime is the `caf test` command.
+The primary interface for testing the distributed development infrastructure is the `caf test` command.
 
-| Command | Description |
-| :--- | :--- |
-| `caf test` | Runs the full suite (Linting + All Behavioral Tests). |
-| `caf test --lint` | Runs fast static analysis (Syntax checks, Shellcheck, Flake evaluation). |
-| `caf test <path>` | Runs a specific test or suite (e.g., `modules/languages/ruby`). |
-| `caf test languages` | Runs a shorthand suite (e.g., all language modules). |
+| Command              | Description                                                              |
+| :------------------- | :----------------------------------------------------------------------- |
+| `caf test`           | Runs the full suite (Linting + All Behavioral Tests).                    |
+| `caf test --lint`    | Runs fast static analysis (Syntax checks, Shellcheck, Flake evaluation). |
+| `caf test <path>`    | Runs a specific test or suite (e.g., `modules/languages/ruby`).          |
+| `caf test languages` | Runs a shorthand suite (e.g., all language modules).                     |
 
 ### Hybrid Test Formats
 
 The test discovery logic (`flake.nix`) automatically detects the format of your `.nix` test files:
 
 1. **Pure Data (Unit Tests)**: Simply returns a `userState` attribute set. Ideal for verifying that a configuration state is valid.
+
    ```nix
    { languages.ruby = true; }
    ```
@@ -136,6 +181,8 @@ The test discovery logic (`flake.nix`) automatically detects the format of your 
 - **Mapped Names**: Slashes are mapped to dots for Nix attributes (e.g., `tests/modules/languages/ruby.nix` becomes `modules.languages.ruby`). The CLI accepts both.
 - **Exclusions**: Files in `tests/fixtures/` and `tests/lib/`, or named `test-helper.nix`, are ignored by discovery to prevent partial files from clobbering the test list.
 - **Global Fixes**: `tests/test-helper.nix` is automatically injected into every discovered test, providing global fixes like disabling font-linking on Darwin sandbox environments.
+
+---
 
 ## Installation Pattern
 
@@ -154,7 +201,7 @@ The installer follows a **Plan → Confirm → Execute** flow:
 **Visual Elements:**
 
 - Display ASCII art logo with brand colors
-- Show tagline: "The first Development Runtime built for collaboration between humans and AI"
+- Show tagline: "The distributed development infrastructure for humans and AI"
 - Show version number
 - Display loading animation during system detection
 
@@ -263,7 +310,7 @@ Push strategy:
 ```
 Secure Access with Tailscale:
 
-Access your Development Runtime from any device securely.
+Access your distributed development infrastructure from any device securely.
 No open ports, encrypted connections, works from anywhere.
 
 Set up Tailscale?
@@ -387,8 +434,14 @@ The installer does NOT ask about:
 ⚙️  Foundation to be installed:
     • Nix package manager
     • Home Manager
+    • Ghostty terminal
     • Zsh with Starship prompt
-    • Terminal tools (zellij, fzf, etc.)
+     • tmux workspace manager
+    • lazygit (for all git operations)
+     • Modern CLI utilities (bat, eza, fd, ripgrep, fzf, zoxide)
+     • Version manager (mise for all languages)
+     • Dev tools (lazydocker, git-delta, git-standup)
+     • System monitors (btop, fastfetch)
     • Your chosen editor (Neovim + LazyVim)
     • Catppuccin Mocha theme
 
@@ -409,7 +462,7 @@ The installer does NOT ask about:
 
 💾 This will use approximately 500MB of disk space
 ⏱️  Installation will take 2-3 minutes
-🔄 You can add languages, frameworks, and tools later with: caf install <tool>
+🔄 You can add languages, frameworks, and tools later via the menu or: caf install <tool>
 
 Ready to install the foundation? [Y/n]
 ```
@@ -453,12 +506,12 @@ Installing Cafaye Foundation...
 ✅ System check complete
 ✅ Nix package manager installed
 🔄 Installing Home Manager... (current)
-⏭️  Configuring shell and editor
-⏭️  Setting up themes
+⏭️  Configuring Ghostty terminal
+⏭️  Setting up tmux workspace
 ⏭️  Initializing backup repository
 ⏭️  Finalizing
 
-💡 Tip: Add tools anytime with: caf install <tool>
+💡 Tip: Add tools anytime via the menu or: caf install <tool>
    Examples: caf install ruby rails postgresql
 ```
 
@@ -488,8 +541,14 @@ Installing Cafaye Foundation...
 
 5. **Foundation Tools Installation** (30 seconds)
    - Download base packages
+   - Install Ghostty terminal (default terminal)
    - Install Zsh and Starship
-   - Install terminal tools (zellij, fzf, zoxide, etc.)
+   - Install tmux workspace manager with plugins
+   - Install lazygit (for all git operations - no git aliases needed)
+   - Install mise (universal version manager for all languages)
+   - Install modern CLI utilities (bat, eza, fd, ripgrep, fzf, zoxide)
+   - Install dev tools (lazydocker, git-delta, git-standup)
+   - Install system monitors (btop, fastfetch)
    - Install selected editor
    - Install theme files
 
@@ -531,16 +590,66 @@ If any step fails:
 
 ## Post-Installation Experience
 
-**Purpose:** Celebrate success and guide user to next steps.
+**Purpose:** Celebrate success, auto-launch the terminal workspace, and guide user to next steps.
 
-**Success Display:**
+**Auto-Launch Terminal Workspace:**
+
+Immediately after successful installation:
+
+- [ ] **Automatically open Ghostty terminal** (default terminal)
+- [ ] **Auto-start tmux** with the Cafaye session and default layout
+- [ ] **Display `caf status`** showing system info and quick tips
+- [ ] **Display welcome notification** with keyboard shortcuts hint
+
+**Visual Layout (tmux):**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ ☕ Cafaye is Ready!                           [dashboard]       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  🎉 Installation Complete!                                      │
+│                                                                 │
+│  Your distributed development infrastructure is ready to use.   │
+│                                                                 │
+│  🖥️  System Info (from caf status):                             │
+│     Host: macbook-pro  |  Uptime: 2h 15m                        │
+│     OS: macOS 14.5  |  Shell: zsh                              │
+│                                                                 │
+│  🎹 Keyboard Shortcuts (Space Leader):                          │
+│     Space Space    → Open Cafaye Menu                          │
+│     Space s        → Search & Install Tools                    │
+│     Space h        → Show Keybindings Help                     │
+│     Space g        → Fleet Status                              │
+│     Space d        → Doctor (Health Check)                     │
+│     Space r        → Rebuild/Apply Changes                     │
+│                                                                 │
+│     Power User (Alt shortcuts):                                │
+│     Alt+M          → Menu    Alt+S → Search                    │
+│     Alt+R          → Rebuild Alt+D → Doctor                    │
+│                                                                 │
+│  💡 Quick Tips:                                                 │
+│     • Use lazygit for all git operations (no aliases needed)   │
+│     • Press Space twice to open the menu                       │
+│     • All features accessible via Space leader                 │
+│                                                                 │
+│  📦 Installed Tools:                                            │
+│     mise, bat, eza, fd, ripgrep, fzf, zoxide, lazydocker       │
+│     btop, fastfetch, git-delta, git-standup                    │
+│                                                                 │
+│  [Press any key to dismiss this welcome message]                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Success Display (after dismissing welcome):**
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🎉  SUCCESS! Cafaye is installed!
 
-    Your Development Runtime is ready.
+    Your distributed development infrastructure is ready.
 
     ☕ ☕ ☕
 
@@ -549,8 +658,14 @@ If any step fails:
 🚀  Foundation installed:
     ✅ Nix package manager
     ✅ Home Manager
+    ✅ Ghostty terminal
     ✅ Zsh with Starship prompt
-    ✅ Terminal tools (zellij, fzf, etc.)
+    ✅ tmux workspace (with resurrect & continuum)
+    ✅ lazygit (use for all git ops)
+    ✅ mise (version manager for all languages)
+    ✅ Modern CLI utilities (bat, eza, fd, ripgrep, fzf, zoxide)
+    ✅ Dev tools (lazydocker, git-delta, git-standup)
+    ✅ System monitors (btop, fastfetch)
     ✅ Neovim with LazyVim
     ✅ Catppuccin Mocha theme
 
@@ -567,18 +682,27 @@ If any step fails:
 
 🎯  Quick Start:
 
-    Start terminal:      zellij
+    Open menu:           Space Space (or type: caf)
+    Search tools:        Space s
+    Show keybindings:    Space h
+    Fleet status:        Space g
+    Doctor:              Space d
+    Rebuild:             Space r
+    Start terminal:      tmux (auto-started in Ghostty)
     Open editor:         nvim
-    Main menu:           caf
+    View status:         caf status
+    Manage projects:     caf project list
 
-🛠️   Add Your Tools:
+    Power shortcuts:     Alt+M (Menu)  Alt+S (Search)  Alt+R (Rebuild)
+
+🛠️   Add Your Tools (via menu or commands):
 
     Install Ruby:        caf install ruby
     Install Rails:       caf install rails postgresql redis
     Install Node:        caf install nodejs
     Install AI tools:    caf install claude-code
 
-    See all available:   caf search
+    Or use the menu:     caf
 
 ⚙️   Configure Further:
 
@@ -595,7 +719,7 @@ If any step fails:
 
 🎊  Happy coding! Your environment is backed up and portable.
 
-    "The first Development Runtime built for
+    "The first distributed development infrastructure built for
      collaboration between humans and AI."
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -605,10 +729,10 @@ Press Enter to start coding...
 
 **Post-Installation Actions:**
 
-- Offer to start a new shell immediately
+- Auto-launch Ghostty with tmux workspace (already done)
 - Show `caf doctor` command for verification
-- Remind about `caf install` for adding tools
-- Mention `caf setup` for full configuration wizard
+- Remind about searchable menu (`caf` or Super+C)
+- Mention Super+S for quick tool search
 
 **VPS Specific:**
 
@@ -618,24 +742,217 @@ Press Enter to start coding...
 
 ---
 
+## Post-Setup Behaviors
+
+### Auto-Status on Terminal Startup
+
+**Purpose:** Provide immediate context when opening a terminal.
+
+**Behavior:**
+
+Whenever a new terminal opens (Ghostty auto-launches or user opens new window):
+
+- [ ] Automatically display `caf status` before the prompt
+- [ ] Shows system information (hostname, OS, uptime)
+- [ ] Shows Cafaye environment status
+- [ ] Shows quick tips for common actions
+- [ ] Can be disabled via `caf config autostatus off`
+
+**Display Format:**
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ ☕ Cafaye Status                                              │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  🖥️  System: macbook-pro | macOS 14.5 | Uptime: 2h 15m       │
+│                                                              │
+│  🌐 Fleet: 1 node (localhost)                                │
+│                                                              │
+│  📦 Tools: Ruby, Node.js, PostgreSQL, Redis                 │
+│                                                              │
+│  💡 Quick Actions:                                          │
+│     Space Space → Menu    |    caf install <tool>           │
+│     caf project list      |    caf status                   │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Menu-First Design Philosophy
+
+**Primary Interaction Method:** Users should interact through searchable menus, not memorized commands.
+
+**Keyboard Shortcuts (Global):**
+
+**Primary - Space Leader:**
+
+| Shortcut      | Action                 | When to Use                     |
+| ------------- | ---------------------- | ------------------------------- |
+| `Space Space` | Open Cafaye Menu       | Any terminal (double-tap Space) |
+| `Space s`     | Search & Install Tools | Space, then 's'                 |
+| `Space i`     | Install                | Space, then 'i'                 |
+| `Space r`     | Rebuild/Apply Changes  | Space, then 'r'                 |
+| `Space d`     | Doctor (Health Check)  | Space, then 'd'                 |
+| `Space g`     | Fleet Status           | Space, then 'g'                 |
+| `Space b`     | Backup Status          | Space, then 'b'                 |
+| `Space u`     | Update System          | Space, then 'u'                 |
+| `Space y`     | Sync Push/Pull         | Space, then 'y'                 |
+| `Space h`     | Show Keybindings Help  | Space, then 'h'                 |
+| `Space l`     | View Logs              | Space, then 'l'                 |
+| `Space f`     | Find Files             | Space, then 'f'                 |
+| `Space t`     | New Terminal           | Space, then 't'                 |
+| `Space c`     | Edit Config            | Space, then 'c'                 |
+| `Space ?`     | Show All Shortcuts     | Space, then '?'                 |
+| `Space q`     | Quit/Close             | Space, then 'q'                 |
+
+**Secondary - Alt Shortcuts (Power Users):**
+
+| Shortcut | Action    |
+| -------- | --------- |
+| `Alt+M`  | Open Menu |
+| `Alt+S`  | Search    |
+| `Alt+I`  | Install   |
+| `Alt+R`  | Rebuild   |
+| `Alt+D`  | Doctor    |
+| `Alt+G`  | Fleet     |
+| `Alt+B`  | Backup    |
+| `Alt+U`  | Update    |
+| `Alt+Y`  | Sync      |
+
+**Leader Key Behavior:**
+
+- Double-tap `Space` within 300ms to open menu
+- After single `Space`, you have 500ms to press next key
+- Visual feedback: Prompt shows `[LEADER]` when active
+- Customizable: Users can set leader to Space, Comma, Backslash, or Escape
+
+**The `caf` Menu System:**
+
+Running `caf` (or double-tapping Space) opens a hierarchical, searchable menu:
+
+```
+☕ Cafaye Menu
+═══════════════════════════════════════════════════
+
+Node: macbook-pro | Status: ✓ Synced
+
+📦 Install        → Languages, frameworks, services
+⚙️  Configure     → Settings, themes, editor
+🌐 Fleet          → Multi-node management
+🔄 Sync           → Backup & synchronization
+🏥 Status         → Health, logs, diagnostics
+🎨 Style          → Themes, fonts, appearance
+🔐 Secrets        → API keys, credentials
+📚 Help           → Docs, keybindings, about
+👋 Exit           → Close menu
+
+Navigation: ↑/↓ arrows, Enter to select, / to search, Q to quit
+```
+
+**Search-Driven Interface:**
+
+Pressing `Space s` (Space then 's') opens universal search:
+
+```
+☕ Search Cafaye
+═══════════════════════════════════════════════════
+
+> ruby
+
+Results:
+  💎 Ruby (Language)
+      Modern, elegant, productive
+
+  🛤️  Ruby on Rails (Framework)
+      Full-stack web framework
+      Includes: Ruby, PostgreSQL, Redis
+
+[↑/↓ to navigate, Enter to install, ESC to close]
+```
+
+**Installation via Menu:**
+
+Path: `caf` → "📦 Install" opens categorized, searchable menu:
+
+```
+☕ Install Tools
+═══════════════════════════════════════════════════
+
+Languages:              Frameworks:
+  💎 Ruby                 🛤️  Rails
+  🐍 Python               🐍 Django
+  🟢 Node.js              ⚛️  Next.js
+  🦀 Rust                 🚀 Phoenix
+  🐹 Go
+
+Databases:              AI Tools:
+  🐘 PostgreSQL            🤖 Claude Code
+  🧠 Redis                 🤖 Ollama
+  🐬 MySQL                 🤖 Aider
+  🍃 MongoDB
+
+Search: [/]  Back: [ESC]  Install: [Enter]
+```
+
+**Smart lazygit Integration:**
+
+lazygit is installed by default and should be used for ALL git operations. No git aliases are provided.
+
+- Open lazygit: `lazygit` or `lg` (if aliased)
+- Or from menu: `caf` → "🏥 Status" → "lazygit"
+- TUI-based, keyboard-driven interface
+- Handles commits, branches, remotes, stashing, etc.
+
+**Progress Display:**
+
+When installing tools (via menu or command):
+
+```
+🛤️  Installing Ruby on Rails
+
+Dependencies:
+  ✓ Ruby 3.3.0
+  ✓ Rails 7.1.0
+  ✓ PostgreSQL 16.1
+  ✓ Redis 7.2
+
+[████████████░░░░░░░░] 60% Building Ruby 3.3.0...
+
+✅ Rails installed!
+
+Quick Start:
+  rails new myapp
+  cd myapp
+  bin/rails server
+
+📝 Auto-committed: "Add Rails framework"
+```
+
+---
+
 ## Fleet Management (Local & Remote Sync)
 
 **Philosophy:**
+
 - **Independent Nodes**: Each machine is an autonomous actor. It does not depend on a central server to function.
 - **Git as Source of Truth**: `~/.config/cafaye` is a Git repository synced via a private remote (GitHub/GitLab).
 - **Awareness via Registry**: Nodes use an encrypted "Fleet Registry" to know about each other without tight coupling.
 
 ### Terminology:
+
 - **Local**: Your primary workstation (usually macOS or Linux Desktop).
 - **Remote**: Any VPS or secondary machine (usually Linux via SSH/Tailscale).
 
 ### 1. The Fleet Registry (`secrets/fleet.yaml`)
+
 Sensitive metadata about your nodes (IPs, provider info, roles) is stored in a SOPS-encrypted file.
+
 - **Security**: Uses machine SSH public keys (converted to age) for encryption.
 - **Privacy**: IPs, hostnames, and provider details are encrypted in the Git repo.
 - **Independent Config**: The registry is used for orchestration only. nix configuration remains node-local.
 
 ### 2. Registration Flow (Local-Involved)
+
 1. **Remote Node**: Finishes installation and provides its Public SSH Key.
 2. **Local Machine**: User runs `caf fleet add <name> --key "<key>" --ip "<ip>"`.
    - Local machine adds the node to the encrypted registry.
@@ -644,6 +961,7 @@ Sensitive metadata about your nodes (IPs, provider info, roles) is stored in a S
 3. **Remote Node**: Runs `caf sync pull`. It can now decrypt the registry because its key was authorized by Local.
 
 ### 3. Sync & Apply Behaviors
+
 - **`caf sync push`**: Auto-commits pending state changes and pushes to the Git remote.
 - **`caf sync pull`**: Pulls latest changes from Git, handles merges, and triggers `caf apply`.
 - **`caf fleet status`**: Displays a dashboard of all nodes, their roles, Tailscale IPs, and sync status.
@@ -652,6 +970,7 @@ Sensitive metadata about your nodes (IPs, provider info, roles) is stored in a S
 ### 4. Fleet Behavioral Tests
 
 **Test THAT:**
+
 - **SOPS**: The registry `secrets/fleet.yaml` is unreadable/invalid if the key is not in `.sops.yaml`.
 - **Encryption**: Sensitive fields (like IP) are not plain-text in the raw Git version of the file.
 - **Registration**: Adding a node correctly updates the recipient list and the registry file.
@@ -661,10 +980,7 @@ Sensitive metadata about your nodes (IPs, provider info, roles) is stored in a S
 
 ---
 
-## Testing Behaviors (Installation Phase Only)
-
-We test **what happens during installation**, not tool additions later.
-Test directories must map 1:1 to code directories.
+## Testing Behaviors
 
 ### Installation Tests
 
@@ -748,55 +1064,239 @@ Test directories must map 1:1 to code directories.
     - Offers: reconfigure, update, reinstall, exit
     - Does not break existing installation
 
-### What We Test
+### Post-Setup Tests
 
-**User experiences during installation:**
+**Menu System:**
 
-- User can install Cafaye foundation
-- User can configure backup during installation
-- User can configure secure access during installation
-- User can select editor and theme
-- Installation completes successfully
-- Backup repository is initialized
-- User can start using Cafaye immediately
+- [ ] User can open main menu with double-tap Space (Space Space)
+- [ ] User can open main menu with Alt+M
+- [ ] User can trigger commands with Space leader (Space s for search, Space r for rebuild, etc.)
+- [ ] User can trigger commands with Alt shortcuts (Alt+S, Alt+R, Alt+D, etc.)
+- [ ] User sees [LEADER] in prompt when Space leader is active
+- [ ] User can navigate menus with arrow keys or vim keys (j/k)
+- [ ] User can search within menus using / key
+- [ ] User can access submenus and go back with arrow keys or h/l
+- [ ] Leader timeout works correctly (500ms default)
+- [ ] Double-tap detection prevents accidental menu opening
+- [ ] Leader key is customizable via config
+- [ ] Keyboard shortcuts work from any terminal
+- [ ] Keyboard shortcuts work over SSH
+- [ ] Visual feedback shows active leader state
 
-### What We DON'T Test (Installation Phase)
+**Terminal Workspace (Ghostty + tmux):**
 
-**Not tested during installation:**
+- [ ] Ghostty opens automatically after installation
+- [ ] tmux session "cafaye" auto-starts with Ghostty
+- [ ] Default layout loads: dashboard | terminal | git
+- [ ] Window 1 (dashboard) shows node info and shortcuts
+- [ ] Window 2 (terminal) provides full terminal access
+- [ ] Window 3 (git) auto-starts lazygit
+- [ ] User can switch windows with Alt+1/2/3
+- [ ] User can create custom tmux layouts
+- [ ] Fleet window appears when 2+ nodes configured
+- [ ] Fleet window shows live view of multiple nodes
+- [ ] tmux sessions persist across disconnects
+- [ ] User can switch between tmux sessions (nodes)
 
-- Tool installation (that's `caf install`, tested separately)
-- Tool configuration (that's post-install)
-- User modifications (that's ongoing use)
-- Complex scenarios (those are integration tests)
+**Configuration Management:**
 
-### Test Categories for Installation
+- [ ] User edits configs only in ~/.config/cafaye/config/user/
+- [ ] User never needs to edit ~/.config/cafaye/config/cafaye/
+- [ ] Changes to user configs are tracked in git
+- [ ] Symlinks created from ~/.config/ to cafaye/config/user/
+- [ ] Custom tmux layouts work and are loadable
+- [ ] Custom ghostty settings apply correctly
+- [ ] Custom lazygit commands appear in UI
+- [ ] Custom zsh aliases work after reload
 
-**Static Tests** (Instant):
+**Neovim Customization (All Distros):**
 
-- Syntax validation of installer script
-- Configuration schema validation
+- [ ] AstroNvim: user plugins load from config/user/nvim/astronvim/
+- [ ] AstroNvim: user mappings override defaults
+- [ ] AstroNvim: polish.lua runs last
+- [ ] LazyVim: user options in config/user/nvim/lazyvim/options.lua
+- [ ] LazyVim: user plugins in config/user/nvim/lazyvim/plugins/
+- [ ] LazyVim: user keymaps override defaults
+- [ ] NvChad: chadrc.lua customizes UI
+- [ ] NvChad: mappings.lua adds keybindings
+- [ ] NvChad: plugins.lua adds plugins
+- [ ] Can switch between nvim distros with caf config
+- [ ] Previous distro config backed up before switch
+- [ ] User configs persist when switching distros
 
-**Unit Tests** (Seconds):
+**Installation:**
 
-- Git identity detection logic
-- Backup configuration parsing
-- Commit message generation from state diff
+- User can install tool via menu
+- User can install tool via command
+- Progress shows during installation
+- Success message appears with next steps
+- Changes auto-commit to git
 
-**Installation Tests** (Minutes, VM-based):
+**Fleet:**
 
-- Complete installation flow on fresh system
-- Each question/response path
-- Error handling during installation
-- Backup initialization
-- Success screen verification
+- User can view fleet status
+- User can add node to fleet
+- Sync generates descriptive commit message
+- Fleet apply works across nodes
 
-**Real-World Tests** (Hours, actual systems):
+## Configuration System Behaviors
 
-- Fresh Ubuntu VPS installation
-- Fresh macOS installation
-- GitHub backup setup works end-to-end
-- Tailscale setup works end-to-end
-- Restore from backup on new machine
+### Directory Structure Behavior
+
+**Structure:**
+
+```
+~/.config/cafaye/
+├── config/
+│   ├── cafaye/          # Managed by Cafaye (DO NOT EDIT)
+│   │   ├── tmux/
+│   │   ├── ghostty/
+│   │   ├── lazygit/
+│   │   ├── nvim/
+│   │   │   ├── astronvim/
+│   │   │   ├── lazyvim/
+│   │   │   └── nvchad/
+│   │   └── zsh/
+│   │
+│   └── user/            # User customizations (EDIT HERE)
+│       ├── tmux/
+│       ├── ghostty/
+│       ├── lazygit/
+│       ├── nvim/
+│       │   ├── astronvim/
+│       │   ├── lazyvim/
+│       │   └── nvchad/
+│       └── zsh/
+```
+
+**Behavior:**
+
+- [ ] cafaye/ directory contains defaults installed by Cafaye
+- [ ] user/ directory contains user customizations
+- [ ] Files in user/ override cafaye/ defaults
+- [ ] Files in cafaye/ can be updated by Cafaye without affecting user/
+- [ ] Both directories are in the same git repository
+- [ ] Changes to user/ are tracked in git
+- [ ] Changes to cafaye/ are tracked in git separately
+
+### Symlink Behavior
+
+**Standard locations symlinked:**
+
+- [ ] ~/.config/tmux/ → ~/.config/cafaye/config/cafaye/tmux/
+- [ ] ~/.config/ghostty/ → ~/.config/cafaye/config/cafaye/ghostty/
+- [ ] ~/.config/lazygit/ → ~/.config/cafaye/config/cafaye/lazygit/
+- [ ] ~/.config/nvim/lua/user/ → ~/.config/cafaye/config/user/nvim/{distro}/
+- [ ] ~/.zshrc → ~/.config/cafaye/config/cafaye/zsh/.zshrc
+
+**Behavior:**
+
+- [ ] Symlinks created during installation
+- [ ] Tools read configs from standard locations
+- [ ] User edits appear in ~/.config/cafaye/config/user/
+- [ ] Changes apply immediately (for most tools)
+
+### Neovim Distribution Management
+
+**Installation:**
+
+```bash
+caf install neovim --distro astronvim
+# OR
+caf install neovim --distro lazyvim
+# OR
+caf install neovim --distro nvchad
+```
+
+**Behavior:**
+
+- [ ] Copies distro template to ~/.config/nvim/
+- [ ] Creates ~/.config/nvim/.cafaye-distro marker file
+- [ ] Creates user/ customization directory for that distro
+- [ ] Creates symlinks from ~/.config/nvim/ to user/ files
+- [ ] Leaves other distro directories untouched in user/
+
+**Switching Distros:**
+
+```bash
+caf config neovim distro lazyvim
+```
+
+**Behavior:**
+
+- [ ] Backs up current ~/.config/nvim/ to nvim-backup-{timestamp}/
+- [ ] Copies new distro template to ~/.config/nvim/
+- [ ] Updates .cafaye-distro marker
+- [ ] Creates/updates symlinks to user/{new-distro}/
+- [ ] Preserves previous distro's user/ configs
+- [ ] User can restore backup if needed
+
+**Customization Pattern (AstroNvim Example):**
+
+```
+~/.config/nvim/                           ~/.config/cafaye/config/user/nvim/astronvim/
+├── init.lua (base)                       ├── plugins.lua ────────┐
+├── lua/                                  ├── mappings.lua ───────┤
+│   ├── plugins/                          ├── highlights.lua ─────┤
+│   │   ├── astronvim plugins...          └── polish.lua ─────────┤
+│   │   └── user.lua ─────────────────────────────────────────────┘
+│   ├── polish.lua ───────────────────────────────────────────────┘
+│   ├── mappings.lua ─────────────────────────────────────────────┘
+│   └── highlights.lua ───────────────────────────────────────────┘
+└── .cafaye-distro ("astronvim")
+```
+
+### User Customization Files
+
+**Each file created with:**
+
+- [ ] Header comment explaining the file's purpose
+- [ ] Instructions on how to customize
+- [ ] Links to official documentation
+- [ ] Multiple commented examples
+- [ ] Placeholder for user's customizations
+
+**Example Structure:**
+
+```bash
+# Header with file purpose
+# Link to documentation
+# Instructions
+
+# ═══════════════════════════════════════════════════════════════════
+# EXAMPLE SECTION
+# ═══════════════════════════════════════════════════════════════════
+# Example 1: Basic setting
+# set -g option value
+
+# Example 2: With explanation
+# bind key command  # What this does
+
+# ═══════════════════════════════════════════════════════════════════
+# YOUR CUSTOMIZATIONS BELOW
+# ═══════════════════════════════════════════════════════════════════
+# (User adds their own here)
+```
+
+### Multi-Environment Testing Requirements
+
+**All features MUST be tested on:**
+
+1. **Automated Tests:**
+   - [ ] Local macOS machine
+   - [ ] GCP VPS (Ubuntu)
+
+2. **Manual Testing:**
+   - [ ] Local macOS machine
+   - [ ] GCP VPS via SSH
+
+**Testing Checklist for Each Feature:**
+
+- [ ] Automated tests pass on macOS
+- [ ] Automated tests pass on GCP VPS
+- [ ] Manual testing completed on macOS
+- [ ] Manual testing completed on GCP VPS
+- [ ] No regressions in existing functionality
 
 ### Test Writing Principles
 
@@ -822,9 +1322,18 @@ Bad: "Progress bar renders at 25%"
 - And they can select editor and theme
 - And they see confirmation summary
 - And installation progresses
+- And Ghostty terminal auto-launches with tmux
+- And tmux session "cafaye" is created
+- And default layout loads (dashboard | terminal | git)
 - And backup repo is initialized
 - And they see success message
-- And they can start using Cafaye
+- And they can start using Cafaye via Space leader (Space Space) or Alt+M
+- And they can search with Space s or Alt+S
+- And they can rebuild with Space r or Alt+R
+- And user customization files exist with examples
+- And symlinks point to correct locations
+- And they can customize tmux, ghostty, lazygit, nvim, zsh
+- And their customizations are tracked in git
 
 ---
 
@@ -957,6 +1466,9 @@ All in `~/.config/cafaye/`:
 - [x] Error handling
 - [x] Warning display
 - [x] Time estimation
+- [ ] Ghostty terminal installation
+- [ ] tmux workspace setup
+- [ ] lazygit installation
 
 ### Backup Initialization
 
@@ -972,6 +1484,234 @@ All in `~/.config/cafaye/`:
 - [x] Tool addition examples
 - [x] Quick start commands
 - [x] Documentation links
+- [ ] Auto-launch Ghostty with tmux
+- [ ] Welcome message in tmux
+- [ ] Keyboard shortcuts hint
+
+### Terminal Workspace
+
+- [ ] Ghostty as default terminal
+- [ ] tmux auto-start on terminal open
+- [ ] Cafaye layout for tmux
+- [ ] lazygit for all git operations
+
+### Menu System (Menu-First Design)
+
+- [ ] Main menu (`caf` or Space Space)
+- [ ] Hierarchical submenus with keyboard navigation
+- [ ] Search interface (Space s)
+- [ ] Space leader key system (double-tap Space)
+- [ ] Alt shortcuts for power users (Alt+M, Alt+S, Alt+R, etc.)
+- [ ] Visual prompt feedback showing [LEADER] when active
+- [ ] 500ms leader timeout (configurable)
+- [ ] 300ms double-tap detection window
+- [ ] Customizable leader key (Space, Comma, Backslash, Escape)
+- [ ] Progress display during installs
+- [ ] Quick install from search
+
+### Terminal Workspace (Ghostty + tmux)
+
+- [ ] Ghostty installed and configured as default terminal
+- [ ] Ghostty auto-launches after Cafaye installation
+- [ ] Ghostty config in ~/.config/cafaye/config/user/ghostty/
+- [ ] tmux installed and auto-starts with Ghostty
+- [ ] tmux session "cafaye" created automatically
+- [ ] Default tmux layout: dashboard | terminal | git
+- [ ] Window 1: dashboard with node info and shortcuts
+- [ ] Window 2: terminal for general work
+- [ ] Window 3: git with lazygit auto-started
+- [ ] Window switching with Alt+1/2/3/4/5
+- [ ] Custom tmux layouts in ~/.config/cafaye/config/user/tmux/layouts/
+- [ ] Fleet window for multi-node monitoring
+- [ ] tmux-resurrect for session persistence
+- [ ] tmux-continuum for auto-save
+- [ ] User tmux config in ~/.config/cafaye/config/user/tmux/tmux.conf
+- [ ] Symlink: ~/.config/tmux/ -> ~/.config/cafaye/config/cafaye/tmux/
+
+### Utility Scripts (~/.config/cafaye/bin/)
+
+Cafaye provides a `bin/` directory with utility scripts that are automatically added to PATH.
+
+**Core Scripts:**
+
+- [ ] `tat` - tmux attach/create helper (attach to existing or create new session)
+- [ ] `tm` - tmux session manager (fzf-based session switching)
+- [ ] `extract` - Universal archive extractor (handles .tar, .zip, .rar, etc.)
+- [ ] `c` - Quick cd with fzf (fuzzy find directories)
+- [ ] `killport` - Kill process using a specific port
+- [ ] `serve` - Simple HTTP server in current directory
+- [ ] `weather` - Quick weather display
+- [ ] `ipinfo` - Display public and local IP addresses
+
+**Project Management:**
+
+- [ ] `caf-project-create` - Create new project with tmux session
+- [ ] `caf-project-switch` - Switch between project sessions
+- [ ] `caf-project-list` - List all projects with status
+
+**Git Helpers:**
+
+- [ ] `git-clone-cd` - Clone and cd into repository
+- [ ] `git-sync` - Pull, commit, push in one command
+- [ ] `git-clean-branches` - Remove merged branches
+
+**PATH Integration:**
+
+- [ ] `~/.config/cafaye/bin/` added to PATH in zsh
+- [ ] Scripts use fzf for interactive selection
+- [ ] Scripts handle errors gracefully
+
+### caf project Command
+
+**Purpose:** Manage multiple development projects with isolated tmux sessions.
+
+**Commands:**
+
+```bash
+caf project                    # List all projects
+caf project create <name>      # Create new project session
+caf project switch <name>      # Switch to project session
+caf project delete <name>      # Delete project session
+caf project rename <old> <new> # Rename project
+caf project backup <name>      # Backup project state
+caf project restore <name>     # Restore from backup
+```
+
+**Behavior:**
+
+- [ ] Each project gets its own tmux session
+- [ ] Projects stored in `~/.config/cafaye/projects.json`
+- [ ] Project directory can be anywhere (not just ~/projects/)
+- [ ] `caf project create myapp --path ~/work/myapp` creates session linked to directory
+- [ ] Switching projects preserves tmux session state
+- [ ] Projects can have custom tmux layouts
+- [ ] `caf project list` shows all projects with:
+  - Project name
+  - Directory path
+  - Active/Inactive status
+  - Last accessed time
+  - Associated tools/languages
+
+**Session Management:**
+
+- [ ] `caf project switch` uses fzf if no name provided
+- [ ] Sessions persist across reboots (tmux-resurrect)
+- [ ] Auto-save session every 15 minutes (tmux-continuum)
+- [ ] Projects can be organized with tags/categories
+
+**Integration:**
+
+- [ ] `caf status` shows current project
+- [ ] Fleet view shows projects across nodes
+- [ ] Projects can be synced between nodes via git
+
+### Configuration Architecture
+
+- [ ] Single directory: ~/.config/cafaye/config/
+- [ ] cafaye/ subdirectory for defaults (auto-updated)
+- [ ] user/ subdirectory for customizations (user-edited)
+- [ ] Symlinks from ~/.config/ to cafaye/config/cafaye/
+- [ ] All user configs tracked in git
+- [ ] Defaults never overwritten by user edits
+- [ ] User configs survive Cafaye updates
+- [ ] README.md in config/user/ explaining structure
+
+### Git UI (lazygit)
+
+- [ ] lazygit installed and auto-starts in tmux window 3
+- [ ] lazygit config in ~/.config/cafaye/config/user/lazygit/
+- [ ] Catppuccin theme applied
+- [ ] Custom commands can be added
+- [ ] Symlink: ~/.config/lazygit/ -> ~/.config/cafaye/config/cafaye/lazygit/
+
+### Neovim (All Distributions)
+
+**AstroNvim:**
+
+- [ ] Complete AstroNvim template in config/cafaye/nvim/astronvim/
+- [ ] User plugins: config/user/nvim/astronvim/plugins.lua
+- [ ] User mappings: config/user/nvim/astronvim/mappings.lua
+- [ ] User highlights: config/user/nvim/astronvim/highlights.lua
+- [ ] User polish: config/user/nvim/astronvim/polish.lua
+- [ ] Symlinks to ~/.config/nvim/lua/
+
+**LazyVim:**
+
+- [ ] Complete LazyVim template in config/cafaye/nvim/lazyvim/
+- [ ] User options: config/user/nvim/lazyvim/options.lua
+- [ ] User keymaps: config/user/nvim/lazyvim/keymaps.lua
+- [ ] User autocmds: config/user/nvim/lazyvim/autocmds.lua
+- [ ] User plugins: config/user/nvim/lazyvim/plugins/
+- [ ] Symlinks to ~/.config/nvim/lua/config/ and lua/plugins/
+
+**NvChad:**
+
+- [ ] Complete NvChad template in config/cafaye/nvim/nvchad/
+- [ ] User chadrc: config/user/nvim/nvchad/chadrc.lua
+- [ ] User mappings: config/user/nvim/nvchad/mappings.lua
+- [ ] User options: config/user/nvim/nvchad/options.lua
+- [ ] User plugins: config/user/nvim/nvchad/plugins.lua
+- [ ] User configs: config/user/nvim/nvchad/configs/
+- [ ] Symlinks to ~/.config/nvim/lua/
+
+**General:**
+
+- [ ] caf install neovim --distro <astronvim|lazyvim|nvchad>
+- [ ] caf config neovim distro <distro> to switch
+- [ ] Backup created before switching distros
+- [ ] .cafaye-distro marker file
+
+### Shell (Zsh)
+
+- [ ] Zsh configured with Starship prompt
+- [ ] User aliases/functions: config/user/zsh/custom.zsh
+- [ ] Cafaye integration in prompt
+- [ ] Space leader detection in Zsh
+- [ ] Symlink: ~/.zshrc -> ~/.config/cafaye/config/cafaye/zsh/.zshrc
+- [ ] fzf integration (Ctrl+R history, Ctrl+T files)
+- [ ] zoxide integration (auto-cd to frequent directories)
+- [ ] Better history search (fzf-based)
+- [ ] Custom completion for caf commands
+
+### Fonts
+
+- [ ] Nerd Fonts auto-installed via Nix
+- [ ] JetBrains Mono default
+- [ ] Fira Code alternative
+- [ ] Font config in ghostty config
+
+### Multi-Node (Fleet)
+
+- [ ] Fleet window in tmux for node overview
+- [ ] SSH attach to each node in separate panes
+- [ ] Session per node (tmux sessions)
+- [ ] Switch sessions with caf or Space .
+- [ ] Visual indicator of current node
+- [ ] Sync status shown for each node
+
+### Testing Requirements
+
+**Automated Tests (macOS + GCP VPS):**
+
+- [ ] Installation creates correct directory structure
+- [ ] Symlinks created correctly
+- [ ] Ghostty auto-launches
+- [ ] tmux auto-starts
+- [ ] Default layout loads
+- [ ] Space leader works
+- [ ] User configs override defaults
+- [ ] Configs tracked in git
+
+**Manual Tests (macOS + GCP VPS):**
+
+- [ ] User can customize tmux prefix
+- [ ] User can create custom tmux layout
+- [ ] User can add lazygit custom command
+- [ ] User can customize ghostty theme
+- [ ] User can add nvim plugin (each distro)
+- [ ] User can switch nvim distro
+- [ ] User configs persist across sync
+- [ ] Fleet window shows multiple nodes
 
 ### Technical
 
@@ -1010,6 +1750,98 @@ All in `~/.config/cafaye/`:
 - [x] Backup initialization tests
 - [x] Error handling tests
 - [x] Idempotency tests
+
+### Multi-Environment Testing
+
+- [ ] Automated tests pass on local macOS
+- [ ] Automated tests pass on GCP VPS
+- [ ] Manual testing completed on local macOS
+- [ ] Manual testing completed on GCP VPS
+
+### Phase 1: Core UX (High Priority)
+
+- [ ] Auto-launch Ghostty with tmux after install
+- [ ] Welcome screen in tmux with shortcuts
+- [ ] Main menu system (`caf` with hierarchical menus)
+- [ ] Global keyboard shortcuts (Super+C, Super+S, etc.)
+- [ ] Search interface (Super+S)
+- [ ] Installation progress display
+- [ ] lazygit installed and configured
+- [ ] Auto-status on terminal startup
+
+### Version Manager & CLI Tools
+
+**mise (Version Manager):**
+
+- [ ] mise installed as universal version manager
+- [ ] mise auto-installs language runtimes on first use
+- [ ] mise config in ~/.config/cafaye/config/user/mise/
+- [ ] User can override versions per project with .tool-versions
+- [ ] mise plugins for: ruby, nodejs, python, rust, go, java, etc.
+
+**CLI Utilities:**
+
+- [ ] bat - cat alternative with syntax highlighting
+- [ ] eza - modern ls alternative with icons
+- [ ] fd - fast find alternative
+- [ ] ripgrep - fast grep alternative
+- [ ] fzf - fuzzy finder (used throughout)
+- [ ] zoxide - smart cd with history
+
+**Dev Tools:**
+
+- [ ] lazydocker - terminal Docker UI
+- [ ] git-delta - modern git diff viewer
+- [ ] git-standup - show yesterday's commits
+
+**System Tools:**
+
+- [ ] btop - modern htop alternative
+- [ ] fastfetch - neofetch alternative
+
+### Utility Scripts (~/.config/cafaye/bin/)
+
+- [ ] bin/ directory created during installation
+- [ ] Scripts added to PATH via zsh config
+- [ ] tat - tmux attach helper
+- [ ] tm - tmux session manager with fzf
+- [ ] extract - universal archive extractor
+- [ ] c - quick cd with fzf
+- [ ] killport - kill process on port
+- [ ] serve - simple HTTP server
+- [ ] weather - weather display
+- [ ] ipinfo - IP address display
+- [ ] git-clone-cd - clone and cd
+- [ ] git-sync - pull, commit, push
+- [ ] git-clean-branches - remove merged branches
+
+### caf project Command
+
+- [ ] caf project list - show all projects
+- [ ] caf project create <name> - create project session
+- [ ] caf project switch <name> - switch to project
+- [ ] caf project delete <name> - delete project
+- [ ] Project directory can be anywhere
+- [ ] Projects stored in projects.json
+- [ ] fzf-based selection if no name provided
+- [ ] tmux-resurrect persistence
+- [ ] Auto-save with tmux-continuum
+
+### Phase 2: Fleet & Sync (High Priority)
+
+- [ ] Fleet status dashboard
+- [ ] Fleet add workflow
+- [ ] Sync push/pull with auto-commit
+- [ ] Conflict resolution UI
+- [ ] Fleet apply orchestration
+
+### Phase 3: Polish (Medium Priority)
+
+- [ ] Theme switching with live preview
+- [ ] Configuration editor (`caf config`)
+- [ ] Backup status detailed view
+- [ ] Error recovery (rollback, retry)
+- [ ] Inline hints system
 
 ---
 
@@ -1076,19 +1908,25 @@ Ready? [Y/n] >
 
 Foundation installed:
 ✅ Nix + Home Manager
+✅ Ghostty terminal
 ✅ Zsh + Starship
+✅ tmux workspace
+✅ lazygit
 ✅ Neovim + LazyVim
 ✅ Backup configured
 ✅ Tailscale connected
 
+[Auto-launches Ghostty with tmux welcome screen]
+
 Add your tools:
-  caf install ruby rails
-  caf install nodejs
-  caf install claude-code
+  Press Super+S to search and install
+  Or: caf install ruby rails
+  Or: caf install nodejs
+  Or: caf install claude-code
 
 ☕ ~
 ```
 
 **Total time:** 2-3 minutes  
 **Total questions:** 6 (all with sensible defaults)  
-**User actions:** Mostly pressing Enter to accept defaults
+**User actions:** Mostly pressing Enter to accept defaults, then using menus
