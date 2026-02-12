@@ -21,11 +21,10 @@ fi
 set -e
 set -o pipefail
 
-# --- Logging ---
+# --- Logging Setup (Deferred to Execution) ---
 LOG_DIR="$HOME/.config/cafaye/logs"
 mkdir -p "$LOG_DIR"
-exec 3>&1 4>&2
-exec 1> >(tee -a "$LOG_DIR/install.log" >&3) 2> >(tee -a "$LOG_DIR/install.log" >&4)
+# We'll redirect output only when the execution phase starts to keep GUM interactive
 
 # --- Signal Handling ---
 cleanup() {
@@ -63,13 +62,21 @@ check_idempotency() {
     fi
 }
 
-# --- Visual Elements ---
+# --- Visual Elements (Cafaye Mauve Theme) ---
+export GUM_INPUT_CURSOR_FOREGROUND="#cba6f7"
+export GUM_INPUT_PROMPT_FOREGROUND="#cba6f7"
+export GUM_INPUT_PLACEHOLDER_FOREGROUND="#585b70"
+export GUM_CHOOSE_CURSOR_FOREGROUND="#cba6f7"
+export GUM_CHOOSE_HEADER_FOREGROUND="#cba6f7"
+export GUM_CHOOSE_SELECTED_FOREGROUND="#cba6f7"
+export GUM_CONFIRM_SELECTED_BACKGROUND="#cba6f7"
+export GUM_CONFIRM_SELECTED_FOREGROUND="#1e1e2e"
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+PURPLE='\033[38;2;203;166;247m' # Mauve TrueColor
+NC='\033[0m'
 
 show_logo() {
     clear
@@ -164,11 +171,16 @@ plan_phase() {
     
     if [[ "$BACKUP_TYPE" == "GitHub (recommended)" ]] || [[ "$BACKUP_TYPE" == "GitLab" ]]; then
         while true; do
-            REPO_URL=$(gum input --placeholder "Enter full https:// URL..." --header "$BACKUP_TYPE Repository URL (e.g., https://$(echo "$BACKUP_TYPE" | tr '[:upper:]' '[:lower:]' | cut -d' ' -f1).com/user/cafaye)")
+            # Use /dev/tty to ensure gum interacts directly with the user
+            REPO_URL=$(gum input --placeholder "https://github.com/user/cafaye" \
+                                --header "$BACKUP_TYPE Repository URL (Enter full https:// URL)" \
+                                < /dev/tty)
+            
             if [[ "$REPO_URL" == https://* ]]; then
                 break
             else
-                echo -e "${RED}⚠️  Please provide a full URL starting with https://${NC}"
+                echo -e "${RED}⚠️  Error: Please provide a full URL starting with https://${NC}" >&2
+                sleep 1
             fi
         done
     fi
@@ -284,7 +296,11 @@ confirm_phase() {
 
 # --- Phase 3: Execute ---
 execute_phase() {
-    echo "🚀 Starting installation..."
+    # Initialize logging here to avoid breaking interactive prompts above
+    exec 3>&1 4>&2
+    exec 1> >(tee -a "$LOG_DIR/install.log" >&3) 2> >(tee -a "$LOG_DIR/install.log" >&4)
+
+    echo -e "${BLUE}🚀 Starting installation...${NC}"
     
     # 1. Prepare directory
     CAFAYE_DIR="$HOME/.config/cafaye"
