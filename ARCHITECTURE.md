@@ -65,7 +65,7 @@ Cafaye is built using a **modular, layered architecture**. Each layer is indepen
 **Goal:** Deliver the beautiful, productive terminal experience.
 
 - **Components:**
-    - `interface/terminal/`: Zellij, Starship, Zsh, themes.
+    - `interface/terminal/`: tmux, Starship, Zsh, themes.
     - `cli/`: The `caf` command-line interface (TUI with gum).
 - **How to Test:**
     - **Unit Tests:** CLI logic and state management.

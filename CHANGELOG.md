@@ -116,7 +116,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Timezone Selection**:
   - `caf-tz-select` - Interactive timezone picker with gum filter
 - **Keybindings Cheatsheet**:
-  - `caf-keys-show` - Interactive reference for Zellij, Neovim, Helix, and CLI shortcuts
+  - `caf-keys-show` - Interactive reference for tmux, Neovim, Helix, and CLI shortcuts
 - **Branding & Polish**:
   - `caf-about-show` - System info display with fastfetch
   - `caf-show-logo` - Cafaye ASCII logo display
@@ -209,7 +209,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Quality**: Dedicated VM tests for the CLI management layer and hook execution
 
 ### Fixed
-- CI runner hanging during interactive shell tests by disabling Zellij auto-attach in test environments
+- CI runner hanging during interactive shell tests by disabling tmux auto-attach in test environments
 - Missing `jq` and `git` dependencies in the system CLI module
 - Hardcoded local paths in state management scripts to use system-standard `/etc/cafaye`
 
@@ -219,7 +219,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Terminal Interface**: Complete Zsh configuration with Starship prompt and Oh My Zsh plugins
-- **Workspace Management**: Zellij tiling multiplexer with auto-start and auto-attach logic
+- **Workspace Management**: tmux tiling multiplexer with auto-start and auto-attach logic
 - **Essential Toolset**: Installed and configured `zoxide`, `eza`, `bat`, `fd`, `ripgrep`, `fzf`, `btop`, `lazygit`, and `fastfetch`
 - **Design System**: Global Catppuccin Mocha theme implemented across all terminal tools
 - **Branding**: ASCII art logo and system details integration
@@ -228,7 +228,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Quality**: Dedicated VM tests for terminal experience and tool availability
 
 ### Fixed
-- SSH login flow to properly greet with system info and enter Zellij
+- SSH login flow to properly greet with system info and enter tmux
 - Catppuccin color consistency across different terminal emulators and tools
 
 ---

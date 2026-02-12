@@ -2,13 +2,13 @@
 
 **IMPORTANT:** Always work from `/Users/kaka/Code/Cafaye/cafaye/` directory.
 
-You are contributing to Cafaye, a **Development Runtime** that provides reproducible, declarative development environments using Nix and Home Manager.
+You are contributing to Cafaye, a **distributed development infrastructure** that provides reproducible, declarative development environments using Nix and Home Manager.
 
 ## 🎯 1. The Core Mission
 
-Build a Development Runtime that is:
+Build a distributed development infrastructure that is:
 
-- **Opinionated**: Follow the "Omarchy" terminal aesthetic (Zellij + Catppuccin)
+- **Opinionated**: Follow the "Omarchy" terminal aesthetic (tmux + Catppuccin)
 - **Reproducible**: Uses Nix and Home Manager for perfect reproducibility
 - **Accessible**: Works on macOS, Ubuntu, or any VPS via SSH
 - **AI-Ready**: Supports Claude Code, Aider, Ollama, and other AI tools
@@ -82,7 +82,7 @@ When implementing a Framework, automatically enable required dependencies:
 Reference the local Omarchy repository at `../omarchy/`:
 
 - **Colors**: Use Catppuccin Mocha (`../omarchy/themes/catppuccin/colors.toml`)
-- **Zellij**: Use "Compact" layout to maximize coding space
+- **tmux**: Use custom layouts to maximize coding space
 - **Starship**: Adapt `../omarchy/config/starship.toml`, add AI indicators
 - **Command Naming**: Use `caf-<thing>-<action>` pattern
   - `caf-editor-launch`

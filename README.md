@@ -29,7 +29,7 @@ curl -fsSL https://cafaye.sh | bash
 
 That's it! You'll get:
 
-- Pre-configured terminal (Zsh, Zellij, Starship, etc)
+- Pre-configured terminal (Zsh, tmux, Starship, etc)
 - Your choice of editors (Neovim, VS Code, Helix, etc)
 - Language runtimes (Ruby, Python, Node, Go, Rust, etc)
 - AI tools (Claude Code, Antigravity, Codex, Aider, etc) ready to go
@@ -45,7 +45,7 @@ ssh root@<your-vps-ip>
 curl -fsSL https://cafaye.sh | bash
 ```
 
-Your VPS becomes a Development Runtime accessible from any device:
+Your VPS becomes a distributed development infrastructure accessible from any device:
 
 - SSH from your laptop
 - Browser-based VS Code from your iPad
@@ -148,7 +148,7 @@ No need to learn Nix. Edit simple JSON files or use the interactive `caf` CLI. T
 │   └── ai/                # Ollama, Aider integration
 │
 ├── interface/             # The Omarchy-inspired aesthetic
-│   ├── terminal/          # Zsh, Zellij, Starship configs
+│   ├── terminal/          # Zsh, tmux, Starship configs
 │   ├── themes/            # Catppuccin and other themes
 │   └── tools.nix          # Modern CLI tools (zoxide, eza, bat)
 │
@@ -194,7 +194,7 @@ No need to learn Nix. Edit simple JSON files or use the interactive `caf` CLI. T
 ### Beautiful & Productive
 
 - **Catppuccin Mocha**: Stunning theme throughout all tools
-- **Zellij**: Tiling terminal that feels like a window manager
+- **tmux**: Tiling terminal that feels like a window manager
 - **Starship Prompt**: Git status, Tailscale connection, active AI model—at a glance
 - **Modern CLI Stack**: zoxide, eza, bat, fd, ripgrep, fzf, btop, lazygit—all pre-configured
 
@@ -209,7 +209,7 @@ No need to learn Nix. Edit simple JSON files or use the interactive `caf` CLI. T
 
 - **SSH**: Native terminal access from any device
 - **Browser IDE**: VS Code Server accessible from phones, tablets, laptops
-- **Persistent Sessions**: Zellij sessions survive disconnections—resume anywhere
+- **Persistent Sessions**: tmux sessions survive disconnections—resume anywhere
 - **Tailscale Integration**: Secure mesh VPN, no open ports needed
 
 ---
@@ -380,7 +380,7 @@ Or add to your `home.nix` for declarative management:
 { config, pkgs, ... }: {
   home.packages = with pkgs; [
     # Cafaye provides the basics
-    ruby nodejs neovim zellij
+    ruby nodejs neovim tmux
     
     # You add the rest
     claude-code
@@ -500,7 +500,7 @@ Everything is defined in `~/.config/home-manager/home.nix`:
     ruby_3_3
     nodejs_20
     neovim
-    zellij
+    tmux
     # ... every tool you use
   ];
   

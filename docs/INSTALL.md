@@ -147,7 +147,7 @@ nvim                    # Launch Neovim
 code-server             # Launch VS Code in browser
 
 # Terminal multiplexing
-zellij                  # Tiling terminal
+tmux                    # Tiling terminal
 
 # Main menu
 caf                     # Interactive configuration menu

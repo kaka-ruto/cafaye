@@ -57,6 +57,6 @@ bin/rails server
 - **MySQL**: (If enabled) MariaDB drop-in toolset.
 
 ## 6. Developer Experience
-- **Terminal**: `zellij` and `zsh` with `starship` make the terminal feel like a high-end IDE.
+- **Terminal**: `tmux` and `zsh` with `starship` make the terminal feel like a high-end IDE.
 - **Security**: Kernel-hardened and SSH brute-force protected by default.
 - **Reproducibility**: This exact environment can be replicated on any VPS with one command.

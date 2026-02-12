@@ -48,7 +48,7 @@ development:
 Redis is pre-configured and optimized for background jobs. Just add `sidekiq` to your Gemfile and point it to `redis://localhost:6379`.
 
 ### Optimized Terminal
-Use `zellij` and `zsh` with `starship` for a beautiful, productive coding environment. Type `caf` to manage your system settings easily.
+Use `tmux` and `zsh` with `starship` for a beautiful, productive coding environment. Type `caf` to manage your system settings easily.
 
 ## 🧪 Testing
 Running tests is fast thanks to the pre-configured ZRAM swap and optimized kernel.

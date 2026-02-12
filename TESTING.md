@@ -256,7 +256,7 @@ ssh root@$VPS_IP "curl -fsSL https://cafaye.sh | bash"
 
 # Verify installation
 ssh root@$VPS_IP "which caf"
-ssh root@$VPS_IP "which zellij"
+ssh root@$VPS_IP "which tmux"
 ssh root@$VPS_IP "ruby --version"
 
 echo "✓ VPS installation test passed"
