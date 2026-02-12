@@ -413,8 +413,12 @@ EOF
         
         if [[ -n "$REPO_URL" ]]; then
             git remote add origin "$REPO_URL"
-            echo "✅ Connected to $REPO_URL"
+            echo "✅ Connected to origin ($REPO_URL)"
         fi
+        
+        # Add upstream for future updates
+        git remote add upstream "https://github.com/cafaye/cafaye.git"
+        echo "✅ Connected to upstream (https://github.com/cafaye/cafaye.git)"
     fi
 
     # 8. Tailscale Activation (Seamless setup)

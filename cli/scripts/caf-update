@@ -3,7 +3,7 @@
 # Updates the Cafaye foundation from the upstream repository
 # Preserves user configuration and handles merges cleanly
 
-UPSTREAM_URL="https://github.com/kaka-ruto/cafaye.git"
+UPSTREAM_URL="https://github.com/cafaye/cafaye.git"
 CAFAYE_DIR="$HOME/.config/cafaye"
 
 # Colors
