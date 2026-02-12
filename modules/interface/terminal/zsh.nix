@@ -52,13 +52,18 @@ in
     };
 
     # Two-layer Zsh initialization
-    initExtra = ''
+    initContent = ''
       # ═══════════════════════════════════════════════════════════════════
       # CAFAYE ZSH INITIALIZATION
       # ═══════════════════════════════════════════════════════════════════
       
       # --- [ LAYER 1: CAFAYE DEFAULTS ] ---
       ${defaultConfig}
+      
+      # Initialize Version Managers
+      if command -v mise &> /dev/null; then
+        eval "$(mise activate zsh)"
+      fi
       
       # --- [ LAYER 2: USER CUSTOMIZATIONS ] ---
       # Sourced from ~/.config/cafaye/config/user/zsh/custom.zsh

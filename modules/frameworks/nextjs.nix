@@ -1,5 +1,13 @@
 { config, pkgs, lib, userState, ... }:
+
+let
+  enabled = userState.frameworks.nextjs or false;
+in
 {
-  # Stub for nextjs.nix
-  home.packages = [];
+  config = lib.mkIf enabled {
+    home.packages = with pkgs; [
+      nodejs_22
+      corepack # yarn/pnpm
+    ];
+  };
 }

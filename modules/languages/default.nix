@@ -1,11 +1,11 @@
-{ config, pkgs, userState, ... }:
+{ ... }:
 
 {
   imports = [
+    ./ruby.nix
+    ./python.nix
+    ./nodejs.nix
     ./rust.nix
     ./go.nix
-    ./nodejs.nix
-    ./python.nix
-    ./ruby.nix
   ];
 }

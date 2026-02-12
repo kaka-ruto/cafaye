@@ -1,5 +1,12 @@
 { config, pkgs, lib, userState, ... }:
+
+let
+  enabled = userState.languages.go or false;
+in
 {
-  # Stub for go.nix
-  home.packages = [];
+  config = lib.mkIf enabled {
+    home.packages = with pkgs; [
+      go
+    ];
+  };
 }

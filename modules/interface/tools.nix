@@ -17,6 +17,7 @@
     
     # Development
     git          # Version control
+    mise         # Polyglot runtime manager (asdf successor)
   ];
 
   # Modern alternatives enabled via HM

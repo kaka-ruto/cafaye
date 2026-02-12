@@ -4,10 +4,19 @@ let
   enabled = (userState.languages.ruby or false) || (userState.frameworks.rails or false);
 in
 {
-  home.packages = lib.optionals enabled (
-    with pkgs; [
-      ruby
-      # bundler & rake (included in ruby)
-    ]
-  );
+  config = lib.mkIf enabled {
+    home.packages = with pkgs; [
+      ruby_3_3
+      
+      # Essential headers for native gems
+      zlib
+      libxml2
+      libxslt
+      pkg-config
+      
+      # DB clients (needed for 'pg' and 'mysql2' gems)
+      postgresql.lib
+      mariadb.client
+    ];
+  };
 }
