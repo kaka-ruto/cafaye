@@ -2,6 +2,13 @@
 
 let 
   shellEnabled = (userState.interface.terminal.shell or "zsh") == "zsh";
+  
+  # Helper to read optional config files
+  readConfig = path: if builtins.pathExists path then builtins.readFile path else "";
+  
+  # Configuration layers
+  defaultConfig = readConfig ../../../config/cafaye/zsh/config.zsh;
+  userConfig = readConfig ../../../config/user/zsh/custom.zsh;
 in
 {
   programs.zsh = {
@@ -12,7 +19,9 @@ in
     
     oh-my-zsh = {
       enable = true;
-      plugins = [ "git" "sudo" "docker" "direnv" ];
+      plugins = [ "git" "sudo" "docker" "direnv" ] 
+                ++ (lib.optional (userState.languages.ruby or false || userState.frameworks.rails or false) "ruby")
+                ++ (lib.optional (userState.languages.ruby or false || userState.frameworks.rails or false) "bundler");
     };
 
     shellAliases = {
@@ -23,7 +32,7 @@ in
       cat = "bat";
       top = "btop";
       
-      # Git Aliases
+      # Git Aliases (Reintroduced by user feedback)
       gs = "git status";
       ga = "git add";
       gaa = "git add --all";
@@ -35,40 +44,27 @@ in
       gd = "git diff";
       gco = "git checkout";
       gb = "git branch";
-      gst = "git status"; # Consistency
+      gst = "git status";
       
       # Cafaye CLI
       apply = "caf apply";
       test = "caf test";
-    } // (lib.optionalAttrs (userState.languages.ruby or false || userState.frameworks.rails or false) {
-      r = "bundle exec rails";
-      rs = "bundle exec rails server";
-      rc = "bundle exec rails console";
-      be = "bundle exec";
-    }) // (lib.optionalAttrs (userState.languages.rust or false) {
-      c = "cargo";
-      cb = "cargo build";
-      cr = "cargo run";
-      ct = "cargo test";
-    }) // (lib.optionalAttrs (userState.languages.nodejs or false) {
-      n = "npm";
-      nr = "npm run";
-      ni = "npm install";
-    });
+    };
 
-    # Initialize starship and zoxide
-    initContent = ''
-      # Greet with fastfetch if interactive
-      if [[ $- == *i* ]]; then
-        # fastfetch --config ~/.config/cafaye/fastfetch/config.jsonc
-        
-        # Auto-start Zellij if not already inside a session
-        if [[ -z "$ZELLIJ" ]]; then
-          if [[ "$ZELLIJ_AUTO_ATTACH" != "false" ]]; then
-            # zellij attach -c cafaye || zellij
-          fi
-        fi
-      fi
+    # Two-layer Zsh initialization
+    initExtra = ''
+      # ═══════════════════════════════════════════════════════════════════
+      # CAFAYE ZSH INITIALIZATION
+      # ═══════════════════════════════════════════════════════════════════
+      
+      # --- [ LAYER 1: CAFAYE DEFAULTS ] ---
+      ${defaultConfig}
+      
+      # --- [ LAYER 2: USER CUSTOMIZATIONS ] ---
+      # Sourced from ~/.config/cafaye/config/user/zsh/custom.zsh
+      ${userConfig}
+      
+      # Starship & Zoxide initialization (handled by HM but listed here for context)
     '';
   };
 }

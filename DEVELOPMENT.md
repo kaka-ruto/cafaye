@@ -1171,13 +1171,13 @@ Sensitive metadata about your nodes (IPs, provider info, roles) is stored in a S
 
 **Behavior:**
 
-- [ ] cafaye/ directory contains defaults installed by Cafaye
-- [ ] user/ directory contains user customizations
-- [ ] Files in user/ override cafaye/ defaults
-- [ ] Files in cafaye/ can be updated by Cafaye without affecting user/
-- [ ] Both directories are in the same git repository
-- [ ] Changes to user/ are tracked in git
-- [ ] Changes to cafaye/ are tracked in git separately
+- [x] cafaye/ directory contains defaults installed by Cafaye
+- [x] user/ directory contains user customizations
+- [x] User customizations **append** to or **overlay** Cafaye defaults using Nix's merge system (lists like aliases and packages are combined).
+- [x] Files in cafaye/ can be updated by Cafaye without affecting user/
+- [x] Both directories are in the same git repository
+- [x] Changes to user/ are tracked in git
+- [x] Changes to cafaye/ are tracked in git separately
 
 ### Symlink Behavior
 
@@ -1750,6 +1750,13 @@ caf project restore <name>     # Restore from backup
 - [x] Backup initialization tests
 - [x] Error handling tests
 - [x] Idempotency tests
+- [x] Detects OS & Arch
+- [x] Prompts for Git Identity (only if missing)
+- [x] Prompts for Backup Strategy
+- [x] Prompts for Editor
+- [x] Prompts for Theme
+- [x] Supports `--yes` flag for non-interactive installs (used in testing)
+- [x] Idempotency: Detects existing installation and offers Update/Reconfigure/Clean options
 
 ### Multi-Environment Testing
 

@@ -1,0 +1,31 @@
+-- ~/.config/cafaye/config/user/nvim/lua/user/highlights.lua
+-- ═══════════════════════════════════════════════════════════════════
+-- Your Syntax Highlighting Customizations
+-- ═══════════════════════════════════════════════════════════════════
+--
+-- Override or extend Treesitter/semantic highlighting colors.
+-- Useful for making specific tokens stand out.
+--
+-- Documentation: https://docs.astronvim.com/recipes/colorscheme/
+-- ═══════════════════════════════════════════════════════════════════
+
+-- Define highlight groups
+-- return {
+--   -- Custom highlight for TODO comments
+--   Todo = { fg = "#ff0000", bg = "#ffff00", bold = true },
+--   
+--   -- Custom highlight for NOTE comments  
+--   Note = { fg = "#0000ff", bg = "#add8e6", italic = true },
+--   
+--   -- Make function calls stand out
+--   ["@function.call"] = { fg = "#89b4fa", bold = true },
+--   
+--   -- Custom color for Ruby symbols
+--   ["@symbol.ruby"] = { fg = "#f38ba8" },
+--   
+--   -- Bracket pair colors
+--   MatchParen = { fg = "#fab387", bg = "#45475a", bold = true },
+-- }
+
+-- Return empty to use defaults
+return {}

@@ -1,0 +1,86 @@
+# ~/.config/cafaye/config/user/tmux/layouts/custom.yml
+# ═══════════════════════════════════════════════════════════════════
+# Your Custom tmux Layouts
+# ═══════════════════════════════════════════════════════════════════
+#
+# Layouts define window and pane arrangements for different workflows.
+# Use them to quickly set up your development environment.
+#
+# Usage:
+#   caf tmux layout custom        # Load this layout
+#   caf tmux layout default       # Load default layout
+#   caf tmux layout dev           # Load dev layout
+#
+# Documentation: https://github.com/tmux-python/tmuxp
+# ═══════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════
+# EXAMPLE 1: Web Development Project
+# ═══════════════════════════════════════════════════════════════════
+# Uncomment and modify for your project:
+
+# name: my-project
+# root: ~/Code/projects/my-project
+#
+# windows:
+#   - editor:
+#       layout: main-vertical
+#       panes:
+#         - nvim
+#         - 
+#   - server:
+#       panes:
+#         - rails server
+#   - logs:
+#       panes:
+#         - tail -f log/development.log
+#   - git:
+#       panes:
+#         - lazygit
+
+# ═══════════════════════════════════════════════════════════════════
+# EXAMPLE 2: API Development
+# ═══════════════════════════════════════════════════════════════════
+
+# name: api-dev
+# root: ~/Code/api
+#
+# windows:
+#   - code:
+#       panes:
+#         - editor:
+#           - nvim
+#   - processes:
+#       layout: even-horizontal
+#       panes:
+#         - docker-compose up
+#         - redis-server
+#   - test:
+#       panes:
+#         - pytest -f
+
+# ═══════════════════════════════════════════════════════════════════
+# EXAMPLE 3: Multi-Node Fleet Monitoring
+# ═══════════════════════════════════════════════════════════════════
+
+# name: fleet-monitor
+# windows:
+#   - local:
+#       panes:
+#         - 
+#   - vps:
+#       panes:
+#         - ssh vps-hetzner -t 'tmux attach -t cafaye || tmux new -s cafaye'
+#   - pi:
+#       panes:
+#         - ssh raspberry-pi -t 'tmux attach -t cafaye || tmux new -s cafaye'
+#   - overview:
+#       layout: tiled
+#       panes:
+#         - htop
+#         - caf fleet status
+
+# ═══════════════════════════════════════════════════════════════════
+# YOUR CUSTOM LAYOUTS BELOW
+# ═══════════════════════════════════════════════════════════════════
+

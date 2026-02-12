@@ -1,0 +1,151 @@
+# ~/.config/cafaye/config/user/lazygit/config.yml
+# ═══════════════════════════════════════════════════════════════════
+# Your lazygit Configuration
+# ═══════════════════════════════════════════════════════════════════
+#
+# This file overrides Cafaye's default lazygit settings.
+# Only add what you want to CHANGE or ADD - defaults are loaded first.
+#
+# Quick Reference:
+#   ? : Show all keybindings
+#   q : Quit
+#
+# Documentation: https://github.com/jesseduffield/lazygit/blob/master/docs/Config.md
+# ═══════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════
+# GUI CUSTOMIZATION
+# ═══════════════════════════════════════════════════════════════════
+gui:
+  # Show icons for files (default: true)
+  # showIcons: true
+  
+  # Use nerd fonts (default: true)
+  # nerdFontsVersion: "3"
+  
+  # Theme colors (Cafaye default: Catppuccin)
+  # Uncomment to customize:
+  
+  # theme:
+  #   activeBorderColor:
+  #     - "#a6e3a1"  # Green
+  #     - bold
+  #   inactiveBorderColor:
+  #     - "#cdd6f4"  # Text
+  #   optionsTextColor:
+  #     - "#89b4fa"  # Blue
+  #   selectedLineBgColor:
+  #     - "#313244"  # Surface0
+  #   selectedRangeBgColor:
+  #     - "#313244"
+  #   cherryPickedCommitBgColor:
+  #     - "#94e2d5"  # Teal
+  #   cherryPickedCommitFgColor:
+  #     - "#89b4fa"  # Blue
+  #   unstagedChangesColor:
+  #     - red
+
+  # Window size options
+  # sidePanelWidth: 0.3333
+  # expandFocusedSidePanel: false
+
+# ═══════════════════════════════════════════════════════════════════
+# GIT CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════
+git:
+  # Paging
+  # paging:
+  #   colorArg: always
+  #   pager: delta --dark --paging=never
+  
+  # Commit message length warning
+  # commit:
+  #   autoWrapCommitMessage: true
+  #   autoWrapWidth: 72
+  
+  # Branch sort order
+  # branchLogCmd: git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium
+
+# ═══════════════════════════════════════════════════════════════════
+# KEYBINDINGS
+# ═══════════════════════════════════════════════════════════════════
+# Override or add keybindings:
+
+# keybinding:
+#   universal:
+#     quit: q
+#     quit-alt1: <c-c>
+#     return: <esc>
+#     quitWithoutChangingDirectory: Q
+
+# ═══════════════════════════════════════════════════════════════════
+# CUSTOM COMMANDS
+# ═══════════════════════════════════════════════════════════════════
+# Add your own custom commands that appear in lazygit menus.
+# These show up in specific contexts with keyboard shortcuts.
+
+customCommands:
+  # Example 1: Create a pull request on GitHub
+  # - key: "<c-p>"
+  #   description: "Create pull request on GitHub"
+  #   command: "gh pr create --fill --web"
+  #   context: "localBranches"
+  #   loadingText: "Creating pull request"
+
+  # Example 2: Checkout GitHub PR by number
+  # - key: "<c-b>"
+  #   description: "Checkout PR by number"
+  #   prompts:
+  #     - type: "input"
+  #       title: "PR number:"
+  #   command: "gh pr checkout {{index .PromptResponses 0}}"
+  #   context: "localBranches"
+  #   loadingText: "Checking out PR"
+
+  # Example 3: Copy commit SHA to clipboard
+  # - key: "<c-y>"
+  #   description: "Copy commit SHA"
+  #   command: "echo {{.SelectedLocalCommit.Sha}} | pbcopy"
+  #   context: "commits"
+  #   loadingText: "Copying..."
+
+  # Example 4: Open file in VS Code
+  # - key: "o"
+  #   description: "Open in VS Code"
+  #   command: "code {{.SelectedFile.Name}}"
+  #   context: "files"
+  #   subprocess: true
+
+  # Example 5: Run tests for selected file
+  # - key: "T"
+  #   description: "Run tests for file"
+  #   command: "rspec {{.SelectedFile.Name}}"
+  #   context: "files"
+  #   subprocess: true
+  #   showOutput: true
+
+# ═══════════════════════════════════════════════════════════════════
+# OS-SPECIFIC CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════
+# Settings that differ by OS:
+
+# macOS:
+# os:
+#   editCommand: code --wait
+#   openCommand: open
+
+# Linux:
+# os:
+#   editCommand: nvim
+#   openCommand: xdg-open
+
+# ═══════════════════════════════════════════════════════════════════
+# UPDATES
+# ═══════════════════════════════════════════════════════════════════
+# Disable update checker (Cafaye handles updates):
+# disableStartupPopups: true
+
+# ═══════════════════════════════════════════════════════════════════
+# YOUR CUSTOMIZATIONS BELOW
+# ═══════════════════════════════════════════════════════════════════
+
