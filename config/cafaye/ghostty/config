@@ -1,0 +1,13 @@
+# Cafaye Ghostty Defaults
+theme = catppuccin-mocha
+font-family = "JetBrainsMono Nerd Font"
+font-size = 12
+
+# Omarchy aesthetic
+window-decoration = false
+window-padding-x = 8
+window-padding-y = 8
+
+# Performance
+cursor-style = block
+cursor-blink = false

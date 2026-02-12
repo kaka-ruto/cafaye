@@ -1,0 +1,95 @@
+# ~/.config/cafaye/config/user/ghostty/config
+# ═══════════════════════════════════════════════════════════════════
+# Your Ghostty Terminal Configuration
+# ═══════════════════════════════════════════════════════════════════
+#
+# This file overrides Cafaye's default Ghostty settings.
+# Only add what you want to CHANGE - defaults are loaded first.
+#
+# Quick Reference:
+#   Reload config: Cmd+Shift+, (macOS) or Ctrl+Shift+, (Linux)
+#
+# Documentation: https://ghostty.org/docs/config
+# ═══════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════
+# FONT SETTINGS
+# ═══════════════════════════════════════════════════════════════════
+# Change font family or size (Cafaye default: JetBrainsMono Nerd Font, 14)
+
+# font-family = "FiraCode Nerd Font"
+# font-size = 16
+# font-style = Regular
+# font-thicken = true
+
+# ═══════════════════════════════════════════════════════════════════
+# WINDOW APPEARANCE
+# ═══════════════════════════════════════════════════════════════════
+# Adjust window padding and appearance:
+
+# window-padding-x = 20
+# window-padding-y = 20
+# window-decoration = true
+# window-theme = ghostty
+
+# ═══════════════════════════════════════════════════════════════════
+# THEME & COLORS
+# ═══════════════════════════════════════════════════════════════════
+# Cafaye default: catppuccin-mocha
+# Change to: catppuccin-latte, tokyo-night, gruvbox, etc.
+
+# theme = tokyo-night
+
+# Or custom background:
+# background = #000000
+# foreground = #ffffff
+
+# ═══════════════════════════════════════════════════════════════════
+# CURSOR SETTINGS
+# ═══════════════════════════════════════════════════════════════════
+
+# cursor-style = bar
+# cursor-style-blink = true
+# cursor-color = #ff0000
+
+# ═══════════════════════════════════════════════════════════════════
+# SCROLLBACK & HISTORY
+# ═══════════════════════════════════════════════════════════════════
+
+# scrollback-limit = 10000000
+# mouse-scroll-multiplier = 1.0
+
+# ═══════════════════════════════════════════════════════════════════
+# KEYBOARD SHORTCUTS
+# ═══════════════════════════════════════════════════════════════════
+# Note: Space leader is handled by shell/tmux, not Ghostty
+# Add Ghostty-specific shortcuts here:
+
+# Copy/paste
+# keybind = cmd+shift+c=copy_to_clipboard
+# keybind = cmd+shift+v=paste_from_clipboard
+
+# Quick tab switching
+# keybind = cmd+1=goto_tab:1
+# keybind = cmd+2=goto_tab:2
+
+# ═══════════════════════════════════════════════════════════════════
+# ADVANCED SETTINGS
+# ═══════════════════════════════════════════════════════════════════
+
+# Shell integration
+# shell-integration = zsh
+# shell-integration-features = cursor,sudo,title
+
+# Performance
+# render-timer = false
+# maximize=true on first launch
+# window-maximize = true
+
+# Confirmation when closing
+# confirm-close-surface = true
+
+# ═══════════════════════════════════════════════════════════════════
+# YOUR CUSTOMIZATIONS BELOW
+# ═══════════════════════════════════════════════════════════════════
+
