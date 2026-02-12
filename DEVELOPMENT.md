@@ -1,12 +1,14 @@
 # Cafaye Installation Behavior Specification
 
-This document describes the behaviors we expect from the Cafaye installer. We describe WHAT should happen, not HOW it's implemented.
+**Cafaye is Distributed Development Infrastructure**—a fleet of synchronized development environments spanning your laptop, VPS, and desktop. This document describes the behaviors we expect from the Cafaye installer.
 
 ## Philosophy
 
-**We install the foundation only.** The installer sets up the core runtime (Nix, Home Manager, shell, basic tools). Everything else—languages, frameworks, AI tools—is added later by the user using `caf install <tool>`.
+**We install the foundation for distributed development.** The installer sets up the core infrastructure (Nix, Home Manager, shell, basic tools) that enables your environment to sync across machines via Git. Start with one node, grow to a fleet. Everything else—languages, frameworks, AI tools—is added later using `caf install <tool>`.
 
-**Why:** This keeps installation fast (2-3 minutes), simple (minimal questions), and flexible (users add what they need, when they need it).
+**Single Node or Fleet:** Cafaye works perfectly with one machine. Add more when you need them. Use `caf fleet` commands to manage multiple nodes, or ignore them if you only have one.
+
+**Why:** This keeps installation fast (2-3 minutes), simple (minimal questions), and flexible (users add what they need, when they need it, on as many machines as they want).
 
 ## Single Directory Structure
 

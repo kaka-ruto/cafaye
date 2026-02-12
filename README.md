@@ -1,12 +1,12 @@
 # ☕ Cafaye
 
-> The first Development Runtime built for collaboration between humans and AI. Accessible from any device, with autonomous agents that keep working when you don't.
+> The first **Distributed Development Infrastructure**—sync your entire environment across all your machines, from laptop to cloud, with AI agents that keep working when you don't.
 
 ## What is Cafaye?
 
-**Cafaye is a Development Runtime**—not an operating system, not just a set of config files, but a complete development environment that runs wherever you need it.
+**Cafaye is Distributed Development Infrastructure**—not an operating system, not just dotfiles, but a complete development environment that spans all your machines.
 
-Think of it as your development environment's home: whether on your laptop, a VPS in the cloud, or both. It packages your tools, configurations, and AI agents into a reproducible, declarative environment that follows you everywhere.
+Think of it as your development environment's fleet: your laptop, VPS, and desktop all stay perfectly in sync. Start with one machine, grow to many. Your tools, configurations, and AI agents travel with you everywhere, and keep working even when you're offline.
 
 ### Key Differences
 
@@ -58,35 +58,39 @@ Your VPS becomes a Development Runtime accessible from any device:
 
 ## 💎 The Philosophy
 
-### 1. **Human-AI Collaboration**
+### 1. **Distributed by Design**
 
-Cafaye orchestrates collaboration between you and AI agents. Use Aider for pair programming, Ollama for local models, and autonomous agents that handle repetitive tasks. The runtime is designed so agents can work alongside you or continue independently.
+Your development environment isn't tied to one machine—it's a fleet. Start with your laptop, add a VPS, maybe a desktop. All stay in perfect sync via Git. Use `caf fleet status` to see all your nodes, `caf fleet apply` to orchestrate changes across them all. Single node or dozen—Cafaye scales with you.
 
-### 2. **Perfect Reproducibility**
+### 2. **Human-AI Collaboration**
+
+Cafaye orchestrates collaboration between you and AI agents. Use Aider for pair programming, Ollama for local models, and autonomous agents that handle repetitive tasks. The infrastructure is designed so agents can work alongside you or continue independently across your entire fleet.
+
+### 3. **Perfect Reproducibility**
 
 Powered by Nix and Home Manager, your entire environment is declared as code. Move to a new machine? Run one command. Your tools, themes, aliases, and configurations are reconstructed exactly as they were. No more "works on my machine."
 
-### 3. **Access From Any Device**
+### 4. **Access From Any Device**
 
-Your Development Runtime runs in the cloud (or locally) and is accessible via SSH or browser from:
+Your distributed infrastructure runs across all your machines and is accessible via SSH or browser from:
 
 - Your MacBook Pro
 - Your iPad at the coffee shop
 - Your phone on the train
 - Any device with a terminal or browser
 
-### 4. **Always On**
+### 5. **Always On**
 
-When hosted on a VPS, your environment never sleeps:
+When hosted on a VPS (part of your fleet), your environment never sleeps:
 
 - Long-running builds continue
 - AI agents process tasks overnight
 - Terminal sessions persist across disconnections
 - Pick up exactly where you left off from any device
 
-### 5. **Zero Configuration**
+### 6. **Zero Configuration**
 
-No need to learn Nix. Edit simple JSON files or use the interactive `caf` CLI. The system handles the complexity—you just declare what you want.
+No need to learn Nix. Edit simple JSON files or use the interactive `caf` CLI. The system handles the complexity—you just declare what you want. Fleet management is optional; start single-node and grow when ready.
 
 ---
 
