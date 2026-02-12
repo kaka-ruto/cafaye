@@ -440,6 +440,15 @@ EOF
         git commit -m "Initial Cafaye environment setup"
     fi
 
+    # Pre-emptively backup files that cause HM activation to fail
+    echo "🧹 Handling existing configuration files..."
+    for f in ".zshrc" ".zshenv" ".config/btop/btop.conf"; do
+        if [[ -f "$HOME/$f" ]] && [[ ! -L "$HOME/$f" ]]; then
+            echo "   Backing up $f to $f.backup"
+            mv "$HOME/$f" "$HOME/$f.backup"
+        fi
+    done
+
     # 7. Apply Home Manager configuration
     echo "🏗️  Building your environment (this may take a minute)..."
     cd "$CAFAYE_DIR"

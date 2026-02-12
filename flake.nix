@@ -160,22 +160,22 @@
         # So we define common ones.
         "x86_64-linux" = home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages."x86_64-linux";
-          modules = [ ./home.nix { home.backupFileExtension = "backup"; } ];
+          modules = [ ./home.nix ];
           extraSpecialArgs = { inherit inputs; userState = readUserState ./.; };
         };
         "aarch64-linux" = home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages."aarch64-linux";
-          modules = [ ./home.nix { home.backupFileExtension = "backup"; } ];
+          modules = [ ./home.nix ];
           extraSpecialArgs = { inherit inputs; userState = readUserState ./.; };
         };
         "x86_64-darwin" = home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages."x86_64-darwin";
-          modules = [ ./home.nix { home.backupFileExtension = "backup"; } ];
+          modules = [ ./home.nix ];
           extraSpecialArgs = { inherit inputs; userState = readUserState ./.; };
         };
         "aarch64-darwin" = home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages."aarch64-darwin";
-          modules = [ ./home.nix { home.backupFileExtension = "backup"; } ];
+          modules = [ ./home.nix ];
           extraSpecialArgs = { inherit inputs; userState = readUserState ./.; };
         };
       };
