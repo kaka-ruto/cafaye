@@ -321,7 +321,8 @@ execute_phase() {
     # If we are in the repo already, sync files excluding .git, .devbox, and state files
     if [[ -f "./flake.nix" ]]; then
         # Use find/cp to avoid permission issues and preserve state
-        find . -maxdepth 1 ! -name ".git" ! -name ".devbox" ! -name "environment.json" ! -name "local-user.nix" ! -name "." -exec cp -r {} "$CAFAYE_DIR/" \;
+        # Exclude result (Nix symlink) and .cache to prevent permission errors
+        find . -maxdepth 1 ! -name ".git" ! -name ".devbox" ! -name ".cache" ! -name "result" ! -name "environment.json" ! -name "local-user.nix" ! -name "." -exec cp -r {} "$CAFAYE_DIR/" \;
     else
         echo "Cloning Cafaye repository..."
         git clone --depth 1 https://github.com/kaka-ruto/cafaye "$CAFAYE_DIR"
