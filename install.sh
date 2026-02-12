@@ -418,8 +418,30 @@ EOF
         echo "experimental-features = nix-command flakes" >> "$HOME/.config/nix/nix.conf"
     fi
 
-    # 6. Apply Home Manager configuration
+    # 6. Initialize Git (Required for Flakes to see files)
+    if [[ ! -d "$CAFAYE_DIR/.git" ]]; then
+        echo "💾 Initializing backup repository..."
+        cd "$CAFAYE_DIR"
+        git init
+        git config user.name "$GIT_NAME"
+        git config user.email "$GIT_EMAIL"
+        
+        if [[ -n "$REPO_URL" ]]; then
+            git remote add origin "$REPO_URL"
+            echo "✅ Connected to origin ($REPO_URL)"
+        fi
+        
+        # Add upstream for future updates
+        git remote add upstream "https://github.com/cafaye/cafaye.git"
+        echo "✅ Connected to upstream (https://github.com/cafaye/cafaye.git)"
+        
+        git add .
+        git commit -m "Initial Cafaye environment setup"
+    fi
+
+    # 7. Apply Home Manager configuration
     echo "🏗️  Building your environment (this may take a minute)..."
+    cd "$CAFAYE_DIR"
     git add -A || true # Ensure Nix sees new files
     export NIX_CONFIG="experimental-features = nix-command flakes"
     SYSTEM_ARCH=$(uname -m)
@@ -430,26 +452,6 @@ EOF
 
     # Use nix run instead of assuming home-manager is in path
     nix run --extra-experimental-features "nix-command flakes" nixpkgs#home-manager -- switch --flake "$CAFAYE_DIR#$FLAKE_CONFIG" --show-trace
-
-    # 7. Backup Initialization
-    if [[ ! -d "$CAFAYE_DIR/.git" ]]; then
-        echo "💾 Initializing backup repository..."
-        cd "$CAFAYE_DIR"
-        git init
-        git config user.name "$GIT_NAME"
-        git config user.email "$GIT_EMAIL"
-        git add .
-        git commit -m "Initial Cafaye environment setup"
-        
-        if [[ -n "$REPO_URL" ]]; then
-            git remote add origin "$REPO_URL"
-            echo "✅ Connected to origin ($REPO_URL)"
-        fi
-        
-        # Add upstream for future updates
-        git remote add upstream "https://github.com/cafaye/cafaye.git"
-        echo "✅ Connected to upstream (https://github.com/cafaye/cafaye.git)"
-    fi
 
     # 8. Tailscale Activation (Seamless setup)
     if [[ "$SET_TAILSCALE" == "yes" ]]; then
