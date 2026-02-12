@@ -1,0 +1,23 @@
+{
+  "interface": {
+    "theme": "catppuccin mocha",
+    "terminal": {
+      "shell": "zsh"
+    }
+  },
+  "editors": {
+    "default": "neovim",
+    "neovim": true,
+    "distributions": {
+      "nvim": {
+        "lazyvim": true,
+        "astronvim": false,
+        "nvchad": false
+      }
+    }
+  },
+  "languages": {},
+  "frameworks": {},
+  "services": {},
+  "ai": {}
+}

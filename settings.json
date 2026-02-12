@@ -1,0 +1,24 @@
+{
+  "core": {
+    "vps": false,
+    "auto_shutdown": false,
+    "tailscale": {
+      "enabled": false,
+      "key": ""
+    },
+    "ssh": {
+      "import": false,
+      "provider": "",
+      "username": ""
+    }
+  },
+  "git": {
+    "name": "Cafaye Test",
+    "email": "test@cafaye.com"
+  },
+  "backup": {
+    "type": "Local only",
+    "url": "",
+    "strategy": "Push manually"
+  }
+}

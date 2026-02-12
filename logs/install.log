@@ -1,0 +1,63 @@
+[0;34m🚀 Starting installation...[0m
+📦 Initializing directory structure...
+cp: './home.nix' and '/home/kaka/.config/cafaye/home.nix' are the same file
+cp: './lint.log' and '/home/kaka/.config/cafaye/lint.log' are the same file
+cp: './modules' and '/home/kaka/.config/cafaye/modules' are the same file
+cp: './CHANGELOG.md' and '/home/kaka/.config/cafaye/CHANGELOG.md' are the same file
+cp: './.gitignore' and '/home/kaka/.config/cafaye/.gitignore' are the same file
+cp: './.github' and '/home/kaka/.config/cafaye/.github' are the same file
+cp: './docs' and '/home/kaka/.config/cafaye/docs' are the same file
+cp: './tests' and '/home/kaka/.config/cafaye/tests' are the same file
+cp: './scripts' and '/home/kaka/.config/cafaye/scripts' are the same file
+cp: './install.sh' and '/home/kaka/.config/cafaye/install.sh' are the same file
+cp: './ARCHITECTURE.md' and '/home/kaka/.config/cafaye/ARCHITECTURE.md' are the same file
+cp: './LICENSE' and '/home/kaka/.config/cafaye/LICENSE' are the same file
+cp: './.dockerignore' and '/home/kaka/.config/cafaye/.dockerignore' are the same file
+cp: './TESTING.md' and '/home/kaka/.config/cafaye/TESTING.md' are the same file
+cp: './bin' and '/home/kaka/.config/cafaye/bin' are the same file
+cp: './user' and '/home/kaka/.config/cafaye/user' are the same file
+cp: './logs' and '/home/kaka/.config/cafaye/logs' are the same file
+cp: './devbox.lock' and '/home/kaka/.config/cafaye/devbox.lock' are the same file
+cp: './config' and '/home/kaka/.config/cafaye/config' are the same file
+cp: './AGENTS.md' and '/home/kaka/.config/cafaye/AGENTS.md' are the same file
+cp: './.sops.yaml' and '/home/kaka/.config/cafaye/.sops.yaml' are the same file
+cp: './flake.nix' and '/home/kaka/.config/cafaye/flake.nix' are the same file
+cp: './RELEASING.md' and '/home/kaka/.config/cafaye/RELEASING.md' are the same file
+cp: './devbox.json' and '/home/kaka/.config/cafaye/devbox.json' are the same file
+cp: './DEVELOPMENT.md' and '/home/kaka/.config/cafaye/DEVELOPMENT.md' are the same file
+cp: './flake.lock' and '/home/kaka/.config/cafaye/flake.lock' are the same file
+cp: './.DS_Store' and '/home/kaka/.config/cafaye/.DS_Store' are the same file
+cp: './version' and '/home/kaka/.config/cafaye/version' are the same file
+cp: './README.md' and '/home/kaka/.config/cafaye/README.md' are the same file
+cp: './cli' and '/home/kaka/.config/cafaye/cli' are the same file
+cp: './secrets' and '/home/kaka/.config/cafaye/secrets' are the same file
+cp: './CONTRIBUTING.md' and '/home/kaka/.config/cafaye/CONTRIBUTING.md' are the same file
+📝 Saving environment choices...
+📝 Saving tool settings...
+⚙️  Enabling Nix flakes...
+🧹 Handling existing configuration files...
+   Backing up .zshrc to .zshrc.backup
+   Backing up .zshenv to .zshenv.backup
+   Backing up .config/btop/btop.conf to .config/btop/btop.conf.backup
+🔍 Checking for conflicting Nix packages...
+🏗️  Building your environment (this may take a minute)...
+warning: Git tree '/home/kaka/.config/cafaye' is dirty
+these 8 derivations will be built:
+  /nix/store/lv6idnk18vjz0prbjqmpqklmz21wd33b-hm-session-vars.sh.drv
+  /nix/store/nfy5cd7xhy60gb9dniib7j4kwx82wgy1-home-manager-path.drv
+  /nix/store/4k94rad6a3ckkcg41fgqmwdhpd163plf-activation-script.drv
+  /nix/store/k9igiz5cpcjsfpw3mcrlj3fbxg6hcm44-hm_..zshenv.drv
+  /nix/store/rx7lnimzwms4kqcdm0x6kgp70kg6jg1d-hm_tmuxtmux.conf.drv
+  /nix/store/vpxx8vjghb0zqk1cm21451pzgi3qazbi-hm_..zshrc.drv
+  /nix/store/728cfkg11nszdgz3vkqwi6qpymysx635-home-manager-files.drv
+  /nix/store/76v4k331nkr5ghgm39b3a1h6xz1261yh-home-manager-generation.drv
+building '/nix/store/lv6idnk18vjz0prbjqmpqklmz21wd33b-hm-session-vars.sh.drv'...
+building '/nix/store/vpxx8vjghb0zqk1cm21451pzgi3qazbi-hm_..zshrc.drv'...
+building '/nix/store/k9igiz5cpcjsfpw3mcrlj3fbxg6hcm44-hm_..zshenv.drv'...
+building '/nix/store/rx7lnimzwms4kqcdm0x6kgp70kg6jg1d-hm_tmuxtmux.conf.drv'...
+building '/nix/store/nfy5cd7xhy60gb9dniib7j4kwx82wgy1-home-manager-path.drv'...
+building '/nix/store/728cfkg11nszdgz3vkqwi6qpymysx635-home-manager-files.drv'...
+building '/nix/store/4k94rad6a3ckkcg41fgqmwdhpd163plf-activation-script.drv'...
+building '/nix/store/76v4k331nkr5ghgm39b3a1h6xz1261yh-home-manager-generation.drv'...
+Starting Home Manager activation
+USER is "kaka", expected "testuser"
