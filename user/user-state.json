@@ -18,33 +18,33 @@
     "theme": "catppuccin-mocha"
   },
   "languages": {
-    "rust": false,
-    "go": false,
-    "nodejs": false,
-    "python": false,
-    "ruby": false
+    "rust": true,
+    "go": true,
+    "nodejs": true,
+    "python": true,
+    "ruby": true
   },
   "dev_tools": {
-    "docker": false
+    "docker": true
   },
   "services": {
-    "postgresql": false,
-    "redis": false
+    "postgresql": true,
+    "redis": true
   },
   "frameworks": {
-    "rails": false,
-    "django": false,
-    "nextjs": false
+    "rails": true,
+    "django": true,
+    "nextjs": true
   },
   "editors": {
     "neovim": true,
-    "helix": false,
+    "helix": true,
     "vscode_server": false,
     "default": "neovim",
     "distributions": {
       "nvim": {
         "lazyvim": false,
-        "astronvim": false,
+        "astronvim": true,
         "nvchad": false,
         "lunarvim": false
       }

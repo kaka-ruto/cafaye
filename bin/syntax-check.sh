@@ -1,6 +1,6 @@
 #!/bin/bash
 # Cafaye: Local Test Runner
-# Verifies the Development Runtime foundation
+# Verifies the distributed development infrastructure foundation
 
 BLUE='\033[0;34m'
 GREEN='\033[0;32m'

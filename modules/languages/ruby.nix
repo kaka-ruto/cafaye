@@ -15,7 +15,7 @@ in
       pkg-config
       
       # DB clients (needed for 'pg' and 'mysql2' gems)
-      postgresql.lib
+      postgresql_16
       mariadb.client
     ];
   };

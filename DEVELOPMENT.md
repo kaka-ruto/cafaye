@@ -1210,11 +1210,11 @@ caf install neovim --distro nvchad
 
 **Behavior:**
 
-- [ ] Copies distro template to ~/.config/nvim/
-- [ ] Creates ~/.config/nvim/.cafaye-distro marker file
-- [ ] Creates user/ customization directory for that distro
-- [ ] Creates symlinks from ~/.config/nvim/ to user/ files
-- [ ] Leaves other distro directories untouched in user/
+- [x] Copies distro template to ~/.config/nvim/ (Via setup script)
+- [x] Creates ~/.config/nvim/.cafaye-distro marker file (Via setup script)
+- [x] Creates user/ customization directory for that distro
+- [x] Creates symlinks from ~/.config/nvim/ to user/ files (Via Nix module)
+- [x] Leaves other distro directories untouched in user/
 
 **Switching Distros:**
 

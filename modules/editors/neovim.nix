@@ -16,6 +16,10 @@ let
   baseUserConfig = readConfig ../../../config/user/nvim/init.lua;
 in
 {
+  imports = [
+    ./neovim
+  ];
+
   programs.neovim = {
     enable = enabled;
     defaultEditor = (userState.editors.default or "neovim") == "neovim";

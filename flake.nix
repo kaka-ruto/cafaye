@@ -1,5 +1,5 @@
 {
-  description = "Cafaye: The first Development Runtime built for collaboration between humans and AI";
+  description = "Cafaye: The distributed development infrastructure for humans and AI";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";

@@ -244,7 +244,7 @@ show_about() {
         fastfetch --config ~/.config/cafaye/fastfetch/config.jsonc
     else
         caf-logo-show
-        echo "Cafaye Development Runtime"
+        echo "Cafaye distributed development infrastructure"
     fi
     read -p "Press enter to return..."
     show_main_menu

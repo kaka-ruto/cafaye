@@ -90,12 +90,14 @@ PURPLE='\033[38;2;203;166;247m' # Mauve TrueColor
 NC='\033[0m'
 
 show_logo() {
-    clear
+    if [[ "$NON_INTERACTIVE" != "true" ]] && [[ -n "$TERM" ]]; then
+        clear
+    fi
     echo -e "${PURPLE}"
     cat << "EOF"
     ☕ Cafaye
     -----------------------------------------------------------------------
-    The first Development Runtime built for collaboration between humans and AI
+    The distributed development infrastructure for humans and AI
     -----------------------------------------------------------------------
 EOF
     echo -e "${NC}"
@@ -533,7 +535,7 @@ show_success() {
     echo ""
     echo "🎉  SUCCESS! Cafaye is installed!"
     echo ""
-    echo "    Your Development Runtime is ready."
+    echo "    Your distributed development infrastructure is ready."
     echo ""
     echo "    ☕ ☕ ☕"
     echo ""

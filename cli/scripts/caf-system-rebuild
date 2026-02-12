@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Rebuilds the Cafaye Development Runtime using Home Manager
+# Rebuilds the Cafaye distributed development infrastructure using Home Manager
 # Usage: caf-system-rebuild
 
 echo "🚀 Applying Cafaye Foundation Changes..."
