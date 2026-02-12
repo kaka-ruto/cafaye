@@ -53,8 +53,9 @@
         };
 
         checks = let
-          # Helper to check if something is a derivation
           isDerivation = x: builtins.isAttrs x && x ? type && x.type == "derivation";
+          isFunction = builtins.isFunction;
+          isAttrs = builtins.isAttrs;
 
           # Helper to recursively find .nix files and create a flat attrset of tests
           findTests = baseDir: relPath:
