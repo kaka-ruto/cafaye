@@ -1,8 +1,11 @@
-{ config, pkgs, userState, ... }:
+{ config, pkgs, lib, userState, ... }:
 
 let
   enabled = userState.editors.distributions.nvim.lunarvim or false;
 in
 {
-  # LunarVim auto-enables neovim
+  config = lib.mkIf enabled {
+    # LunarVim uses ~/.config/lvim
+    home.file.".config/lvim".source = ../../../config/user/nvim/lunarvim;
+  };
 }
