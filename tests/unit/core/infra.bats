@@ -14,3 +14,14 @@ load "../../lib/test_helper"
   run rg -n "dir\\s*=\\s*\"~/" config/user/nvim/astronvim/plugins/notre.lua
   [ "$status" -ne 0 ]
 }
+
+@test "workspace boot uses declarative runner and user-overridable config" {
+  run rg -n "caf-workspace-run" cli/scripts/caf-workspace-init
+  [ "$status" -eq 0 ]
+
+  run rg -n "CAF_WORKSPACE_WINDOWS" cli/scripts/caf-workspace-run
+  [ "$status" -eq 0 ]
+
+  run rg -n "config/user/tmux/workspace.sh|CAF_WORKSPACE_WINDOWS" config/user/tmux/workspace.sh
+  [ "$status" -eq 0 ]
+}

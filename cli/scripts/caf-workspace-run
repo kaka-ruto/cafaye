@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DEFAULT_WORKSPACE="${HOME}/.config/cafaye/config/cafaye/tmux/workspace.sh"
+USER_WORKSPACE="${HOME}/.config/cafaye/config/user/tmux/workspace.sh"
+
+if [[ -f "$DEFAULT_WORKSPACE" ]]; then
+  # shellcheck disable=SC1090
+  source "$DEFAULT_WORKSPACE"
+fi
+
+if [[ -f "$USER_WORKSPACE" ]]; then
+  # shellcheck disable=SC1090
+  source "$USER_WORKSPACE"
+fi
+
+CAF_WORKSPACE_SESSION="${CAF_WORKSPACE_SESSION:-${CAFAYE_TMUX_SESSION:-cafaye}}"
+CAF_WORKSPACE_START_WINDOW="${CAF_WORKSPACE_START_WINDOW:-terminal}"
+
+if [[ -z "${CAF_WORKSPACE_WINDOWS+x}" ]] || [[ ${#CAF_WORKSPACE_WINDOWS[@]} -eq 0 ]]; then
+  echo "CAF_WORKSPACE_WINDOWS is empty; refusing to create session." >&2
+  exit 1
+fi
+
+create_session() {
+  local first=1
+  local window_def name cmd
+
+  for window_def in "${CAF_WORKSPACE_WINDOWS[@]}"; do
+    name="${window_def%%|*}"
+    cmd="${window_def#*|}"
+
+    if [[ -z "$name" ]]; then
+      echo "Invalid window definition: '$window_def' (missing window name)." >&2
+      exit 1
+    fi
+
+    if [[ "$first" -eq 1 ]]; then
+      tmux new-session -d -s "$CAF_WORKSPACE_SESSION" -n "$name"
+      first=0
+    else
+      tmux new-window -t "${CAF_WORKSPACE_SESSION}:" -n "$name"
+    fi
+
+    if [[ "$cmd" != "$window_def" ]] && [[ -n "$cmd" ]]; then
+      tmux send-keys -t "${CAF_WORKSPACE_SESSION}:${name}" "$cmd" C-m
+    fi
+  done
+
+  tmux select-window -t "${CAF_WORKSPACE_SESSION}:${CAF_WORKSPACE_START_WINDOW}" 2>/dev/null || true
+}
+
+if ! tmux has-session -t "$CAF_WORKSPACE_SESSION" 2>/dev/null; then
+  create_session
+fi
