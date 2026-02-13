@@ -28,3 +28,11 @@ load "../../lib/test_helper"
   run rg -n "config/user/tmux/workspace.sh|config/user/tmux/workspace.yml|CAF_WORKSPACE_WINDOWS" config/user/tmux/workspace.sh
   [ "$status" -eq 0 ]
 }
+
+@test "zsh leader/alt keybindings and search command are present" {
+  run rg -n "CAFAYE_LEADER_KEY|CAFAYE_LEADER_TIMEOUT_MS|CAFAYE_DOUBLE_TAP_MS|bindkey '\\\\em'|bindkey '\\\\es'|bindkey '\\\\er'|bindkey '\\\\ed'" config/cafaye/zsh/config.zsh
+  [ "$status" -eq 0 ]
+
+  run rg -n "caf-search" cli/scripts/caf-search config/cafaye/zsh/config.zsh
+  [ "$status" -eq 0 ]
+}

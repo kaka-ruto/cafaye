@@ -260,6 +260,7 @@ case "$1" in
         if [[ -n "$2" ]]; then
             # Direct tool installation eg: caf install ruby
             tool="$2"
+            echo "⏳ Enabling ${tool}..."
             # Map tool to state key (simplified for MVP)
             case "$tool" in
                 ruby) caf-state-write "languages.ruby" "true" ;;
@@ -277,7 +278,11 @@ case "$1" in
             esac
             echo "✅ $tool enabled in state."
             if gum confirm "Apply changes now?"; then
-                caf-system-rebuild
+                if command -v gum >/dev/null 2>&1; then
+                    gum spin --spinner dot --title "Applying ${tool} changes..." -- caf-system-rebuild
+                else
+                    caf-system-rebuild
+                fi
             fi
         else
             show_install_menu

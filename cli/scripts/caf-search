@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if command -v gum >/dev/null 2>&1 && [[ -t 0 ]] && [[ -t 1 ]]; then
+  choice="$(printf '%s\n' \
+    "quick install" \
+    "install" \
+    "status" \
+    "project list" \
+    "project switch" \
+    "sync pull" \
+    "sync push" \
+    "fleet status" \
+    "backup status" \
+    "apply" | gum filter --placeholder "Search Cafaye commands...")"
+else
+  choice="${1:-status}"
+fi
+
+case "$choice" in
+  "quick install")
+    if command -v gum >/dev/null 2>&1 && [[ -t 0 ]] && [[ -t 1 ]]; then
+      tool="$(printf '%s\n' ruby python nodejs go rust rails django nextjs postgresql redis docker | gum filter --placeholder "Quick install tool...")"
+      [[ -n "$tool" ]] && exec caf install "$tool"
+    fi
+    exec caf install
+    ;;
+  install) exec caf install ;;
+  status) exec caf status ;;
+  "project list") exec caf project list ;;
+  "project switch") exec caf project switch ;;
+  "sync pull") exec caf sync pull ;;
+  "sync push") exec caf sync push ;;
+  "fleet status") exec caf fleet status ;;
+  "backup status") exec caf backup status ;;
+  apply) exec caf apply ;;
+  *)
+    if [[ -n "$choice" ]]; then
+      exec caf "$choice"
+    fi
+    ;;
+esac

@@ -1068,20 +1068,20 @@ Sensitive metadata about your nodes (IPs, provider info, roles) is stored in a S
 
 **Menu System:**
 
-- [ ] User can open main menu with double-tap Space (Space Space)
-- [ ] User can open main menu with Alt+M
-- [ ] User can trigger commands with Space leader (Space s for search, Space r for rebuild, etc.)
-- [ ] User can trigger commands with Alt shortcuts (Alt+S, Alt+R, Alt+D, etc.)
-- [ ] User sees [LEADER] in prompt when Space leader is active
+- [x] User can open main menu with double-tap Space (Space Space)
+- [x] User can open main menu with Alt+M
+- [x] User can trigger commands with Space leader (Space s for search, Space r for rebuild, etc.)
+- [x] User can trigger commands with Alt shortcuts (Alt+S, Alt+R, Alt+D, etc.)
+- [x] User sees [LEADER] in prompt when Space leader is active
 - [ ] User can navigate menus with arrow keys or vim keys (j/k)
 - [ ] User can search within menus using / key
 - [ ] User can access submenus and go back with arrow keys or h/l
-- [ ] Leader timeout works correctly (500ms default)
-- [ ] Double-tap detection prevents accidental menu opening
-- [ ] Leader key is customizable via config
-- [ ] Keyboard shortcuts work from any terminal
-- [ ] Keyboard shortcuts work over SSH
-- [ ] Visual feedback shows active leader state
+- [x] Leader timeout works correctly (500ms default)
+- [x] Double-tap detection prevents accidental menu opening
+- [x] Leader key is customizable via config
+- [x] Keyboard shortcuts work from any terminal
+- [x] Keyboard shortcuts work over SSH
+- [x] Visual feedback shows active leader state
 
 **Terminal Workspace (Ghostty + tmux):**
 
@@ -1499,15 +1499,15 @@ All in `~/.config/cafaye/`:
 
 - [x] Main menu (`caf` or Space Space)
 - [x] Hierarchical submenus with keyboard navigation
-- [ ] Search interface (Space s)
-- [ ] Space leader key system (double-tap Space)
-- [ ] Alt shortcuts for power users (Alt+M, Alt+S, Alt+R, etc.)
-- [ ] Visual prompt feedback showing [LEADER] when active
-- [ ] 500ms leader timeout (configurable)
-- [ ] 300ms double-tap detection window
-- [ ] Customizable leader key (Space, Comma, Backslash, Escape)
-- [ ] Progress display during installs
-- [ ] Quick install from search
+- [x] Search interface (Space s)
+- [x] Space leader key system (double-tap Space)
+- [x] Alt shortcuts for power users (Alt+M, Alt+S, Alt+R, etc.)
+- [x] Visual prompt feedback showing [LEADER] when active
+- [x] 500ms leader timeout (configurable)
+- [x] 300ms double-tap detection window
+- [x] Customizable leader key (Space, Comma, Backslash, Escape)
+- [x] Progress display during installs
+- [x] Quick install from search
 
 ### Terminal Workspace (Ghostty + tmux)
 

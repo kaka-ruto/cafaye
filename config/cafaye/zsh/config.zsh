@@ -65,6 +65,98 @@ if whence compdef >/dev/null 2>&1; then
   compdef _cafaye_complete caf
 fi
 
+# Search interface used by leader/shortcut workflows.
+if ! command -v caf-search >/dev/null 2>&1; then
+  caf-search() { caf install; }
+fi
+
+# Leader key/shortcut system (works locally and over SSH).
+# Defaults:
+# - leader key: Space
+# - leader timeout: 500ms
+# - double-tap open menu window: 300ms
+if [[ $- == *i* ]] && [[ -t 0 ]] && [[ -t 1 ]] && whence zle >/dev/null 2>&1; then
+  export CAFAYE_LEADER_KEY="${CAFAYE_LEADER_KEY:-space}"      # space|comma|backslash|escape
+  export CAFAYE_LEADER_TIMEOUT_MS="${CAFAYE_LEADER_TIMEOUT_MS:-500}"
+  export CAFAYE_DOUBLE_TAP_MS="${CAFAYE_DOUBLE_TAP_MS:-300}"
+
+  _cafaye_leader_char=" "
+  _cafaye_leader_bindkey=" "
+  case "$CAFAYE_LEADER_KEY" in
+    comma) _cafaye_leader_char=","; _cafaye_leader_bindkey="," ;;
+    backslash) _cafaye_leader_char="\\"; _cafaye_leader_bindkey="\\" ;;
+    escape) _cafaye_leader_char=$'\e'; _cafaye_leader_bindkey=$'\e' ;;
+    *) _cafaye_leader_char=" "; _cafaye_leader_bindkey=" " ;;
+  esac
+
+  _cafaye_run_command() {
+    local cmd="$1"
+    BUFFER="$cmd"
+    zle accept-line
+  }
+
+  _cafaye_leader_widget() {
+    local timeout_sec
+    local next
+    local dt_ms
+    local now_ms
+
+    now_ms="$(($(date +%s%3N 2>/dev/null || echo 0)))"
+    dt_ms=999999
+    if [[ -n "${CAFAYE_LAST_LEADER_TS_MS:-}" ]]; then
+      dt_ms=$(( now_ms - CAFAYE_LAST_LEADER_TS_MS ))
+    fi
+    CAFAYE_LAST_LEADER_TS_MS="$now_ms"
+
+    # Double-tap leader opens the main menu quickly.
+    if [[ "$dt_ms" -le "${CAFAYE_DOUBLE_TAP_MS}" ]]; then
+      _cafaye_run_command "caf"
+      return
+    fi
+
+    timeout_sec="$(awk "BEGIN { printf \"%.3f\", ${CAFAYE_LEADER_TIMEOUT_MS}/1000 }")"
+    CAFAYE_LEADER_ACTIVE=1
+    RPS1="[LEADER]"
+    zle reset-prompt
+    zle -M "[LEADER] s:search r:rebuild d:status m:menu"
+
+    if read -r -s -k 1 -t "$timeout_sec" next; then
+      case "$next" in
+        s|S) _cafaye_run_command "caf-search" ;;
+        r|R) _cafaye_run_command "caf apply" ;;
+        d|D) _cafaye_run_command "caf status" ;;
+        m|M) _cafaye_run_command "caf" ;;
+        h|H) _cafaye_run_command "caf --help" ;;
+        "$_cafaye_leader_char") _cafaye_run_command "caf" ;;
+        *) LBUFFER+="${_cafaye_leader_char}${next}" ;;
+      esac
+    else
+      LBUFFER+="${_cafaye_leader_char}"
+    fi
+
+    CAFAYE_LEADER_ACTIVE=0
+    RPS1=""
+    zle reset-prompt
+  }
+  zle -N _cafaye_leader_widget
+
+  _cafaye_menu_widget() { _cafaye_run_command "caf"; }
+  _cafaye_search_widget() { _cafaye_run_command "caf-search"; }
+  _cafaye_rebuild_widget() { _cafaye_run_command "caf apply"; }
+  _cafaye_status_widget() { _cafaye_run_command "caf status"; }
+  zle -N _cafaye_menu_widget
+  zle -N _cafaye_search_widget
+  zle -N _cafaye_rebuild_widget
+  zle -N _cafaye_status_widget
+
+  # Space leader and Alt shortcuts for power users.
+  bindkey "$_cafaye_leader_bindkey" _cafaye_leader_widget
+  bindkey '\em' _cafaye_menu_widget
+  bindkey '\es' _cafaye_search_widget
+  bindkey '\er' _cafaye_rebuild_widget
+  bindkey '\ed' _cafaye_status_widget
+fi
+
 # Example function: extract many types of archives
 extract() {
   if [ -f "$1" ] ; then
