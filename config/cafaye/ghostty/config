@@ -11,3 +11,10 @@ window-padding-y = 8
 # Performance
 cursor-style = block
 cursor-blink = false
+
+# Cafaye global shortcut bridge (maps Super keys to shell-level Alt shortcuts)
+keybind = global:super+m=text:\x1bm
+keybind = global:super+c=text:\x1bc
+keybind = global:super+s=text:\x1bs
+keybind = global:super+r=text:\x1br
+keybind = global:super+d=text:\x1bd

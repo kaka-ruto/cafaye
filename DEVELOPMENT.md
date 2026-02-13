@@ -1770,8 +1770,8 @@ caf project restore <name>     # Restore from backup
 - [x] Auto-launch Ghostty with tmux after install
 - [x] Welcome screen in tmux with shortcuts
 - [x] Main menu system (`caf` with hierarchical menus)
-- [ ] Global keyboard shortcuts (Super+C, Super+S, etc.)
-- [ ] Search interface (Super+S)
+- [x] Global keyboard shortcuts (Super+C, Super+S, etc.)
+- [x] Search interface (Super+S)
 - [x] Installation progress display
 - [x] lazygit installed and configured
 - [x] Auto-status on terminal startup
@@ -1844,7 +1844,7 @@ caf project restore <name>     # Restore from backup
 
 ### Phase 3: Polish (Medium Priority)
 
-- [ ] Theme switching with live preview
+- [x] Theme switching with live preview
 - [x] Configuration editor (`caf config`)
 - [x] Backup status detailed view
 - [x] Error recovery (rollback, retry)

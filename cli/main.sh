@@ -198,20 +198,35 @@ show_system_health() {
 show_style_menu() {
     choice=$(caf_choose_menu "Style Submenu" \
         "🌙 Catppuccin Mocha" \
-        "☀️  Light Mode (Coming Soon)" \
+        "🌃 Tokyo Night" \
+        "🌿 Everforest" \
         "⬅️  Back")
 
     case "$choice" in
-        *"Mocha"*) 
-            caf-state-write "interface.theme" "catppuccin-mocha"
-            caf-hook-run theme-set
-            echo "Theme set to Catppuccin Mocha!"
-            sleep 1
-            ;;
+        *"Mocha"*) preview_theme_change "catppuccin-mocha" "Catppuccin Mocha" ;;
+        *"Tokyo Night"*) preview_theme_change "tokyo-night" "Tokyo Night" ;;
+        *"Everforest"*) preview_theme_change "everforest" "Everforest" ;;
         "⬅️  Back") show_main_menu ;;
         *) show_main_menu ;;
     esac
     show_style_menu
+}
+
+preview_theme_change() {
+    local next_theme="$1"
+    local next_label="$2"
+    local previous_theme
+    previous_theme="$(caf-state-read "interface.theme" 2>/dev/null || echo "catppuccin-mocha")"
+
+    caf-state-write "interface.theme" "$next_theme"
+    caf-hook-run theme-set
+    echo "Previewing $next_label..."
+    echo "Keep this theme?"
+    if ! gum confirm; then
+        caf-state-write "interface.theme" "$previous_theme"
+        caf-hook-run theme-set
+        echo "Reverted to ${previous_theme}."
+    fi
 }
 
 toggle_language() {

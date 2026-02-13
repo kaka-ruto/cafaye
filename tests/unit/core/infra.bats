@@ -30,7 +30,7 @@ load "../../lib/test_helper"
 }
 
 @test "zsh leader/alt keybindings and search command are present" {
-  run rg -n "CAFAYE_LEADER_KEY|CAFAYE_LEADER_TIMEOUT_MS|CAFAYE_DOUBLE_TAP_MS|bindkey '\\\\em'|bindkey '\\\\es'|bindkey '\\\\er'|bindkey '\\\\ed'" config/cafaye/zsh/config.zsh
+  run rg -n "CAFAYE_LEADER_KEY|CAFAYE_LEADER_TIMEOUT_MS|CAFAYE_DOUBLE_TAP_MS|bindkey '\\\\em'|bindkey '\\\\ec'|bindkey '\\\\es'|bindkey '\\\\er'|bindkey '\\\\ed'" config/cafaye/zsh/config.zsh
   [ "$status" -eq 0 ]
 
   run rg -n "caf-search" cli/scripts/caf-search config/cafaye/zsh/config.zsh
@@ -86,5 +86,15 @@ load "../../lib/test_helper"
 
 @test "menu system supports vim keys arrows search and submenu back/select" {
   run rg -n "caf_choose_menu|fzf|j:down|k:up|up:up|down:down|h:abort|l:accept|/:change-prompt" cli/main.sh
+  [ "$status" -eq 0 ]
+}
+
+@test "ghostty config includes super-key shortcut bridge" {
+  run rg -n "global:super\\+m|global:super\\+c|global:super\\+s|global:super\\+r|global:super\\+d|text:\\\\x1b" config/cafaye/ghostty/config
+  [ "$status" -eq 0 ]
+}
+
+@test "style menu supports theme live preview workflow" {
+  run rg -n "preview_theme_change|Previewing|Keep this theme|caf-hook-run theme-set" cli/main.sh
   [ "$status" -eq 0 ]
 }

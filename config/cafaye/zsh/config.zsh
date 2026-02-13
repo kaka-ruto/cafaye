@@ -118,7 +118,7 @@ if [[ $- == *i* ]] && [[ -t 0 ]] && [[ -t 1 ]] && whence zle >/dev/null 2>&1; th
     CAFAYE_LEADER_ACTIVE=1
     RPS1="[LEADER]"
     zle reset-prompt
-    zle -M "[LEADER] s:search r:rebuild d:status m:menu"
+    zle -M "[LEADER] s:search r:rebuild d:status m:menu .:sessions"
 
     if read -r -s -k 1 -t "$timeout_sec" next; then
       case "$next" in
@@ -126,6 +126,7 @@ if [[ $- == *i* ]] && [[ -t 0 ]] && [[ -t 1 ]] && whence zle >/dev/null 2>&1; th
         r|R) _cafaye_run_command "caf apply" ;;
         d|D) _cafaye_run_command "caf status" ;;
         m|M) _cafaye_run_command "caf" ;;
+        .) _cafaye_run_command "caf fleet switch" ;;
         h|H) _cafaye_run_command "caf --help" ;;
         "$_cafaye_leader_char") _cafaye_run_command "caf" ;;
         *) LBUFFER+="${_cafaye_leader_char}${next}" ;;
@@ -152,6 +153,7 @@ if [[ $- == *i* ]] && [[ -t 0 ]] && [[ -t 1 ]] && whence zle >/dev/null 2>&1; th
   # Space leader and Alt shortcuts for power users.
   bindkey "$_cafaye_leader_bindkey" _cafaye_leader_widget
   bindkey '\em' _cafaye_menu_widget
+  bindkey '\ec' _cafaye_menu_widget
   bindkey '\es' _cafaye_search_widget
   bindkey '\er' _cafaye_rebuild_widget
   bindkey '\ed' _cafaye_status_widget
