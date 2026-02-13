@@ -12,8 +12,21 @@ in
     '';
     
     # User linkage
-    xdg.configFile."nvim/lua/plugins/user.lua".source = ../../../config/user/nvim/lazyvim/plugins/user.lua;
-    xdg.configFile."nvim/lua/config/options.lua".source = ../../../config/user/nvim/lazyvim/options.lua;
-    xdg.configFile."nvim/lua/config/keymaps.lua".source = ../../../config/user/nvim/lazyvim/keymaps.lua;
+    xdg.configFile."nvim/lua/plugins/user.lua" = {
+      source = ../../../config/user/nvim/lazyvim/plugins/user.lua;
+      force = true;
+    };
+    xdg.configFile."nvim/lua/config/options.lua" = {
+      source = ../../../config/user/nvim/lazyvim/options.lua;
+      force = true;
+    };
+    xdg.configFile."nvim/lua/config/keymaps.lua" = {
+      source = ../../../config/user/nvim/lazyvim/keymaps.lua;
+      force = true;
+    };
+    xdg.configFile."nvim/lua/config/autocmds.lua" = {
+      source = ../../../config/user/nvim/lazyvim/autocmds.lua;
+      force = true;
+    };
   };
 }

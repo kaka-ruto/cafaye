@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Cafaye Fleet Management
-# Usage: caf-fleet [status|add|apply]
+# Usage: caf-fleet [status|add|apply|attach|switch]
 
 CAFAYE_DIR=$(git rev-parse --show-toplevel 2>/dev/null || echo "$HOME/.config/cafaye")
 cd "$CAFAYE_DIR" || exit 1
@@ -31,6 +31,8 @@ run_sops() {
 }
 
 show_fleet_status() {
+    local local_node
+    local_node="$(hostname -s 2>/dev/null || hostname 2>/dev/null || echo unknown)"
     echo "📋 Cafaye Fleet Dashboard"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     
@@ -42,7 +44,13 @@ show_fleet_status() {
     if [[ -z "$DATA" ]]; then
          echo "❌ Unable to decrypt/parse fleet registry."
     else
-         echo "$DATA" | jq -r '.fleet | to_entries[] | "  - \(.key): \(.value.tailscale_ip) (\(.value.role))"'
+         echo "$DATA" | jq -r '.fleet | to_entries[] | "\(.key)|\(.value.tailscale_ip)|\(.value.role)|\(.value.hostname // .key)"' | while IFS='|' read -r name ip role host; do
+             marker=""
+             if [[ "$host" == "$local_node" || "$name" == "$local_node" ]]; then
+                 marker=" [current]"
+             fi
+             echo "  - ${name}: ${ip} (${role})${marker}"
+         done
          echo ""
          echo "Connectivity:"
          echo "$DATA" | jq -r '.fleet | to_entries[] | @base64' | while read -r row; do
@@ -53,6 +61,12 @@ show_fleet_status() {
                  echo "  - ${name}: reachable"
                  proj="$(ssh -o ConnectTimeout=2 "$ip" 'jq -r ".current // \"none\"" ~/.config/cafaye/projects.json 2>/dev/null || echo n/a' 2>/dev/null || echo n/a)"
                  echo "    project: ${proj}"
+                 sync="$(ssh -o ConnectTimeout=2 "$ip" 'cd ~/.config/cafaye 2>/dev/null && git status --porcelain | wc -l || echo n/a' 2>/dev/null || echo n/a)"
+                 if [[ "$sync" == "0" ]]; then
+                   echo "    sync: clean"
+                 else
+                   echo "    sync: pending(${sync})"
+                 fi
              else
                  echo "  - ${name}: unreachable"
              fi
@@ -115,9 +129,43 @@ fleet_apply() {
     done
 }
 
+fleet_attach() {
+    local session="fleet"
+    local data
+    data="$(run_sops -d --output-type json secrets/fleet.yaml 2>/dev/null || echo '{}')"
+    if [[ -z "$data" || "$data" == "{}" ]]; then
+      echo "No fleet registry found."
+      return 1
+    fi
+    tmux kill-session -t "$session" >/dev/null 2>&1 || true
+    tmux new-session -d -s "$session" -n overview
+    tmux send-keys -t "${session}:overview" "watch -n 5 caf-fleet status" C-m
+
+    echo "$data" | jq -r '.fleet | to_entries[] | "\(.key)|\(.value.tailscale_ip)"' | while IFS='|' read -r name ip; do
+      node_session="node-${name}"
+      tmux kill-session -t "$node_session" >/dev/null 2>&1 || true
+      tmux new-session -d -s "$node_session" -n "$name" "echo '[${name}]'; ssh ${ip}"
+      tmux new-window -t "${session}:" -n "$name" "tmux attach -t ${node_session}"
+    done
+    tmux attach -t "$session"
+}
+
+fleet_switch() {
+    local target
+    if command -v fzf >/dev/null 2>&1; then
+      target="$(tmux list-sessions -F '#S' | fzf --height=40% --reverse --prompt='session> ' || true)"
+    else
+      target="$(tmux list-sessions -F '#S' | head -n1)"
+    fi
+    [[ -z "$target" ]] && { echo "No tmux sessions found."; return 1; }
+    tmux switch-client -t "$target" 2>/dev/null || tmux attach -t "$target"
+}
+
 case "$command" in
     status) show_fleet_status ;;
     add) add_fleet_node "$@" ;;
     apply) fleet_apply ;;
-    *) echo "Usage: caf fleet [status|add|apply]"; exit 1 ;;
+    attach) fleet_attach ;;
+    switch) fleet_switch ;;
+    *) echo "Usage: caf fleet [status|add|apply|attach|switch]"; exit 1 ;;
 esac

@@ -596,10 +596,10 @@ If any step fails:
 
 Immediately after successful installation:
 
-- [ ] **Automatically open Ghostty terminal** (default terminal)
-- [ ] **Auto-start tmux** with the Cafaye session and default layout
-- [ ] **Display `caf status`** showing system info and quick tips
-- [ ] **Display welcome notification** with keyboard shortcuts hint
+- [x] **Automatically open Ghostty terminal** (default terminal)
+- [x] **Auto-start tmux** with the Cafaye session and default layout
+- [x] **Display `caf status`** showing system info and quick tips
+- [x] **Display welcome notification** with keyboard shortcuts hint
 
 **Visual Layout (tmux):**
 
@@ -1085,18 +1085,18 @@ Sensitive metadata about your nodes (IPs, provider info, roles) is stored in a S
 
 **Terminal Workspace (Ghostty + tmux):**
 
-- [ ] Ghostty opens automatically after installation
-- [ ] tmux session "cafaye" auto-starts with Ghostty
-- [ ] Default layout loads: dashboard | terminal | git
-- [ ] Window 1 (dashboard) shows node info and shortcuts
-- [ ] Window 2 (terminal) provides full terminal access
-- [ ] Window 3 (git) auto-starts lazygit
-- [ ] User can switch windows with Alt+1/2/3
-- [ ] User can create custom tmux layouts
-- [ ] Fleet window appears when 2+ nodes configured
-- [ ] Fleet window shows live view of multiple nodes
-- [ ] tmux sessions persist across disconnects
-- [ ] User can switch between tmux sessions (nodes)
+- [x] Ghostty opens automatically after installation
+- [x] tmux session "cafaye" auto-starts with Ghostty
+- [x] Default layout loads: dashboard | terminal | git
+- [x] Window 1 (dashboard) shows node info and shortcuts
+- [x] Window 2 (terminal) provides full terminal access
+- [x] Window 3 (git) auto-starts lazygit
+- [x] User can switch windows with Alt+1/2/3
+- [x] User can create custom tmux layouts
+- [x] Fleet window appears when 2+ nodes configured
+- [x] Fleet window shows live view of multiple nodes
+- [x] tmux sessions persist across disconnects
+- [x] User can switch between tmux sessions (nodes)
 
 **Configuration Management:**
 
@@ -1111,15 +1111,15 @@ Sensitive metadata about your nodes (IPs, provider info, roles) is stored in a S
 
 **Neovim Customization (All Distros):**
 
-- [ ] AstroNvim: user plugins load from config/user/nvim/astronvim/
-- [ ] AstroNvim: user mappings override defaults
-- [ ] AstroNvim: polish.lua runs last
-- [ ] LazyVim: user options in config/user/nvim/lazyvim/options.lua
-- [ ] LazyVim: user plugins in config/user/nvim/lazyvim/plugins/
-- [ ] LazyVim: user keymaps override defaults
-- [ ] NvChad: chadrc.lua customizes UI
-- [ ] NvChad: mappings.lua adds keybindings
-- [ ] NvChad: plugins.lua adds plugins
+- [x] AstroNvim: user plugins load from config/user/nvim/astronvim/
+- [x] AstroNvim: user mappings override defaults
+- [x] AstroNvim: polish.lua runs last
+- [x] LazyVim: user options in config/user/nvim/lazyvim/options.lua
+- [x] LazyVim: user plugins in config/user/nvim/lazyvim/plugins/
+- [x] LazyVim: user keymaps override defaults
+- [x] NvChad: chadrc.lua customizes UI
+- [x] NvChad: mappings.lua adds keybindings
+- [x] NvChad: plugins.lua adds plugins
 - [x] Can switch between nvim distros with caf config
 - [x] Previous distro config backed up before switch
 - [x] User configs persist when switching distros
@@ -1183,10 +1183,10 @@ Sensitive metadata about your nodes (IPs, provider info, roles) is stored in a S
 
 **Standard locations symlinked:**
 
-- [x] ~/.config/tmux/ → ~/.config/cafaye/config/cafaye/tmux/
-- [x] ~/.config/ghostty/ → ~/.config/cafaye/config/cafaye/ghostty/
+- [ ] ~/.config/tmux/ → ~/.config/cafaye/config/cafaye/tmux/
+- [ ] ~/.config/ghostty/ → ~/.config/cafaye/config/cafaye/ghostty/
 - [x] ~/.config/lazygit/ → ~/.config/cafaye/config/cafaye/lazygit/
-- [ ] ~/.config/nvim/lua/user/ → ~/.config/cafaye/config/user/nvim/{distro}/
+- [x] ~/.config/nvim/lua/user/ → ~/.config/cafaye/config/user/nvim/{distro}/
 - [ ] ~/.zshrc → ~/.config/cafaye/config/cafaye/zsh/.zshrc
 
 **Behavior:**
@@ -1227,9 +1227,9 @@ caf config neovim distro lazyvim
 - [x] Backs up current ~/.config/nvim/ to nvim-backup-{timestamp}/
 - [x] Copies new distro template to ~/.config/nvim/
 - [x] Updates .cafaye-distro marker
-- [ ] Creates/updates symlinks to user/{new-distro}/
-- [ ] Preserves previous distro's user/ configs
-- [ ] User can restore backup if needed
+- [x] Creates/updates symlinks to user/{new-distro}/
+- [x] Preserves previous distro's user/ configs
+- [x] User can restore backup if needed
 
 **Customization Pattern (AstroNvim Example):**
 
@@ -1526,7 +1526,7 @@ All in `~/.config/cafaye/`:
 - [x] tmux-resurrect for session persistence
 - [x] tmux-continuum for auto-save
 - [x] User tmux config in ~/.config/cafaye/config/user/tmux/tmux.conf
-- [x] Symlink: ~/.config/tmux/ -> ~/.config/cafaye/config/cafaye/tmux/
+- [ ] Symlink: ~/.config/tmux/ -> ~/.config/cafaye/config/cafaye/tmux/
 
 ### Utility Scripts (~/.config/cafaye/bin/)
 
@@ -1610,7 +1610,7 @@ caf project restore <name>     # Restore from backup
 - [x] Single directory: ~/.config/cafaye/config/
 - [x] cafaye/ subdirectory for defaults (auto-updated)
 - [x] user/ subdirectory for customizations (user-edited)
-- [x] Symlinks from ~/.config/ to cafaye/config/cafaye/
+- [ ] Symlinks from ~/.config/ to cafaye/config/cafaye/
 - [x] All user configs tracked in git
 - [x] Defaults never overwritten by user edits
 - [x] User configs survive Cafaye updates
@@ -1628,31 +1628,31 @@ caf project restore <name>     # Restore from backup
 
 **AstroNvim:**
 
-- [ ] Complete AstroNvim template in config/cafaye/nvim/astronvim/
-- [ ] User plugins: config/user/nvim/astronvim/plugins.lua
-- [ ] User mappings: config/user/nvim/astronvim/mappings.lua
-- [ ] User highlights: config/user/nvim/astronvim/highlights.lua
-- [ ] User polish: config/user/nvim/astronvim/polish.lua
-- [ ] Symlinks to ~/.config/nvim/lua/
+- [x] Complete AstroNvim template in config/cafaye/nvim/astronvim/
+- [x] User plugins: config/user/nvim/astronvim/plugins.lua
+- [x] User mappings: config/user/nvim/astronvim/mappings.lua
+- [x] User highlights: config/user/nvim/astronvim/highlights.lua
+- [x] User polish: config/user/nvim/astronvim/polish.lua
+- [x] Symlinks to ~/.config/nvim/lua/
 
 **LazyVim:**
 
-- [ ] Complete LazyVim template in config/cafaye/nvim/lazyvim/
-- [ ] User options: config/user/nvim/lazyvim/options.lua
-- [ ] User keymaps: config/user/nvim/lazyvim/keymaps.lua
-- [ ] User autocmds: config/user/nvim/lazyvim/autocmds.lua
-- [ ] User plugins: config/user/nvim/lazyvim/plugins/
-- [ ] Symlinks to ~/.config/nvim/lua/config/ and lua/plugins/
+- [x] Complete LazyVim template in config/cafaye/nvim/lazyvim/
+- [x] User options: config/user/nvim/lazyvim/options.lua
+- [x] User keymaps: config/user/nvim/lazyvim/keymaps.lua
+- [x] User autocmds: config/user/nvim/lazyvim/autocmds.lua
+- [x] User plugins: config/user/nvim/lazyvim/plugins/
+- [x] Symlinks to ~/.config/nvim/lua/config/ and lua/plugins/
 
 **NvChad:**
 
-- [ ] Complete NvChad template in config/cafaye/nvim/nvchad/
-- [ ] User chadrc: config/user/nvim/nvchad/chadrc.lua
-- [ ] User mappings: config/user/nvim/nvchad/mappings.lua
-- [ ] User options: config/user/nvim/nvchad/options.lua
-- [ ] User plugins: config/user/nvim/nvchad/plugins.lua
-- [ ] User configs: config/user/nvim/nvchad/configs/
-- [ ] Symlinks to ~/.config/nvim/lua/
+- [x] Complete NvChad template in config/cafaye/nvim/nvchad/
+- [x] User chadrc: config/user/nvim/nvchad/chadrc.lua
+- [x] User mappings: config/user/nvim/nvchad/mappings.lua
+- [x] User options: config/user/nvim/nvchad/options.lua
+- [x] User plugins: config/user/nvim/nvchad/plugins.lua
+- [x] User configs: config/user/nvim/nvchad/configs/
+- [x] Symlinks to ~/.config/nvim/lua/
 
 **General:**
 
@@ -1675,19 +1675,19 @@ caf project restore <name>     # Restore from backup
 
 ### Fonts
 
-- [ ] Nerd Fonts auto-installed via Nix
-- [ ] JetBrains Mono default
-- [ ] Fira Code alternative
-- [ ] Font config in ghostty config
+- [x] Nerd Fonts auto-installed via Nix
+- [x] JetBrains Mono default
+- [x] Fira Code alternative
+- [x] Font config in ghostty config
 
 ### Multi-Node (Fleet)
 
 - [x] Fleet window in tmux for node overview
-- [ ] SSH attach to each node in separate panes
-- [ ] Session per node (tmux sessions)
-- [ ] Switch sessions with caf or Space .
-- [ ] Visual indicator of current node
-- [ ] Sync status shown for each node
+- [x] SSH attach to each node in separate panes
+- [x] Session per node (tmux sessions)
+- [x] Switch sessions with caf or Space .
+- [x] Visual indicator of current node
+- [x] Sync status shown for each node
 
 ### Testing Requirements
 
@@ -1708,7 +1708,7 @@ caf project restore <name>     # Restore from backup
 - [x] User can create custom tmux layout
 - [x] User can add lazygit custom command
 - [x] User can customize ghostty theme
-- [ ] User can add nvim plugin (each distro)
+- [x] User can add nvim plugin (each distro)
 - [x] User can switch nvim distro
 - [x] User configs persist across sync
 - [x] Fleet window shows multiple nodes

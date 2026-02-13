@@ -36,3 +36,37 @@ load "../../lib/test_helper"
   run rg -n "caf-search" cli/scripts/caf-search config/cafaye/zsh/config.zsh
   [ "$status" -eq 0 ]
 }
+
+@test "neovim distro templates and user override files exist" {
+  run test -f config/cafaye/nvim/astronvim/init.lua
+  [ "$status" -eq 0 ]
+  run test -f config/cafaye/nvim/lazyvim/init.lua
+  [ "$status" -eq 0 ]
+  run test -f config/cafaye/nvim/nvchad/init.lua
+  [ "$status" -eq 0 ]
+
+  run test -f config/user/nvim/lazyvim/autocmds.lua
+  [ "$status" -eq 0 ]
+  run test -f config/user/nvim/nvchad/options.lua
+  [ "$status" -eq 0 ]
+  run test -f config/user/nvim/nvchad/plugins.lua
+  [ "$status" -eq 0 ]
+  run test -f config/user/nvim/nvchad/configs/lspconfig.lua
+  [ "$status" -eq 0 ]
+}
+
+@test "neovim modules wire user config symlinks" {
+  run rg -n "nvim/lua/user|force = true" modules/editors/neovim/astronvim.nix
+  [ "$status" -eq 0 ]
+
+  run rg -n "autocmds.lua" modules/editors/neovim/lazyvim.nix
+  [ "$status" -eq 0 ]
+
+  run rg -n "nvim/lua/custom" modules/editors/neovim/nvchad.nix
+  [ "$status" -eq 0 ]
+}
+
+@test "fleet status has current-node visual indicator" {
+  run rg -n "\\[current\\]|local_node|hostname -s" cli/scripts/caf-fleet
+  [ "$status" -eq 0 ]
+}
