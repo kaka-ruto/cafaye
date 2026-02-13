@@ -23,6 +23,11 @@ secrets/secrets.yaml
 .devbox/
 .factory/
 
+# Logs
+*.log
+logs/
+secrets/*.broken.*
+
 # Runtime utility links generated in ~/.config/cafaye/bin
 bin/*
 !bin/syntax-check.sh

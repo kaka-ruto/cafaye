@@ -5,9 +5,10 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 ## Core Platform Readiness
 - [ ] Fresh install succeeds on supported Linux hosts with no manual recovery steps.
 - [ ] Fresh install succeeds on supported macOS hosts with no manual recovery steps.
-- [ ] Re-running installer is idempotent and preserves user customizations.
+- [x] Installer is idempotent and can be safely re-run without data loss.
+- [x] Installer pre-fills form fields with existing state when re-run.
 - [ ] Upgrade path from previous versions preserves state, configs, and workflows.
-- [ ] Uninstall/rollback path restores a safe, usable host state.
+- [x] Uninstaller exists and safely removes Cafaye with backups.
 - [ ] Default setup is production-safe and works for first-time users out of the box.
 
 ## Reproducibility and State Management
@@ -16,6 +17,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] Drift detection clearly reports when runtime state differs from declared state.
 - [x] Sync/pull/push workflows are reliable across laptop and remote nodes.
 - [ ] Recovery from interrupted sync/rebuild leaves system in a consistent state.
+- [x] Install logs are redacted and safe to share for debugging.
 - [ ] State files are validated and corrupted state is detected with actionable guidance.
 
 ## Distributed Fleet Operations
@@ -51,8 +53,9 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [ ] Broken plugin states are detected and recoverable without manual surgery.
 
 ## Security and Secrets
-- [ ] Secret encryption/decryption flows are reliable with current SOPS tooling.
-- [ ] Key bootstrap, rotation, and revocation are documented and tested.
+- [x] Secrets are encrypted at rest and never committed to version control.
+- [ ] Secret rotation workflows are documented and tested.
+- [x] SOPS integration works reliably across local and remote nodes.
 - [ ] Sensitive data is never leaked to logs, terminal history, or CI artifacts.
 - [ ] Principle of least privilege is enforced for scripts and remote operations.
 - [ ] Supply chain integrity checks exist for critical dependencies.

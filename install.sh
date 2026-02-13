@@ -186,6 +186,59 @@ ensure_dependencies() {
     fi
 }
 
+# --- State Loading ---
+load_state() {
+    local env_file="$HOME/.config/cafaye/environment.json"
+    local set_file="$HOME/.config/cafaye/settings.json"
+    
+    if [[ -f "$env_file" ]]; then
+        echo "📥 Loading existing environment state..."
+        THEME_CHOICE_RAW=$(jq -r '.interface.theme // "catppuccin mocha"' "$env_file")
+        # Convert mocha -> Catppuccin Mocha for menu
+        case "$THEME_CHOICE_RAW" in
+            "catppuccin mocha") THEME_CHOICE="Catppuccin Mocha" ;;
+            "tokyo night") THEME_CHOICE="Tokyo Night" ;;
+            "gruvbox") THEME_CHOICE="Gruvbox" ;;
+            *) THEME_CHOICE="Catppuccin Mocha" ;;
+        esac
+        
+        EDITOR_CHOICE_RAW=$(jq -r '.editors.default // "neovim"' "$env_file")
+        case "$EDITOR_CHOICE_RAW" in
+            "neovim") EDITOR_CHOICE="Neovim" ;;
+            "helix") EDITOR_CHOICE="Helix" ;;
+            "vs code server") EDITOR_CHOICE="VS Code Server" ;;
+            *) EDITOR_CHOICE="Neovim" ;;
+        esac
+
+        if [[ "$EDITOR_CHOICE" == "Neovim" ]]; then
+            if [[ "$(jq -r '.editors.distributions.nvim.lazyvim' "$env_file")" == "true" ]]; then
+                NVIM_DISTRO="LazyVim (recommended)"
+            elif [[ "$(jq -r '.editors.distributions.nvim.astronvim' "$env_file")" == "true" ]]; then
+                NVIM_DISTRO="AstroNvim"
+            elif [[ "$(jq -r '.editors.distributions.nvim.nvchad' "$env_file")" == "true" ]]; then
+                NVIM_DISTRO="NvChad"
+            fi
+        fi
+    fi
+
+    if [[ -f "$set_file" ]]; then
+        echo "📥 Loading existing settings state..."
+        GIT_NAME=$(jq -r '.git.name // ""' "$set_file")
+        GIT_EMAIL=$(jq -r '.git.email // ""' "$set_file")
+        BACKUP_TYPE=$(jq -r '.backup.type // ""' "$set_file")
+        REPO_URL=$(jq -r '.backup.url // ""' "$set_file")
+        PUSH_STRATEGY=$(jq -r '.backup.strategy // ""' "$set_file")
+        SET_TAILSCALE=$(jq -r '.core.tailscale.enabled // "no"' "$set_file")
+        NETWORK_MODE=$(jq -r '.core.network_mode // "tailscale"' "$set_file")
+        IS_VPS=$(jq -r '.core.vps // "no"' "$set_file")
+        AUTO_SHUTDOWN=$(jq -r '.core.auto_shutdown // "yes"' "$set_file")
+        SSH_IMPORT_MODE=$(jq -r '.core.ssh.mode // ""' "$set_file")
+        SSH_USER=$(jq -r '.core.ssh.username // ""' "$set_file")
+        SSH_KEY_PATH=$(jq -r '.core.ssh.path // ""' "$set_file")
+        SSH_KEY_VALUE=$(jq -r '.core.ssh.public_key // ""' "$set_file")
+    fi
+}
+
 # --- Phase 1: Plan ---
 plan_phase() {
     [[ "$NON_INTERACTIVE" == "true" ]] && return
@@ -193,16 +246,12 @@ plan_phase() {
     echo "Welcome to Cafaye! Let's set up your foundation."
     echo ""
 
-    # 1. Git Identity
-    GIT_NAME=$(git config --get user.name || echo "")
-    GIT_EMAIL=$(git config --get user.email || echo "")
+    # 1. Git Identity (use loaded state or git config)
+    [[ -z "$GIT_NAME" ]] && GIT_NAME=$(git config --get user.name || echo "")
+    [[ -z "$GIT_EMAIL" ]] && GIT_EMAIL=$(git config --get user.email || echo "")
 
-    if [[ -z "$GIT_NAME" ]]; then
-        GIT_NAME=$(gum input --placeholder "What is your name?" --header "Git Identity: Name")
-    fi
-    if [[ -z "$GIT_EMAIL" ]]; then
-        GIT_EMAIL=$(gum input --placeholder "What is your email?" --header "Git Identity: Email")
-    fi
+    GIT_NAME=$(gum input --value "$GIT_NAME" --placeholder "What is your name?" --header "Git Identity: Name")
+    GIT_EMAIL=$(gum input --value "$GIT_EMAIL" --placeholder "What is your email?" --header "Git Identity: Email")
 
     # 2. Backup Strategy
     BACKUP_TYPE=$(gum choose --header "Where would you like to back up your environment?" "GitHub (recommended)" "GitLab" "Local only" "Skip for now")
@@ -603,6 +652,15 @@ EOF
         fi
     fi
 
+    # --- Redaction Pass ---
+    echo "🛡️  Redacting sensitive information from install log..."
+    INSTALL_LOG="$LOG_DIR/install.log"
+    if [[ -f "$INSTALL_LOG" ]]; then
+        sed 's/tskey-auth-[[:alnum:]]\+/REDACTED-TAILSCALE-KEY/g' "$INSTALL_LOG" | \
+        sed 's/AGE-SECRET-KEY-[[:alnum:]]\+/REDACTED-AGE-KEY/g' | \
+        sed -E 's/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}/[REDACTED-EMAIL]/g' > "$INSTALL_LOG.tmp" && mv "$INSTALL_LOG.tmp" "$INSTALL_LOG"
+    fi
+
     show_success
 }
 
@@ -676,6 +734,7 @@ create_standard_symlinks() {
 # --- Main Flow Start ---
 show_logo
 detect_system
+load_state
 check_idempotency
 
 while true; do
