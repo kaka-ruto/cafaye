@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-02-13 22:40 UTC
 
-## ✅ Completed Milestones (55/134 items - 41%)
+## ✅ Completed Milestones (60/134 items - 44%)
 
 ### Core Platform Readiness (6/7)
 - ✅ Fresh install succeeds on supported Linux hosts with no manual recovery steps
@@ -87,16 +87,16 @@ Users cannot onboard without this.
 | Editor Experience | 5 | 6 | 83% |
 | Security & Secrets | 5 | 7 | 71% |
 | Reliability & Recovery | 4 | 6 | 67% |
-| Testing | 3 | 8 | 38% |
+| Testing | 5 | 8 | 63% |
 | CI/CD | 3 | 7 | 43% |
 | Performance | 0 | 6 | 0% |
 | Observability | 2 | 5 | 40% |
-| Documentation | 3 | 6 | 50% |
+| Documentation | 4 | 6 | 67% |
 | Product Fit | 0 | 5 | 0% |
 | Governance | 0 | 3 | 0% |
 
 
-**Overall: 55/134 (41%)**
+**Overall: 60/134 (44%)**
 
 ## 🚀 Recent Improvements (Current Session - 2026-02-13)
 
@@ -176,6 +176,11 @@ Users cannot onboard without this.
    - Audited CLI exit codes and human-actionable error reporting
    - Standardized SSH hardening and log redaction for VPS safety
    - Documented explicit OS support constraints
+
+15. **Foundation Hardening & Migration (NEW)**
+   - Implemented `with_retry` and explicit timeouts for all core network operations
+   - Created comprehensive `MIGRATION.md` for onboarding from other systems
+   - Verified single-VM behavioral integration test patterns
 
 ## 🎯 Recommended Focus Areas
 

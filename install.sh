@@ -31,6 +31,29 @@ fi
 set -e
 set -o pipefail
 
+# --- Reliability Helpers ---
+with_retry() {
+    local max_attempts=3
+    local timeout=2
+    local attempt=1
+    local exitCode=0
+
+    while [ $attempt -le $max_attempts ]; do
+        if "$@"; then
+            return 0
+        else
+            exitCode=$?
+            echo "⚠️  Command failed (attempt $attempt/$max_attempts). Retrying in $timeout seconds..."
+            sleep $timeout
+            attempt=$((attempt + 1))
+            timeout=$((timeout * 2))
+        fi
+    done
+
+    echo "❌ Command failed after $max_attempts attempts."
+    return $exitCode
+}
+
 # --- Logging Setup (Deferred to Execution) ---
 LOG_DIR="$HOME/.config/cafaye/logs"
 mkdir -p "$LOG_DIR"
@@ -177,7 +200,7 @@ install_gum_binary() {
     fi
 
     mkdir -p "$HOME/.local/bin"
-    curl -fL "$URL" -o /tmp/gum.tar.gz
+    with_retry curl --connect-timeout 10 -fL "$URL" -o /tmp/gum.tar.gz
     tar -xzf /tmp/gum.tar.gz -C /tmp
     
     # Verify extraction
@@ -228,7 +251,7 @@ ensure_dependencies() {
                     # Download jq binary
                     echo "⬇️  Downloading jq..."
                     [[ "$ARCH" == "arm64" ]] && JQ_ARCH="arm64" || JQ_ARCH="amd64"
-                     curl -L -o /tmp/jq "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-macos-${JQ_ARCH}"
+                    with_retry curl --connect-timeout 10 -L -o /tmp/jq "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-macos-${JQ_ARCH}"
                     chmod +x /tmp/jq
                     mkdir -p "$HOME/.local/bin"
                     mv /tmp/jq "$HOME/.local/bin/"
@@ -613,11 +636,9 @@ EOF
     # 5. Install Nix (Determinate Systems Installer for reliability)
     if ! command -v nix &> /dev/null; then
         echo "❄️  Installing Nix package manager..."
-        if [[ "$OS" == "Darwin" ]]; then
-            curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --no-confirm
-        else
-            curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --no-confirm
-        fi
+        # Wrap the whole pipe or at least the curl part. 
+        # Since it's a pipe, let's wrap the curl.
+        with_retry curl --connect-timeout 10 --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --no-confirm
         
         if [[ -f "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]]; then
             . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh

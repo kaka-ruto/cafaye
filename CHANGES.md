@@ -63,15 +63,15 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 
 ## Reliability, Errors, and Recovery
 - [x] All core CLI commands return stable exit codes and human-actionable errors.
-- [ ] Transient network failures are retried with bounded backoff and clear logs.
+- [x] Transient network failures are retried with bounded backoff and clear logs.
 - [ ] Long-running operations provide progress and cancellation safety.
-- [ ] Timeouts are explicit and tuned for CI and real-world remote hosts.
+- [x] Timeouts are explicit and tuned for CI and real-world remote hosts.
 - [ ] Interrupted operations can resume or safely restart without data loss.
 - [x] System doctor diagnostics can identify and prioritize root causes.
 
 ## Testing Architecture and Coverage
-- [ ] Single-VM integration test suite covers all core infra behaviors end-to-end.
-- [ ] Integration tests avoid spawning multiple nested VMs for behavioral coverage.
+- [x] Single-VM integration test suite covers all core infra behaviors end-to-end.
+- [x] Integration tests avoid spawning multiple nested VMs for behavioral coverage.
 - [ ] Unit tests cover command parsing, config resolution, and failure handling.
 - [ ] Cross-platform test matrix validates Linux and macOS critical paths.
 - [ ] Tests assert expected behavior, not implementation details.
@@ -107,7 +107,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 ## Documentation and Onboarding
 - [x] Getting-started docs lead a new user to productive setup without support.
 - [x] Supported OS versions, limitations, and known constraints are explicit.
-- [ ] Migration guides exist for users coming from other dotfile/dev-env systems.
+- [x] Migration guides exist for users coming from other dotfile/dev-env systems.
 - [x] Customization docs clearly explain what users should and should not edit.
 - [ ] Distributed workflow docs cover fleet setup, daily flow, and troubleshooting.
 - [ ] Security model and threat assumptions are clearly documented.

@@ -1,6 +1,29 @@
 #!/bin/bash
 set -euo pipefail
 
+# --- Reliability Helpers ---
+with_retry() {
+    local max_attempts=3
+    local timeout=2
+    local attempt=1
+    local exitCode=0
+
+    while [ $attempt -le $max_attempts ]; do
+        if "$@"; then
+            return 0
+        else
+            exitCode=$?
+            echo "⚠️  Command failed (attempt $attempt/$max_attempts). Retrying in $timeout seconds..."
+            sleep $timeout
+            attempt=$((attempt + 1))
+            timeout=$((timeout * 2))
+        fi
+    done
+
+    # Don't exit if it fails, just return the code
+    return $exitCode
+}
+
 # Cafaye Fleet Management
 # Usage: caf-fleet [status|add|sync|apply|attach|switch]
 
@@ -205,7 +228,7 @@ fleet_apply() {
 
     for remote in $remotes; do
         echo "🛠️  Applying on $remote..."
-        ssh $SSH_OPT $remote_opts "$remote" "caf apply" || echo "❌ Failed: $remote"
+        with_retry ssh $SSH_OPT $remote_opts "$remote" "caf apply" || echo "❌ Failed to reach $remote"
     done
 }
 
@@ -219,7 +242,7 @@ fleet_sync() {
     
     for remote in $remotes; do
         echo "📤 Syncing to $remote..."
-        if rsync -avz --exclude '.git' --exclude '.devbox' --exclude '.cache' --exclude 'result' \
+        if with_retry rsync -avz --exclude '.git' --exclude '.devbox' --exclude '.cache' --exclude 'result' \
             -e "ssh $SSH_OPT -o StrictHostKeyChecking=no" \
             ./ "$(whoami)@${remote}:~/.config/cafaye/"; then
              echo "✅ Synced $remote"
