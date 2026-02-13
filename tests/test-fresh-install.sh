@@ -177,15 +177,32 @@ elif [[ -n "$EXISTING_HOST" ]]; then
 elif [[ -n "$VPS_NAME" ]]; then
     log "Creating test VPS: $VPS_NAME"
     
-    # Create VPS
-    cd "$REPO_ROOT"
-    ./cli/scripts/caf-vps create "$VPS_NAME" || {
+    # Create VPS directly with gcloud
+    ZONE="us-central1-a"
+    MACHINE_TYPE="e2-medium"
+    SSH_USER=$(whoami)
+    SSH_PUB_KEY="$HOME/.ssh/id_ed25519.pub"
+    [[ ! -f "$SSH_PUB_KEY" ]] && SSH_PUB_KEY="$HOME/.ssh/id_rsa.pub"
+    
+    if [[ ! -f "$SSH_PUB_KEY" ]]; then
+        error "No SSH public key found"
+        exit 1
+    fi
+    
+    log "Provisioning VPS on GCP..."
+    gcloud compute instances create "$VPS_NAME" \
+        --zone="$ZONE" \
+        --machine-type="$MACHINE_TYPE" \
+        --image-project=ubuntu-os-cloud \
+        --image-family=ubuntu-2404-lts-amd64 \
+        --metadata=ssh-keys="${SSH_USER}:$(cat "$SSH_PUB_KEY")" \
+        --quiet || {
         error "Failed to create VPS"
         exit 1
     }
     
     # Get VPS IP
-    VPS_IP=$(./cli/scripts/caf-vps list | grep "$VPS_NAME" | awk '{print $2}')
+    VPS_IP=$(gcloud compute instances describe "$VPS_NAME" --zone="$ZONE" --format='get(networkInterfaces[0].accessConfigs[0].externalIp)')
     if [[ -z "$VPS_IP" ]]; then
         error "Could not determine VPS IP"
         exit 1
@@ -195,8 +212,9 @@ elif [[ -n "$VPS_NAME" ]]; then
     
     # Wait for SSH
     log "Waiting for SSH..."
-    for i in {1..30}; do
-        if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no "root@$VPS_IP" "echo ok" &>/dev/null; then
+    SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=5"
+    for i in {1..60}; do
+        if ssh $SSH_OPTS "${SSH_USER}@${VPS_IP}" "echo ok" &>/dev/null; then
             success "SSH ready"
             break
         fi
@@ -204,17 +222,17 @@ elif [[ -n "$VPS_NAME" ]]; then
     done
     
     # Run tests
-    run_test_suite "$VPS_IP" "ssh -o StrictHostKeyChecking=no root@$VPS_IP"
+    run_test_suite "$VPS_IP" "ssh $SSH_OPTS ${SSH_USER}@${VPS_IP}"
     TEST_RESULT=$?
     
     # Cleanup if requested
     if [[ "$CLEANUP" == "true" ]]; then
         log "Cleaning up VPS..."
-        ./cli/scripts/caf-vps delete "$VPS_NAME" --yes
+        gcloud compute instances delete "$VPS_NAME" --zone="$ZONE" --quiet
         success "VPS deleted"
     else
         log "VPS preserved: $VPS_NAME ($VPS_IP)"
-        log "To delete: ./cli/scripts/caf-vps delete $VPS_NAME"
+        log "To delete: gcloud compute instances delete $VPS_NAME --zone=$ZONE"
     fi
     
     exit $TEST_RESULT
