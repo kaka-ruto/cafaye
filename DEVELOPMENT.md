@@ -1100,14 +1100,14 @@ Sensitive metadata about your nodes (IPs, provider info, roles) is stored in a S
 
 **Configuration Management:**
 
-- [ ] User edits configs only in ~/.config/cafaye/config/user/
-- [ ] User never needs to edit ~/.config/cafaye/config/cafaye/
-- [ ] Changes to user configs are tracked in git
-- [ ] Symlinks created from ~/.config/ to cafaye/config/user/
-- [ ] Custom tmux layouts work and are loadable
-- [ ] Custom ghostty settings apply correctly
-- [ ] Custom lazygit commands appear in UI
-- [ ] Custom zsh aliases work after reload
+- [x] User edits configs only in ~/.config/cafaye/config/user/
+- [x] User never needs to edit ~/.config/cafaye/config/cafaye/
+- [x] Changes to user configs are tracked in git
+- [x] Symlinks created from ~/.config/ to cafaye/config/user/
+- [x] Custom tmux layouts work and are loadable
+- [x] Custom ghostty settings apply correctly
+- [x] Custom lazygit commands appear in UI
+- [x] Custom zsh aliases work after reload
 
 **Neovim Customization (All Distros):**
 
@@ -1120,9 +1120,9 @@ Sensitive metadata about your nodes (IPs, provider info, roles) is stored in a S
 - [ ] NvChad: chadrc.lua customizes UI
 - [ ] NvChad: mappings.lua adds keybindings
 - [ ] NvChad: plugins.lua adds plugins
-- [ ] Can switch between nvim distros with caf config
-- [ ] Previous distro config backed up before switch
-- [ ] User configs persist when switching distros
+- [x] Can switch between nvim distros with caf config
+- [x] Previous distro config backed up before switch
+- [x] User configs persist when switching distros
 
 **Installation:**
 
@@ -1183,18 +1183,18 @@ Sensitive metadata about your nodes (IPs, provider info, roles) is stored in a S
 
 **Standard locations symlinked:**
 
-- [ ] ~/.config/tmux/ → ~/.config/cafaye/config/cafaye/tmux/
-- [ ] ~/.config/ghostty/ → ~/.config/cafaye/config/cafaye/ghostty/
-- [ ] ~/.config/lazygit/ → ~/.config/cafaye/config/cafaye/lazygit/
+- [x] ~/.config/tmux/ → ~/.config/cafaye/config/cafaye/tmux/
+- [x] ~/.config/ghostty/ → ~/.config/cafaye/config/cafaye/ghostty/
+- [x] ~/.config/lazygit/ → ~/.config/cafaye/config/cafaye/lazygit/
 - [ ] ~/.config/nvim/lua/user/ → ~/.config/cafaye/config/user/nvim/{distro}/
 - [ ] ~/.zshrc → ~/.config/cafaye/config/cafaye/zsh/.zshrc
 
 **Behavior:**
 
-- [ ] Symlinks created during installation
-- [ ] Tools read configs from standard locations
-- [ ] User edits appear in ~/.config/cafaye/config/user/
-- [ ] Changes apply immediately (for most tools)
+- [x] Symlinks created during installation
+- [x] Tools read configs from standard locations
+- [x] User edits appear in ~/.config/cafaye/config/user/
+- [x] Changes apply immediately (for most tools)
 
 ### Neovim Distribution Management
 
@@ -1224,9 +1224,9 @@ caf config neovim distro lazyvim
 
 **Behavior:**
 
-- [ ] Backs up current ~/.config/nvim/ to nvim-backup-{timestamp}/
-- [ ] Copies new distro template to ~/.config/nvim/
-- [ ] Updates .cafaye-distro marker
+- [x] Backs up current ~/.config/nvim/ to nvim-backup-{timestamp}/
+- [x] Copies new distro template to ~/.config/nvim/
+- [x] Updates .cafaye-distro marker
 - [ ] Creates/updates symlinks to user/{new-distro}/
 - [ ] Preserves previous distro's user/ configs
 - [ ] User can restore backup if needed
@@ -1250,11 +1250,11 @@ caf config neovim distro lazyvim
 
 **Each file created with:**
 
-- [ ] Header comment explaining the file's purpose
-- [ ] Instructions on how to customize
-- [ ] Links to official documentation
-- [ ] Multiple commented examples
-- [ ] Placeholder for user's customizations
+- [x] Header comment explaining the file's purpose
+- [x] Instructions on how to customize
+- [x] Links to official documentation
+- [x] Multiple commented examples
+- [x] Placeholder for user's customizations
 
 **Example Structure:**
 
@@ -1693,8 +1693,8 @@ caf project restore <name>     # Restore from backup
 
 **Automated Tests (macOS + GCP VPS):**
 
-- [ ] Installation creates correct directory structure
-- [ ] Symlinks created correctly
+- [x] Installation creates correct directory structure
+- [x] Symlinks created correctly
 - [ ] Ghostty auto-launches
 - [x] tmux auto-starts
 - [x] Default layout loads
@@ -1704,10 +1704,10 @@ caf project restore <name>     # Restore from backup
 
 **Manual Tests (macOS + GCP VPS):**
 
-- [ ] User can customize tmux prefix
-- [ ] User can create custom tmux layout
-- [ ] User can add lazygit custom command
-- [ ] User can customize ghostty theme
+- [x] User can customize tmux prefix
+- [x] User can create custom tmux layout
+- [x] User can add lazygit custom command
+- [x] User can customize ghostty theme
 - [ ] User can add nvim plugin (each distro)
 - [x] User can switch nvim distro
 - [x] User configs persist across sync
