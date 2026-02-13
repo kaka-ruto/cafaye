@@ -74,7 +74,7 @@ run_real_world_single_vm() {
     echo -e "\n${BLUE}☁️  Running single-VM real-world audit...${NC}"
     INSTANCE_NAME="${INSTANCE_NAME:-cafaye-vps-test}" \
     ZONE="${ZONE:-us-central1-a}" \
-    bash tests/integration/real-world/single-vm-audit.sh
+    bash tests/integration/behavioral_realworld_gcp_single_vm.sh
 }
 
 # --- Main Logic ---

@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: caf-ci-status [--latest] [--commit <sha>] [--logs] [--limit <n>]
+
+Examples:
+  caf-ci-status
+  caf-ci-status --latest
+  caf-ci-status --latest --logs
+  caf-ci-status --commit a1b2c3d
+  caf-ci-status --commit a1b2c3d --logs
+EOF
+}
+
+if ! command -v gh >/dev/null 2>&1; then
+  echo "gh CLI is required. Install with: brew install gh (macOS) or apt install gh (Linux)"
+  exit 1
+fi
+
+if ! gh auth status >/dev/null 2>&1; then
+  echo "gh is not authenticated. Run: gh auth login"
+  exit 1
+fi
+
+latest=false
+show_logs=false
+commit=""
+limit=20
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --latest) latest=true ;;
+    --logs) show_logs=true ;;
+    --commit)
+      commit="${2:-}"
+      shift
+      ;;
+    --limit)
+      limit="${2:-20}"
+      shift
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1"
+      usage
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+json_fields="databaseId,headSha,displayTitle,status,conclusion,workflowName,createdAt,url"
+runs_json="$(gh run list --limit "$limit" --json "$json_fields")"
+
+if [[ -n "$commit" ]]; then
+  runs_json="$(echo "$runs_json" | jq --arg c "$commit" '[.[] | select(.headSha | startswith($c))]')"
+fi
+
+if [[ "$latest" == "true" ]]; then
+  run_id="$(echo "$runs_json" | jq -r '.[0].databaseId // empty')"
+  if [[ -z "$run_id" ]]; then
+    echo "No workflow run found."
+    exit 1
+  fi
+  gh run view "$run_id"
+  if [[ "$show_logs" == "true" ]]; then
+    echo ""
+    gh run view "$run_id" --log
+  fi
+  exit 0
+fi
+
+if [[ "$show_logs" == "true" ]]; then
+  run_id="$(echo "$runs_json" | jq -r '.[0].databaseId // empty')"
+  if [[ -z "$run_id" ]]; then
+    echo "No workflow run found."
+    exit 1
+  fi
+  gh run view "$run_id" --log
+  exit 0
+fi
+
+count="$(echo "$runs_json" | jq 'length')"
+if [[ "$count" -eq 0 ]]; then
+  echo "No workflow run found."
+  exit 1
+fi
+
+echo "$runs_json" | jq -r '
+  (["ID","SHA","WORKFLOW","STATUS","CONCLUSION","TITLE"] | @tsv),
+  (.[] | [.databaseId, (.headSha[0:8]), .workflowName, .status, (.conclusion // "-"), .displayTitle] | @tsv)
+' | column -t -s $'\t'

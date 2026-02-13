@@ -378,6 +378,10 @@ case "$1" in
             echo "Usage: caf backup status"
         fi
         ;;
+    ci)
+        shift
+        caf-ci-status "$@"
+        ;;
     --help|-h)
         echo "Cafaye CLI"
         echo ""
@@ -394,6 +398,7 @@ case "$1" in
         echo "  test [--nix]    Run syntax or behavioral tests"
         echo "  update          Update Cafaye foundation to latest version"
         echo "  backup status   Show backup repository status"
+        echo "  ci ...          Show CI status/logs (e.g. --latest --logs)"
         echo ""
         echo "Run without arguments for interactive menu."
         ;;

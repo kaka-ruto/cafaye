@@ -115,14 +115,19 @@ load "../../lib/test_helper"
 }
 
 @test "single-vm real-world audit exists and is wired in test runner" {
-  run rg -n "single-vm-audit\\.sh|cafaye-vps-test|us-central1-a|real-world" tests/integration/real-world/single-vm-audit.sh bin/test.sh
+  run rg -n "behavioral_realworld_gcp_single_vm\\.sh|cafaye-vps-test|us-central1-a|real-world" tests/integration/behavioral_realworld_gcp_single_vm.sh bin/test.sh
   [ "$status" -eq 0 ]
 }
 
 @test "single behavioral nix vm test and ci workflow wiring exist" {
-  run rg -n "runNixOSTest|cafaye-behavioral-single-vm|cli/scripts/caf-status|caf-workspace-run --dry-run" tests/integration/behavioral-single-vm.nix
+  run rg -n "runNixOSTest|cafaye-behavioral-single-vm|cli/scripts/caf-status|caf-workspace-run --dry-run" tests/integration/behavioral_core_single_vm.nix
   [ "$status" -eq 0 ]
 
-  run rg -n "pull_request|push:|behavioral-single-vm|checks.x86_64-linux.integration.behavioral-single-vm|bin/test.sh --lint|bin/test.sh unit" .github/workflows/factory.yml
+  run rg -n "pull_request|push:|behavioral-single-vm|checks.x86_64-linux.integration.behavioral_core_single_vm|bin/test.sh --lint|bin/test.sh unit" .github/workflows/factory.yml
+  [ "$status" -eq 0 ]
+}
+
+@test "ci status helper script supports latest commit and logs modes" {
+  run rg -n "caf-ci-status|--latest|--commit|--logs|gh run list|gh run view" cli/scripts/caf-ci-status
   [ "$status" -eq 0 ]
 }
