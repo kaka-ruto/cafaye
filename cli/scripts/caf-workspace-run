@@ -3,6 +3,20 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+DRY_RUN=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --dry-run|-n)
+      DRY_RUN=1
+      shift
+      ;;
+    *)
+      echo "Usage: caf-workspace-run [--dry-run]" >&2
+      exit 1
+      ;;
+  esac
+done
 
 DEFAULT_WORKSPACE_YML="${HOME}/.config/cafaye/config/cafaye/tmux/workspace.yml"
 USER_WORKSPACE_YML="${HOME}/.config/cafaye/config/user/tmux/workspace.yml"
@@ -127,6 +141,16 @@ maybe_add_fleet_window() {
   fi
 }
 maybe_add_fleet_window
+
+if [[ "$DRY_RUN" -eq 1 ]]; then
+  echo "Workspace Session: ${CAF_WORKSPACE_SESSION}"
+  echo "Start Window: ${CAF_WORKSPACE_START_WINDOW}"
+  echo "Windows:"
+  for w in "${CAF_WORKSPACE_WINDOWS[@]}"; do
+    echo "  - ${w}"
+  done
+  exit 0
+fi
 
 create_session() {
   local first=1
