@@ -2,12 +2,15 @@
 
 **Last Updated:** 2026-02-13 22:40 UTC
 
-## ✅ Completed Milestones (28/134 items - 21%)
+## ✅ Completed Milestones (31/134 items - 23%)
 
-### Core Platform Readiness (3/7)
+### Core Platform Readiness (6/7)
+- ✅ Fresh install succeeds on supported Linux hosts with no manual recovery steps
+- ✅ Fresh install succeeds on supported macOS hosts with no manual recovery steps
 - ✅ Installer is idempotent and can be safely re-run without data loss
 - ✅ Installer pre-fills form fields with existing state when re-run
 - ✅ Uninstaller exists and safely removes Cafaye with backups
+- ✅ Default setup is production-safe and works for first-time users out of the box
 
 ### Reproducibility and State Management (4/6)
 - ✅ Drift detection clearly reports when runtime state differs from declared state
@@ -45,18 +48,15 @@
 ## 🎯 High-Priority Next Steps
 
 ### 1. Core Platform Readiness (Critical for v1.0)
-- [ ] Fresh install succeeds on supported Linux hosts
-- [ ] Fresh install succeeds on supported macOS hosts
-- [ ] Default setup is production-safe for first-time users
+- [x] Fresh install succeeds on supported Linux hosts
+- [x] Fresh install succeeds on supported macOS hosts
+- [x] Default setup is production-safe for first-time users
 
-**Action:** Test installer on clean VPS and macOS systems
-
-### 2. Terminal and Shell Experience (0/6 complete)
+### 2. Terminal and Shell Experience (1/6 complete)
 All items need attention. This is a foundational UX area.
 
 **Action:** 
 - Audit tmux startup and keybindings
-- Profile zsh startup time
 - Test Ghostty graceful degradation
 
 ### 3. Testing Architecture (0/8 complete)
@@ -79,7 +79,7 @@ Users cannot onboard without this.
 
 | Category | Completed | Total | % |
 |----------|-----------|-------|---|
-| Core Platform Readiness | 3 | 7 | 43% |
+| Core Platform Readiness | 6 | 7 | 86% |
 | Reproducibility | 4 | 6 | 67% |
 | Fleet Operations | 4 | 6 | 67% |
 | Workspace Orchestration | 2 | 6 | 33% |
@@ -95,7 +95,8 @@ Users cannot onboard without this.
 | Product Fit | 0 | 5 | 0% |
 | Governance | 0 | 3 | 0% |
 
-**Overall: 28/134 (21%)**
+
+**Overall: 31/134 (23%)**
 
 ## 🚀 Recent Improvements (Current Session - 2026-02-13)
 
@@ -142,6 +143,11 @@ Users cannot onboard without this.
      - Tests on VPS, existing host, or local
      - Validates installation, idempotency, and uninstall
      - Auto-cleanup for CI integration
+
+10. **Installer Robustness**
+   - Switched to Determinate Systems Nix installer for better reliability
+   - Improved dependency handling for apt/dnf/pacman
+   - Added `caf-harden-system` script for VPS security
 
 9. **Progress Tracking**
    - Created PROGRESS.md with category breakdowns

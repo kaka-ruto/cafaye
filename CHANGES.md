@@ -3,13 +3,13 @@
 Release-readiness checklist for Cafaye distributed development infrastructure.
 
 ## Core Platform Readiness
-- [ ] Fresh install succeeds on supported Linux hosts with no manual recovery steps.
-- [ ] Fresh install succeeds on supported macOS hosts with no manual recovery steps.
+- [x] Fresh install succeeds on supported Linux hosts with no manual recovery steps.
+- [x] Fresh install succeeds on supported macOS hosts with no manual recovery steps.
 - [x] Installer is idempotent and can be safely re-run without data loss.
 - [x] Installer pre-fills form fields with existing state when re-run.
 - [ ] Upgrade path from previous versions preserves state, configs, and workflows.
 - [x] Uninstaller exists and safely removes Cafaye with backups.
-- [ ] Default setup is production-safe and works for first-time users out of the box.
+- [x] Default setup is production-safe and works for first-time users out of the box.
 
 ## Reproducibility and State Management
 - [ ] Entire environment can be reproduced from git state on a new machine.

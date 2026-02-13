@@ -1,0 +1,78 @@
+#!/bin/bash
+set -euo pipefail
+
+# Cafaye System Hardening Script
+# Usage: sudo caf-harden-system
+
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root"
+   exit 1
+fi
+
+echo "🛡️  Cafaye System Hardening"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# 1. SSH Hardening
+echo "🔒 Hardening SSH configuration..."
+SSHD_CONFIG="/etc/ssh/sshd_config"
+if [[ -f "$SSHD_CONFIG" ]]; then
+    # Backup
+    cp "$SSHD_CONFIG" "$SSHD_CONFIG.bak.$(date +%s)"
+    
+    # Disable password authentication
+    sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' "$SSHD_CONFIG"
+    sed -i 's/^#*PermitRootLogin.*/PermitRootLogin no/' "$SSHD_CONFIG"
+    # Ensure PubkeyAuthentication is yes
+    sed -i 's/^#*PubkeyAuthentication.*/PubkeyAuthentication yes/' "$SSHD_CONFIG"
+    
+    # Restart SSH
+    if command -v systemctl &> /dev/null; then
+        systemctl restart sshd || systemctl restart ssh
+    else
+        service ssh restart
+    fi
+    echo "✅ SSH hardened (Password auth disabled, Root login disabled)"
+else
+    echo "⚠️  SSH config not found at $SSHD_CONFIG"
+fi
+
+# 2. Firewall (UFW)
+echo "🔥 Configuring Firewall (UFW)..."
+if command -v ufw &> /dev/null; then
+    ufw default deny incoming
+    ufw default allow outgoing
+    
+    # Allow SSH
+    ufw allow ssh
+    
+    # Allow Tailscale interface
+    if ip addr show tailscale0 &> /dev/null; then
+        ufw allow in on tailscale0
+    fi
+    
+    # Enable
+    echo "y" | ufw enable
+    echo "✅ UFW enabled and configured"
+else
+    echo "⚠️  UFW not installed. Skipping firewall configuration."
+    # Offer to install?
+    # apt-get install ufw -y
+fi
+
+# 3. Automatic Updates (Unattended Upgrades)
+echo "🔄 Configuring Automatic Updates..."
+if command -v apt-get &> /dev/null; then
+    apt-get install -y unattended-upgrades
+    echo 'Unattended-Upgrade::Allowed-Origins {
+        "${distro_id}:${distro_codename}";
+        "${distro_id}:${distro_codename}-security";
+        "${distro_id}ESMApps:${distro_codename}-apps-security";
+        "${distro_id}ESM:${distro_codename}-infra-security";
+    };' > /etc/apt/apt.conf.d/50unattended-upgrades-cafaye
+    echo "✅ Unattended upgrades enabled"
+else
+    echo "ℹ️  Not a Debian/Ubuntu system. Skipping automatic updates."
+fi
+
+echo ""
+echo "✅ System hardening complete."
