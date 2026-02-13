@@ -12,7 +12,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@v9
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
       - uses: cachix/cachix-action@v14
         with:
           name: cafaye
@@ -28,6 +31,10 @@ jobs:
     needs: lint-and-eval
     steps:
       - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
       - name: Install bats
         run: sudo apt-get update && sudo apt-get install -y bats
       - name: Run unit tests
@@ -40,7 +47,10 @@ jobs:
     needs: lint-and-eval
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@v9
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
       - uses: cachix/cachix-action@v14
         with:
           name: cafaye

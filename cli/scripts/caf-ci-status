@@ -14,15 +14,24 @@ Examples:
 EOF
 }
 
-if ! command -v gh >/dev/null 2>&1; then
-  echo "gh CLI is required. Install with: brew install gh (macOS) or apt install gh (Linux)"
-  exit 1
-fi
+require_tools() {
+  if ! command -v gh >/dev/null 2>&1; then
+    echo "gh CLI is required. Install with: brew install gh (macOS) or apt install gh (Linux)"
+    exit 1
+  fi
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "jq is required. Install with: brew install jq (macOS) or apt install jq (Linux)"
+    exit 1
+  fi
+  if ! gh auth status >/dev/null 2>&1; then
+    echo "gh is not authenticated. Run: gh auth login"
+    exit 1
+  fi
+}
 
-if ! gh auth status >/dev/null 2>&1; then
-  echo "gh is not authenticated. Run: gh auth login"
-  exit 1
-fi
+repo_name() {
+  gh repo view --json nameWithOwner -q '.nameWithOwner'
+}
 
 latest=false
 show_logs=false
@@ -54,44 +63,70 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-json_fields="databaseId,headSha,displayTitle,status,conclusion,workflowName,createdAt,url"
-runs_json="$(gh run list --limit "$limit" --json "$json_fields")"
+require_tools
+repo="$(repo_name)"
 
+runs_json="$(gh run list --limit "$limit" --json databaseId,headSha,displayTitle,status,conclusion,workflowName,createdAt,url)"
 if [[ -n "$commit" ]]; then
   runs_json="$(echo "$runs_json" | jq --arg c "$commit" '[.[] | select(.headSha | startswith($c))]')"
 fi
 
-if [[ "$latest" == "true" ]]; then
-  run_id="$(echo "$runs_json" | jq -r '.[0].databaseId // empty')"
-  if [[ -z "$run_id" ]]; then
+if [[ "$latest" != "true" ]]; then
+  count="$(echo "$runs_json" | jq 'length')"
+  if [[ "$count" -eq 0 ]]; then
     echo "No workflow run found."
     exit 1
   fi
-  gh run view "$run_id"
+
+  echo "$runs_json" | jq -r '
+    (["ID","SHA","WORKFLOW","STATUS","CONCLUSION","TITLE"] | @tsv),
+    (.[] | [.databaseId, (.headSha[0:8]), .workflowName, .status, (.conclusion // "-"), .displayTitle] | @tsv)
+  ' | column -t -s $'\t'
+
   if [[ "$show_logs" == "true" ]]; then
+    run_id="$(echo "$runs_json" | jq -r '.[0].databaseId')"
     echo ""
-    gh run view "$run_id" --log
+    echo "== Failed logs for run ${run_id} =="
+    gh run view "$run_id" --log-failed || gh run view "$run_id" --log
   fi
   exit 0
 fi
 
-if [[ "$show_logs" == "true" ]]; then
-  run_id="$(echo "$runs_json" | jq -r '.[0].databaseId // empty')"
-  if [[ -z "$run_id" ]]; then
-    echo "No workflow run found."
-    exit 1
-  fi
-  gh run view "$run_id" --log
-  exit 0
-fi
-
-count="$(echo "$runs_json" | jq 'length')"
-if [[ "$count" -eq 0 ]]; then
+run_id="$(echo "$runs_json" | jq -r '.[0].databaseId // empty')"
+if [[ -z "$run_id" ]]; then
   echo "No workflow run found."
   exit 1
 fi
 
-echo "$runs_json" | jq -r '
-  (["ID","SHA","WORKFLOW","STATUS","CONCLUSION","TITLE"] | @tsv),
-  (.[] | [.databaseId, (.headSha[0:8]), .workflowName, .status, (.conclusion // "-"), .displayTitle] | @tsv)
+run_json="$(gh api "repos/${repo}/actions/runs/${run_id}")"
+jobs_json="$(gh api "repos/${repo}/actions/runs/${run_id}/jobs?per_page=100")"
+
+echo "Run ID:       $(echo "$run_json" | jq -r '.id')"
+echo "Workflow:     $(echo "$run_json" | jq -r '.name')"
+echo "Branch:       $(echo "$run_json" | jq -r '.head_branch')"
+echo "Commit:       $(echo "$run_json" | jq -r '.head_sha[0:8]')"
+echo "Status:       $(echo "$run_json" | jq -r '.status')"
+echo "Conclusion:   $(echo "$run_json" | jq -r '.conclusion // "-"')"
+echo "URL:          $(echo "$run_json" | jq -r '.html_url')"
+echo ""
+echo "Jobs:"
+echo "$jobs_json" | jq -r '
+  (["ID","NAME","STATUS","CONCLUSION","STARTED"] | @tsv),
+  (.jobs[] | [.id, .name, .status, (.conclusion // "-"), (.started_at // "-")] | @tsv)
 ' | column -t -s $'\t'
+
+failed_count="$(echo "$jobs_json" | jq '[.jobs[] | select(.conclusion == "failure")] | length')"
+if [[ "$failed_count" -gt 0 ]]; then
+  echo ""
+  echo "Failed jobs:"
+  echo "$jobs_json" | jq -r '.jobs[] | select(.conclusion == "failure") | "- \(.name) (#\(.id))"'
+fi
+
+if [[ "$show_logs" == "true" ]]; then
+  echo ""
+  echo "== Failed logs for run ${run_id} =="
+  gh run view "$run_id" --log-failed || gh run view "$run_id" --log
+elif [[ "$failed_count" -gt 0 ]]; then
+  echo ""
+  echo "Tip: run 'caf-ci-status --latest --logs' to print failed logs."
+fi
