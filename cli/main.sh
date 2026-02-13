@@ -31,6 +31,7 @@ show_main_menu() {
         "📦 Install (Languages & Frameworks)" \
         "⚙️  Services (Postgres, Redis)" \
         "🎨 Style (Themes & UI)" \
+        "🏗️  Fleet (Manage Nodes)" \
         "🏥 Status (System Health)" \
         "🔐 Secrets" \
         "🔄 Update & Rebuild" \
@@ -41,6 +42,7 @@ show_main_menu() {
         *"Install"*) show_install_menu ;;
         *"Services"*) show_services_menu ;;
         *"Style"*) show_style_menu ;;
+        *"Fleet"*) show_fleet_menu ;;
         *"Status"*) show_status_menu ;;
         *"Secrets"*) caf-secrets ;;
         *"Update"*) run_system_update ;;
@@ -48,6 +50,27 @@ show_main_menu() {
         *"Exit"*) exit 0 ;;
         *) show_main_menu ;;
     esac
+}
+
+show_fleet_menu() {
+    choice=$(caf_choose_menu "Fleet Management" \
+        "📋 Dashboard (Status)" \
+        "🏗️  Manage VPS (Forge CRUD)" \
+        "📤 Sync Files to Fleet" \
+        "🛠️  Apply Fleet Changes" \
+        "🔗 Attach All (TMUX)" \
+        "⬅️  Back")
+
+    case "$choice" in
+        *"Dashboard"*) caf-fleet status; read -p "Press enter..." ;;
+        *"Manage"*) caf-vps ;;
+        *"Sync"*) caf-fleet sync ;;
+        *"Apply"*) caf-fleet apply ;;
+        *"Attach"*) caf-fleet attach ;;
+        "⬅️  Back") show_main_menu ;;
+        *) show_fleet_menu ;;
+    esac
+    show_fleet_menu
 }
 
 show_status_plain() {
@@ -363,6 +386,10 @@ case "$1" in
         shift
         caf-fleet "$@"
         ;;
+    vps)
+        shift
+        caf-vps "$@"
+        ;;
     test)
         shift
         caf-test "$@"
@@ -394,7 +421,8 @@ case "$1" in
         echo "  project ...     Manage project sessions"
         echo "  apply           Apply state changes (rebuild)"
         echo "  sync [push/pull] Sync state with Git source of truth"
-        echo "  fleet [status/add/apply/attach/switch] Manage remote nodes"
+        echo "  fleet [status/add/remove/sync/apply/attach/switch] Manage remote nodes"
+        echo "  vps [list/create/delete/status] Manage Cloud VPS instances"
         echo "  test [--nix]    Run syntax or behavioral tests"
         echo "  update          Update Cafaye foundation to latest version"
         echo "  backup status   Show backup repository status"

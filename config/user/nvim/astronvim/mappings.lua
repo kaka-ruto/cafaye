@@ -102,7 +102,16 @@ local mappings = {
 }
 
 -- Apply mappings
--- return mappings
-
--- Return empty to use AstroNvim defaults
-return {}
+return {
+  n = {
+    -- Cafaye Specific Mappings
+    ["<leader>C"] = { name = "☕ Cafaye" },
+    ["<leader>Cc"] = { "<cmd>TermExec cmd='caf'<cr>", desc = "Cafaye Main Menu" },
+    ["<leader>Cs"] = { "<cmd>TermExec cmd='caf status'<cr>", desc = "Cafaye Status" },
+    ["<leader>Cf"] = { "<cmd>TermExec cmd='caf fleet status'<cr>", desc = "Fleet Dashboard" },
+    ["<leader>Cv"] = { "<cmd>TermExec cmd='caf-vps'<cr>", desc = "Manage VPS (Forge CRUD)" },
+    ["<leader>Ca"] = { "<cmd>TermExec cmd='caf apply'<cr>", desc = "Apply Changes (Rebuild)" },
+    ["<leader>Cd"] = { "<cmd>TermExec cmd='caf doctor'<cr>", desc = "System Doctor" },
+    ["<leader>Ck"] = { "<cmd>TermExec cmd='caf-keys-show'<cr>", desc = "Keybindings Cheatsheet" },
+  },
+}

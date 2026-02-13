@@ -43,7 +43,7 @@ run_syntax_check() {
     
     local output
     output=$(nix flake show --all-systems 2>&1)
-    if ! echo "$output" | grep -q "nixosConfigurations"; then
+    if ! echo "$output" | grep -qE "nixosConfigurations|homeConfigurations"; then
         print_error "Syntax check failed. Output:"
         echo "$output"
         return 1

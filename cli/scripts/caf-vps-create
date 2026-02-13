@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# cli/scripts/caf-vps-create
+# Interactive VPS creation and setup with Cafaye
+
+set -euo pipefail
+
+# Colors
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Check dependencies
+for cmd in gcloud gum jq rsync ssh; do
+    if ! command -v "$cmd" &> /dev/null; then
+        echo -e "${RED}❌ Error: $cmd is required.${NC}"
+        exit 1
+    fi
+done
+
+echo -e "${BLUE}☕ Cafaye Forge: VPS Creation Wizard${NC}"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# 1. Configuration
+NODE_NAME=$(gum input --placeholder "e.g. forge-01" --header "Node Name")
+[[ -z "$NODE_NAME" ]] && exit 1
+
+ZONE=$(gum input --value "us-central1-a" --header "GCP Zone")
+MACHINE_TYPE=$(gum choose "e2-standard-2 (2 vCPU, 8GB RAM)" "e2-medium (2 vCPU, 4GB RAM)" "e2-small (2 vCPU, 2GB RAM)" --header "Machine Type" | cut -d' ' -f1)
+
+# Default repo or fork
+GITHUB_USER=$(git config user.github || echo "")
+DEFAULT_REPO="https://github.com/cafaye/cafaye"
+if [[ -n "$GITHUB_USER" ]]; then
+    FORK_REPO="https://github.com/${GITHUB_USER}/cafaye"
+    REPO_CHOICE=$(gum choose "$FORK_REPO (your fork)" "$DEFAULT_REPO (main)" "Custom URL" --header "Source Repository for VPS")
+else
+    REPO_CHOICE=$(gum choose "$DEFAULT_REPO (main)" "Custom URL" --header "Source Repository for VPS")
+fi
+
+REPO_URL="$REPO_CHOICE"
+if [[ "$REPO_CHOICE" == "Custom URL" ]]; then
+    REPO_URL=$(gum input --placeholder "https://github.com/user/repo" --header "Custom Repository URL")
+fi
+REPO_URL=$(echo "$REPO_URL" | cut -d' ' -f1)
+
+# 2. Confirmation
+gum confirm "Create and setup VPS '$NODE_NAME' in $ZONE ($MACHINE_TYPE)?" || exit 0
+
+# 3. Create instance
+echo -e "\n${BLUE}🚀 Provisioning VPS on GCP...${NC}"
+SSH_PUB_KEY="$HOME/.ssh/cafaye.pub"
+[[ ! -f "$SSH_PUB_KEY" ]] && SSH_PUB_KEY="$HOME/.ssh/id_ed25519.pub"
+[[ ! -f "$SSH_PUB_KEY" ]] && SSH_PUB_KEY="$HOME/.ssh/id_rsa.pub"
+
+if [[ ! -f "$SSH_PUB_KEY" ]]; then
+    echo -e "${RED}❌ No SSH public key found. Please generate one first.${NC}"
+    exit 1
+fi
+
+SSH_USER=$(whoami)
+
+gcloud compute instances create "$NODE_NAME" \
+    --zone="$ZONE" \
+    --machine-type="$MACHINE_TYPE" \
+    --image-project=ubuntu-os-cloud \
+    --image-family=ubuntu-2404-lts-amd64 \
+    --metadata=ssh-keys="${SSH_USER}:$(cat "$SSH_PUB_KEY")" \
+    --quiet
+
+# Get IP
+VPS_IP=$(gcloud compute instances describe "$NODE_NAME" --zone="$ZONE" --format='get(networkInterfaces[0].accessConfigs[0].externalIp)')
+echo -e "${GREEN}✅ VPS Created! IP: $VPS_IP${NC}"
+
+# 4. Wait for SSH
+echo -e "\n${BLUE}⏳ Waiting for SSH to be ready...${NC}"
+SSH_OPTS="-i $HOME/.ssh/cafaye -o StrictHostKeyChecking=no -o ConnectTimeout=5"
+[[ ! -f "$HOME/.ssh/cafaye" ]] && SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=5"
+
+until ssh $SSH_OPTS "${SSH_USER}@${VPS_IP}" "echo ready" &> /dev/null; do
+    printf "."
+    sleep 2
+done
+echo -e " ${GREEN}ready!${NC}"
+
+# 5. Sync and Install
+echo -e "\n${BLUE}📦 Syncing Cafaye to VPS...${NC}"
+rsync -avz --exclude '.git' --exclude '.devbox' --exclude '.cache' --exclude 'result' \
+    -e "ssh $SSH_OPTS" \
+    ./ "${SSH_USER}@${VPS_IP}:~/cafaye"
+
+echo -e "\n${BLUE}🛠️  Running Cafaye Installer on VPS...${NC}"
+# We set IS_VPS=yes and enable auto-shutdown in the installer call if possible, 
+# or we patch settings.json after.
+ssh $SSH_OPTS "${SSH_USER}@${VPS_IP}" "cd ~/cafaye && bash install.sh --yes"
+
+echo -e "\n${BLUE}⚙️  Configuring VPS specific settings...${NC}"
+ssh $SSH_OPTS "${SSH_USER}@${VPS_IP}" "jq '.core.vps = true | .core.auto_shutdown = true' ~/.config/cafaye/settings.json > ~/.config/cafaye/settings.json.tmp && mv ~/.config/cafaye/settings.json.tmp ~/.config/cafaye/settings.json && ~/.config/cafaye/cli/scripts/caf-system-rebuild"
+
+# 6. Bootstrap Keys and Fleet Registration
+echo -e "\n${BLUE}🔑 Bootstrapping security keys...${NC}"
+# Generate remote SSH key if missing
+ssh $SSH_OPTS "${SSH_USER}@${VPS_IP}" "[[ ! -f ~/.ssh/id_ed25519 ]] && ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_ed25519"
+REMOTE_AGE_KEY=$(ssh $SSH_OPTS "${SSH_USER}@${VPS_IP}" "bash ~/.config/cafaye/cli/scripts/caf-keys-age")
+
+echo -e "Remote Age Key: ${YELLOW}$REMOTE_AGE_KEY${NC}"
+
+# Register node
+echo -e "\n${BLUE}💾 Registering node in fleet...${NC}"
+# We need to set SOPS_AGE_KEY for the local registration
+# In a real scenario, the user would have it in their shell.
+# Here we'll try to use the same logic as caf-fleet
+./cli/scripts/caf-fleet add "$NODE_NAME" "$REMOTE_AGE_KEY" "$VPS_IP" remote
+
+echo -e "\n${GREEN}🎉 VPS '$NODE_NAME' is fully set up and added to your fleet!${NC}"
+echo "You can now access it via: ssh ${SSH_USER}@${VPS_IP}"
+echo "Or use 'caf fleet Status' to see it in your dashboard."

@@ -27,7 +27,7 @@ git add -A || true
 attempt=1
 max_attempts=2
 while true; do
-    if nix run --extra-experimental-features "nix-command flakes" nixpkgs#home-manager -- switch --flake ".#${FLAKE_CONFIG}" --show-trace; then
+    if nix run --extra-experimental-features "nix-command flakes" nixpkgs#home-manager -- switch --flake ".#${FLAKE_CONFIG}" -b "backup-$(date +%Y%m%d%H%M%S)" --show-trace; then
         break
     fi
     if [[ "$attempt" -ge "$max_attempts" ]]; then

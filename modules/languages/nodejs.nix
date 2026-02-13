@@ -6,8 +6,7 @@ in
 {
   config = lib.mkIf enabled {
     home.packages = with pkgs; [
-      nodejs_22 # Latest LTS
-      corepack  # For yarn/pnpm management
+      nodejs_22 # Latest LTS (includes corepack)
     ];
   };
 }

@@ -29,6 +29,37 @@ echo "Editor: ${editor}"
 echo "Theme: ${theme}"
 echo "Tailscale: ${tailscale_enabled}"
 echo "Project: ${current_project}"
+
+# Drift detection (minimal)
+# Use realpath to handle symbolic links
+SCRIPT_PATH="$(dirname "$(realpath "$0")")"
+if [[ -f "${SCRIPT_PATH}/caf-drift" ]]; then
+  # Run drift check in background or quickly
+  # For status, we just want a summary
+  SYSTEM_ARCH=$(uname -m)
+  [[ "$SYSTEM_ARCH" == "arm64" ]] && SYSTEM_ARCH="aarch64"
+  SYSTEM_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+  [[ "$SYSTEM_OS" == "darwin" ]] && OS_SUFFIX="darwin" || OS_SUFFIX="linux"
+  FLAKE_CONFIG="${SYSTEM_ARCH}-${OS_SUFFIX}"
+  
+  HM_PROFILE="${HOME}/.local/state/nix/profiles/home-manager"
+  [[ ! -L "$HM_PROFILE" ]] && HM_PROFILE="${HOME}/.nix-profile"
+  
+  if [[ -L "$HM_PROFILE" ]]; then
+    ACTIVE_PATH=$(readlink -f "$HM_PROFILE")
+    # Quick eval check (this might be slow, so maybe we only do it if some flag is passed or cache it)
+    # For now, let's keep it simple
+    DECLARED_PATH=$(nix eval --raw "${CAFAYE_DIR}#homeConfigurations.${FLAKE_CONFIG}.activationPackage" --extra-experimental-features "nix-command flakes" 2>/dev/null || echo "unknown")
+    
+    if [[ "$DECLARED_PATH" != "unknown" ]]; then
+      if [[ "$ACTIVE_PATH" == "$DECLARED_PATH" ]]; then
+        echo "Drift: None (Synced)"
+      else
+        echo "Drift: DEVIATED (Run 'caf apply')"
+      fi
+    fi
+  fi
+fi
 echo ""
 echo "Quick actions: caf install <tool> | caf project list | caf apply"
 if command -v caf-hints >/dev/null 2>&1; then

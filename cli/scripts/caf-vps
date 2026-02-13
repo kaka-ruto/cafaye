@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# cli/scripts/caf-vps
+# CRUD management for Cafaye VPS instances (Forge)
+
+set -euo pipefail
+
+# Colors
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+command="${1:-menu}"
+
+vps_list() {
+    echo -e "${BLUE}📋 Active GCP Instances (Cafaye)${NC}"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    gcloud compute instances list --format="table(name,zone,machineType,status,networkInterfaces[0].accessConfigs[0].externalIp)"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+
+vps_create() {
+    bash "$(dirname "$0")/caf-vps-create"
+}
+
+vps_delete() {
+    local node_name="${2:-}"
+    if [[ -z "$node_name" ]]; then
+       # Interactive selection
+       echo -e "${YELLOW}Select an instance to delete:${NC}"
+       node_name=$(gcloud compute instances list --format="value(name)" | gum filter --placeholder "Select instance to delete...")
+    fi
+
+    [[ -z "$node_name" ]] && return
+
+    gum confirm "🔥 ARE YOU SURE? This will permanently delete instance '$node_name' and all its data." || return
+
+    echo -e "${BLUE}🗑️  Deleting instance on GCP...${NC}"
+    # Find zone
+    local zone
+    zone=$(gcloud compute instances list --filter="name:$node_name" --format="value(zone)")
+    
+    if [[ -z "$zone" ]]; then
+        echo -e "${RED}❌ Could not find zone for instance '$node_name'.${NC}"
+        return 1
+    fi
+
+    if gcloud compute instances delete "$node_name" --zone="$zone" --quiet; then
+        echo -e "${GREEN}✅ Instance deleted from GCP.${NC}"
+        
+        if gum confirm "Remove '$node_name' from your Cafaye fleet registry too?"; then
+            "$(dirname "$0")/caf-fleet" remove "$node_name"
+        fi
+    else
+        echo -e "${RED}❌ Failed to delete instance.${NC}"
+    fi
+}
+
+vps_status() {
+    local node_name="${2:-}"
+    if [[ -z "$node_name" ]]; then
+       node_name=$(gcloud compute instances list --format="value(name)" | gum filter --placeholder "Select instance to check...")
+    fi
+    [[ -z "$node_name" ]] && return
+    
+    echo -e "${BLUE}🔍 Status for $node_name:${NC}"
+    gcloud compute instances describe "$node_name" --format="yaml(status,zone,machineType,networkInterfaces[0].accessConfigs[0].externalIp,metadata)"
+}
+
+vps_menu() {
+    choice=$(gum choose --header "🏗️  VPS Forge (GCP)" \
+        "📋 List Instances" \
+        "🚀 Create New VPS" \
+        "🔍 Describe Instance" \
+        "🗑️  Delete VPS" \
+        "⬅️  Back")
+
+    case "$choice" in
+        *"List"*) vps_list; read -p "Press enter..." ;;
+        *"Create"*) vps_create ;;
+        *"Describe"*) vps_status "" "" ;;
+        *"Delete"*) vps_delete "" "" ;;
+        "⬅️  Back") exit 0 ;;
+    esac
+    vps_menu
+}
+
+case "$command" in
+    list) vps_list ;;
+    create) vps_create ;;
+    delete) vps_delete "$@" ;;
+    status) vps_status "$@" ;;
+    menu|*) vps_menu ;;
+esac

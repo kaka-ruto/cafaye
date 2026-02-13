@@ -18,6 +18,19 @@ else
   ((ISSUES++))
 fi
 
+# Check for Drift
+echo -n "Checking for configuration drift... "
+if command -v caf-drift &> /dev/null; then
+  if caf-drift 2>&1 | grep -q "DRIFT DETECTED"; then
+    echo "⚠ DRIFT DETECTED"
+    ((ISSUES++))
+  else
+    echo "✓ Healthy"
+  fi
+else
+  echo "○ caf-drift not found"
+fi
+
 # Check NixOS/Home Manager generation
 echo -n "Checking Environment generation... "
 if [ -L /nix/var/nix/profiles/system ]; then
@@ -129,6 +142,23 @@ if systemctl is-enabled --quiet mysql 2>/dev/null; then
   fi
 else
   echo "○ Not enabled"
+fi
+
+# Check Auto-Shutdown (if on VPS)
+if [[ -f "$HOME/.config/cafaye/settings.json" ]]; then
+  if jq -r '.core.vps // false' "$HOME/.config/cafaye/settings.json" 2>/dev/null | grep -q "true"; then
+    echo -n "Checking Idle Sleep (Auto-Shutdown)... "
+    if systemctl --user is-active --quiet caf-vps-sleepidle.timer 2>/dev/null; then
+      echo "✓ Active"
+    else
+      if jq -r '.core.auto_shutdown // false' "$HOME/.config/cafaye/settings.json" 2>/dev/null | grep -q "true"; then
+        echo "❌ Enabled but timer not active"
+        ((ISSUES++))
+      else
+        echo "○ Disabled"
+      fi
+    fi
+  fi
 fi
 
 # Check Runtimes

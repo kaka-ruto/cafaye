@@ -38,6 +38,9 @@ show_neovim_keys() {
 ║  gd             Go to definition                           ║
 ║  gr             Find references                            ║
 ║  K              Hover documentation                        ║
+║  Space+C        Cafaye menu                                ║
+║  Space+C,s      Cafaye status                              ║
+║  Space+C,v      Manage VPS (Forge)                         ║
 ╚════════════════════════════════════════════════════════════╝
 EOF
 }
@@ -71,9 +74,10 @@ show_cli_keys() {
 ║  caf services   Manage backend services                    ║
 ║  caf-editor-launch      Open default editor                ║
 ║  caf-system-doctor      Check system health                ║
-║  caf-system-update      Update system                      ║
-║  caf-debug-collect      Gather debug info                  ║
-║  caf-config-refresh     Reset configs                      ║
+║  caf-project-init     Manage project sessions            ║
+║  caf fleet status     Fleet Dashboard                    ║
+║  caf fleet sync       Sync codebase to fleet             ║
+║  caf fleet apply      Orchestrate fleet rebuild          ║
 ╚════════════════════════════════════════════════════════════╝
 EOF
 }

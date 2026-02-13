@@ -7,7 +7,6 @@ in
   config = lib.mkIf enabled {
     home.packages = with pkgs; [
       nodejs_22
-      corepack # yarn/pnpm
     ];
   };
 }

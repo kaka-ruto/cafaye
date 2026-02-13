@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# cli/scripts/caf-drift
+# Detects drift between declared state and runtime state
+
+set -euo pipefail
+
+# Colors
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+CAFAYE_DIR="${HOME}/.config/cafaye"
+if [[ ! -d "$CAFAYE_DIR" ]]; then
+    CAFAYE_DIR="$(pwd)"
+fi
+
+cd "$CAFAYE_DIR"
+
+echo -e "${BLUE}☕ Checking for Cafaye Drift...${NC}"
+
+# Detect system
+SYSTEM_ARCH=$(uname -m)
+[[ "$SYSTEM_ARCH" == "arm64" ]] && SYSTEM_ARCH="aarch64"
+SYSTEM_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+[[ "$SYSTEM_OS" == "darwin" ]] && OS_SUFFIX="darwin" || OS_SUFFIX="linux"
+FLAKE_CONFIG="${SYSTEM_ARCH}-${OS_SUFFIX}"
+
+# 1. Check for uncommitted changes (if auto-commit is the goal)
+if [[ -d ".git" ]]; then
+    if ! git diff --quiet environment.json settings.json; then
+        echo -e "${YELLOW}⚠️  Configuration files have uncommitted changes.${NC}"
+        git diff --stat environment.json settings.json
+    fi
+fi
+
+# 2. Compare Nix store paths
+echo "🔍 Comparing active generation with declared configuration..."
+
+# Get active HM generation path
+HM_PROFILE="${HOME}/.local/state/nix/profiles/home-manager"
+if [[ ! -L "$HM_PROFILE" ]]; then
+    # Fallback for some systems
+    HM_PROFILE="${HOME}/.nix-profile"
+fi
+
+if [[ -L "$HM_PROFILE" ]]; then
+    ACTIVE_PATH=$(readlink -f "$HM_PROFILE")
+    
+    # Get declared path (dry-run evaluation)
+    echo "🔨 Evaluating declared state..."
+    DECLARED_PATH=$(nix eval --raw ".#homeConfigurations.${FLAKE_CONFIG}.activationPackage" --extra-experimental-features "nix-command flakes" 2>/dev/null || echo "error")
+    
+    if [[ "$DECLARED_PATH" == "error" ]]; then
+        echo -e "${RED}❌ Failed to evaluate declared state. Check your config files.${NC}"
+        exit 1
+    fi
+    
+    if [[ "$ACTIVE_PATH" == "$DECLARED_PATH" ]]; then
+        echo -e "${GREEN}✅ No drift detected. Runtime state matches declared state.${NC}"
+    else
+        echo -e "${RED}⚠️  DRIFT DETECTED!${NC}"
+        echo -e "Active path:   ${ACTIVE_PATH}"
+        echo -e "Declared path: ${DECLARED_PATH}"
+        echo ""
+        echo "The following changes are declared but not active:"
+        # Use nvd if available, or just list differences
+        if command -v nvd >/dev/null 2>&1; then
+            nvd diff "$ACTIVE_PATH" "$DECLARED_PATH"
+        else
+            echo "Run 'caf apply' to synchronize."
+        fi
+    fi
+else
+    echo -e "${YELLOW}⚠️  Home Manager profile not found. Have you run the installer?${NC}"
+fi

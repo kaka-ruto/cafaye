@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Cafaye Fleet Management
-# Usage: caf-fleet [status|add|apply|attach|switch]
+# Usage: caf-fleet [status|add|sync|apply|attach|switch]
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOCAL_REPO_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
@@ -21,7 +21,7 @@ fi
 
 cd "$CAFAYE_DIR" || exit 1
 
-command="$1"
+command="${1:-}"
 
 # Identify the SSH key for SOPS
 SSH_PRIVATE_KEY=""
@@ -40,8 +40,26 @@ if [[ -n "$SSH_PRIVATE_KEY" && -z "${SOPS_AGE_KEY:-}" ]]; then
     export SOPS_AGE_KEY="$(nix --extra-experimental-features "nix-command flakes" shell nixpkgs#ssh-to-age --command ssh-to-age -private-key -i "$SSH_PRIVATE_KEY" 2>/dev/null || true)"
 fi
 
+# Layered decryption helper
 run_sops() {
-    nix --extra-experimental-features "nix-command flakes" shell nixpkgs#sops --command sops "$@"
+    # If sops is not in path, use nix run
+    if command -v sops &> /dev/null; then
+        sops "$@"
+    else
+        nix --extra-experimental-features "nix-command flakes" shell nixpkgs#sops --command sops "$@"
+    fi
+}
+
+# Cross-platform reachability check
+check_reachable() {
+    local ip="$1"
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        # macOS ping uses -W in milliseconds
+        ping -c 1 -W 1000 "$ip" >/dev/null 2>&1
+    else
+        # Linux ping uses -W in seconds (usually)
+        ping -c 1 -W 1 "$ip" >/dev/null 2>&1
+    fi
 }
 
 show_fleet_status() {
@@ -71,13 +89,20 @@ show_fleet_status() {
              entry="$(echo "$row" | base64 --decode)"
              name="$(echo "$entry" | jq -r '.key')"
              ip="$(echo "$entry" | jq -r '.value.tailscale_ip')"
-             if timeout 2 bash -lc "ping -c 1 -W 1 \"$ip\" >/dev/null 2>&1"; then
+             
+             if check_reachable "$ip"; then
                  echo "  - ${name}: reachable"
-                 proj="$(ssh -o ConnectTimeout=2 "$ip" 'jq -r ".current // \"none\"" ~/.config/cafaye/projects.json 2>/dev/null || echo n/a' 2>/dev/null || echo n/a)"
+                 # Try to get more info via SSH if possible (batch mode to avoid hanging/prompting)
+                 SSH_OPTS="-o ConnectTimeout=2 -o BatchMode=yes -o StrictHostKeyChecking=no"
+                 [[ -f "$HOME/.ssh/cafaye" ]] && SSH_OPTS="${SSH_OPTS} -i $HOME/.ssh/cafaye"
+                 
+                 proj="$(ssh ${SSH_OPTS} "$ip" 'jq -r ".current // \"none\"" ~/.config/cafaye/projects.json 2>/dev/null || echo n/a' 2>/dev/null || echo n/a)"
                  echo "    project: ${proj}"
-                 sync="$(ssh -o ConnectTimeout=2 "$ip" 'cd ~/.config/cafaye 2>/dev/null && git status --porcelain | wc -l || echo n/a' 2>/dev/null || echo n/a)"
+                 sync="$(ssh ${SSH_OPTS} "$ip" 'cd ~/.config/cafaye 2>/dev/null && git status --porcelain 2>/dev/null | wc -l || echo n/a' 2>/dev/null || echo n/a)"
                  if [[ "$sync" == "0" ]]; then
                    echo "    sync: clean"
+                 elif [[ "$sync" == "n/a" ]]; then
+                   echo "    sync: unavailable"
                  else
                    echo "    sync: pending(${sync})"
                  fi
@@ -129,6 +154,34 @@ add_fleet_node() {
     echo "✅ Node '$name' added."
 }
 
+remove_fleet_node() {
+    name="${2:-}"
+    if [[ -z "$name" ]]; then
+        echo "Usage: caf fleet remove <name>"
+        exit 1
+    fi
+    echo "🗑️  Removing node '$name' from fleet..."
+
+    mkdir -p secrets
+    tmp_plain="$(mktemp)"
+    tmp_new="$(mktemp)"
+    trap 'rm -f "$tmp_plain" "$tmp_new"' EXIT
+
+    if [[ -s "secrets/fleet.yaml" ]] && run_sops -d --output-type json secrets/fleet.yaml >"$tmp_plain" 2>/dev/null; then
+       # check if exists
+       if [[ $(jq "(.fleet | has(\"$name\"))" "$tmp_plain") == "false" ]]; then
+           echo "❌ Node '$name' not found in registry."
+           exit 1
+       fi
+       jq "del(.fleet[\"$name\"])" "$tmp_plain" > "$tmp_new"
+       run_sops -e --input-type json --output-type yaml --filename-override secrets/fleet.yaml "$tmp_new" > secrets/fleet.yaml
+       echo "✅ Node '$name' removed from registry."
+    else
+       echo "❌ Registry empty or inaccessible."
+       exit 1
+    fi
+}
+
 fleet_apply() {
     echo "🚀 Orchestrating fleet-wide apply..."
     remotes=$(run_sops -d --output-type json secrets/fleet.yaml 2>/dev/null | jq -r '.fleet | to_entries[] | select(.value.role == "remote") | .value.tailscale_ip')
@@ -136,10 +189,27 @@ fleet_apply() {
 
     SSH_OPT=""
     [[ -f "$HOME/.ssh/cafaye" ]] && SSH_OPT="-i $HOME/.ssh/cafaye"
+    remote_opts="-o ConnectTimeout=5 -o StrictHostKeyChecking=no"
 
     for remote in $remotes; do
-        echo "🛠️  Syncing $remote..."
-        ssh $SSH_OPT -o ConnectTimeout=5 "$remote" "caf sync pull" || echo "❌ Failed: $remote"
+        echo "🛠️  Applying on $remote..."
+        ssh $SSH_OPT $remote_opts "$remote" "caf apply" || echo "❌ Failed: $remote"
+    done
+}
+
+fleet_sync() {
+    echo "📦 Syncing local codebase to all remote nodes..."
+    remotes=$(run_sops -d --output-type json secrets/fleet.yaml 2>/dev/null | jq -r '.fleet | to_entries[] | select(.value.role == "remote") | .value.tailscale_ip')
+    [[ -z "$remotes" ]] && { echo "No remote nodes found."; return; }
+
+    SSH_OPT=""
+    [[ -f "$HOME/.ssh/cafaye" ]] && SSH_OPT="-i $HOME/.ssh/cafaye"
+    
+    for remote in $remotes; do
+        echo "📤 Syncing to $remote..."
+        rsync -avz --exclude '.git' --exclude '.devbox' --exclude '.cache' --exclude 'result' \
+            -e "ssh $SSH_OPT -o StrictHostKeyChecking=no" \
+            ./ $(whoami)@${remote}:~/.config/cafaye/
     done
 }
 
@@ -158,7 +228,7 @@ fleet_attach() {
     echo "$data" | jq -r '.fleet | to_entries[] | "\(.key)|\(.value.tailscale_ip)"' | while IFS='|' read -r name ip; do
       node_session="node-${name}"
       tmux kill-session -t "$node_session" >/dev/null 2>&1 || true
-      tmux new-session -d -s "$node_session" -n "$name" "echo '[${name}]'; ssh ${ip}"
+      tmux new-session -d -s "$node_session" -n "$name" "echo '[${name}]'; ssh -o StrictHostKeyChecking=no ${ip}"
       tmux new-window -t "${session}:" -n "$name" "tmux attach -t ${node_session}"
     done
     tmux attach -t "$session"
@@ -178,8 +248,10 @@ fleet_switch() {
 case "$command" in
     status) show_fleet_status ;;
     add) add_fleet_node "$@" ;;
+    remove) remove_fleet_node "$@" ;;
+    sync) fleet_sync ;;
     apply) fleet_apply ;;
     attach) fleet_attach ;;
     switch) fleet_switch ;;
-    *) echo "Usage: caf fleet [status|add|apply|attach|switch]"; exit 1 ;;
+    *) echo "Usage: caf fleet [status|add|remove|sync|apply|attach|switch]"; exit 1 ;;
 esac

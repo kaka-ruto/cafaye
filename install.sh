@@ -665,10 +665,12 @@ safe_symlink() {
 }
 
 create_standard_symlinks() {
-    echo "🔗 Creating standard config symlinks..."
-    safe_symlink "$HOME/.config/cafaye/config/cafaye/tmux" "$HOME/.config/tmux"
-    safe_symlink "$HOME/.config/cafaye/config/cafaye/ghostty" "$HOME/.config/ghostty"
-    safe_symlink "$HOME/.config/cafaye/config/cafaye/zsh/.zshrc" "$HOME/.zshrc"
+    echo "🔗 Checking standard config symlinks..."
+    # These are now managed by Home Manager modules.
+    # Manual symlinks here cause conflicts during HM activation.
+    # safe_symlink "$HOME/.config/cafaye/config/cafaye/tmux" "$HOME/.config/tmux"
+    # safe_symlink "$HOME/.config/cafaye/config/cafaye/ghostty" "$HOME/.config/ghostty"
+    # safe_symlink "$HOME/.config/cafaye/config/cafaye/zsh/.zshrc" "$HOME/.zshrc"
 }
 
 # --- Main Flow Start ---
