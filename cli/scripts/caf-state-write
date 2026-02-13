@@ -7,10 +7,12 @@ key="$1"
 value="$2"
 prefix=$(echo "$key" | cut -d'.' -f1)
 
-if [[ "$prefix" == "core" || "$prefix" == "git" || "$prefix" == "backup" ]]; then
-    STATE_FILE="$HOME/.config/cafaye/settings.json"
-else
-    STATE_FILE="$HOME/.config/cafaye/environment.json"
+if [[ -z "${STATE_FILE:-}" ]]; then
+    if [[ "$prefix" == "core" || "$prefix" == "git" || "$prefix" == "backup" ]]; then
+        STATE_FILE="$HOME/.config/cafaye/settings.json"
+    else
+        STATE_FILE="$HOME/.config/cafaye/environment.json"
+    fi
 fi
 
 if [[ ! -f "$STATE_FILE" ]]; then

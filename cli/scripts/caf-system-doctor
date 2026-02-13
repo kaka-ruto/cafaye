@@ -161,6 +161,61 @@ if [[ -f "$HOME/.config/cafaye/settings.json" ]]; then
   fi
 fi
 
+# Check Backup/Sync Health
+echo -n "Checking Backup Source of Truth... "
+if [[ -d "$HOME/.config/cafaye/.git" ]]; then
+  cd "$HOME/.config/cafaye"
+  REMOTE=$(git remote get-url origin 2>/dev/null || echo "none")
+  if [[ "$REMOTE" == "none" ]]; then
+    echo "⚠ Local repo only (no origin set)"
+    ((ISSUES++))
+  else
+    UNCOMMITTED=$(git status --porcelain | wc -l)
+    if [ "$UNCOMMITTED" -gt 0 ]; then
+      echo "⚠ $UNCOMMITTED uncommitted change(s) in configuration"
+      ((ISSUES++))
+    else
+      echo "✓ Synced with $REMOTE"
+    fi
+  fi
+  cd - >/dev/null
+else
+  echo "⚠ Not a Git repository (backups disabled)"
+  ((ISSUES++))
+fi
+
+# Check system resources (CPU/Memory)
+echo -n "Checking CPU Load... "
+CPU_LOAD=$(uptime | awk -F'load average:' '{ print $2 }' | cut -d, -f1 | xargs)
+CORES=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 1)
+THRESHOLD=$(echo "$CORES * 2" | bc 2>/dev/null || echo 4)
+if (( $(echo "$CPU_LOAD > $THRESHOLD" | bc -l) )); then
+  echo "⚠ High system load ($CPU_LOAD > $THRESHOLD)"
+  ((ISSUES++))
+else
+  echo "✓ $CPU_LOAD"
+fi
+
+echo -n "Checking Memory... "
+if [[ "$OS" == "Darwin" ]]; then
+  MEM_FREE=$(vm_stat | grep "Pages free" | awk '{print $3}' | sed 's/\.//')
+  MEM_FREE_MB=$(($MEM_FREE * 4096 / 1024 / 1024))
+  if [ "$MEM_FREE_MB" -lt 500 ]; then
+    echo "⚠ Low memory (${MEM_FREE_MB}MB free)"
+    ((ISSUES++))
+  else
+    echo "✓ ${MEM_FREE_MB}MB free"
+  fi
+else
+  MEM_FREE_MB=$(free -m | awk '/^Mem:/{print $4}')
+  if [ "$MEM_FREE_MB" -lt 500 ]; then
+    echo "⚠ Low memory (${MEM_FREE_MB}MB free)"
+    ((ISSUES++))
+  else
+    echo "✓ ${MEM_FREE_MB}MB free"
+  fi
+fi
+
 # Check Runtimes
 echo -n "Checking Ruby... "
 if command -v ruby &> /dev/null; then

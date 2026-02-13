@@ -72,10 +72,10 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 ## Testing Architecture and Coverage
 - [x] Single-VM integration test suite covers all core infra behaviors end-to-end.
 - [x] Integration tests avoid spawning multiple nested VMs for behavioral coverage.
-- [ ] Unit tests cover command parsing, config resolution, and failure handling.
+- [x] Unit tests cover command parsing, config resolution, and failure handling.
 - [ ] Cross-platform test matrix validates Linux and macOS critical paths.
-- [ ] Tests assert expected behavior, not implementation details.
-- [ ] Test runtime is bounded and fast enough for PR feedback loops.
+- [x] Tests assert expected behavior, not implementation details.
+- [x] Test runtime is bounded and fast enough for PR feedback loops.
 - [ ] Flaky tests are tracked, quarantined, and driven to zero.
 - [ ] Real-world smoke tests validate fleet workflows against remote hosts.
 - [x] Fresh install test suite validates installer on clean VPS/VM.
@@ -93,7 +93,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [ ] First-time setup time is acceptable on low/medium compute VPS instances.
 - [ ] Incremental rebuild/sync times are predictable for daily use.
 - [ ] Fleet status and orchestration remain responsive at higher node counts.
-- [ ] Startup latency for shell/tmux/editor remains within target budgets.
+- [x] Startup latency for shell/tmux/editor remains within target budgets.
 - [ ] Heavy operations avoid unnecessary downloads and duplicate work.
 - [ ] Cache strategy materially improves CI and user install performance.
 
@@ -101,8 +101,8 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] Structured logs exist for install, update, sync, and fleet workflows.
 - [ ] Log verbosity can be adjusted without losing essential diagnostics.
 - [x] Diagnostic bundles are safe to share and redact sensitive material.
-- [ ] Health commands provide concise summary plus deep-dive details.
-- [ ] Failure telemetry can be correlated across local and remote nodes.
+- [x] Health commands provide concise summary plus deep-dive details.
+- [x] Failure telemetry can be correlated across local and remote nodes using Trace IDs.
 
 ## Documentation and Onboarding
 - [x] Getting-started docs lead a new user to productive setup without support.

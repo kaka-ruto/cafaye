@@ -6,6 +6,11 @@
 export CLI_DIR="$(dirname "$(realpath "$0")")"
 export PATH="$CLI_DIR/scripts:$PATH"
 
+# Ensure Trace ID exists for cross-node correlation
+if [[ -z "${CAFAYE_TRACE_ID:-}" ]]; then
+    export CAFAYE_TRACE_ID="caf-$(date +%s)-$RANDOM"
+fi
+
 caf_choose_menu() {
     local header="$1"
     shift

@@ -13,7 +13,7 @@ mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/rebuild.log"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-echo "--- Rebuild started: $(date) ---"
+echo "--- Rebuild started: $(date) [Trace: ${CAFAYE_TRACE_ID:-none}] ---"
 
 CAFAYE_DIR="$HOME/.config/cafaye"
 if [[ ! -d "$CAFAYE_DIR" ]]; then

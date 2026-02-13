@@ -19,7 +19,7 @@ mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/sync.log"
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-echo "--- Sync $command started: $(date) ---"
+echo "--- Sync $command started: $(date) [Trace: ${CAFAYE_TRACE_ID:-none}] ---"
 
 case "$command" in
     push)

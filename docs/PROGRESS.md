@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-02-13 22:40 UTC
 
-## ✅ Completed Milestones (60/134 items - 44%)
+## ✅ Completed Milestones (64/134 items - 48%)
 
 ### Core Platform Readiness (6/7)
 - ✅ Fresh install succeeds on supported Linux hosts with no manual recovery steps
@@ -87,16 +87,16 @@ Users cannot onboard without this.
 | Editor Experience | 5 | 6 | 83% |
 | Security & Secrets | 5 | 7 | 71% |
 | Reliability & Recovery | 4 | 6 | 67% |
-| Testing | 5 | 8 | 63% |
+| Testing | 6 | 9 | 67% |
 | CI/CD | 3 | 7 | 43% |
-| Performance | 0 | 6 | 0% |
-| Observability | 2 | 5 | 40% |
+| Performance | 1 | 6 | 17% |
+| Observability | 4 | 5 | 80% |
 | Documentation | 4 | 6 | 67% |
 | Product Fit | 0 | 5 | 0% |
 | Governance | 0 | 3 | 0% |
 
 
-**Overall: 60/134 (44%)**
+**Overall: 64/134 (48%)**
 
 ## 🚀 Recent Improvements (Current Session - 2026-02-13)
 
@@ -181,6 +181,12 @@ Users cannot onboard without this.
    - Implemented `with_retry` and explicit timeouts for all core network operations
    - Created comprehensive `MIGRATION.md` for onboarding from other systems
    - Verified single-VM behavioral integration test patterns
+
+16. **Observability, Unit Testing & Performance (NEW)**
+   - Enhanced `caf-system-doctor` with Backup Health and Resource Monitoring
+   - Implemented cross-node Trace IDs for fleet operation correlation
+   - Added unit test suite for `caf-project` and verified BATS infrastructure
+   - Validated shell/tmux startup latency is within sub-second budgets
 
 ## 🎯 Recommended Focus Areas
 

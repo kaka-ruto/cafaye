@@ -32,6 +32,9 @@ LOCAL_REPO_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 SECRETS_DIR="${LOCAL_REPO_DIR}/secrets"
 FLEET_YAML="${SECRETS_DIR}/fleet.yaml"
 
+# Trace ID for cross-node correlation
+export CAFAYE_TRACE_ID="caf-$(date +%s)-$RANDOM"
+
 # Structured Logging
 LOG_DIR="$HOME/.config/cafaye/logs"
 mkdir -p "$LOG_DIR"
@@ -39,7 +42,7 @@ LOG_FILE="$LOG_DIR/fleet.log"
 # We only redirect for heavy operations, not status
 if [[ "${1:-}" != "status" ]] && [[ "${1:-}" != "" ]]; then
     exec > >(tee -a "$LOG_FILE") 2>&1
-    echo "--- Fleet $1 started: $(date) ---"
+    echo "--- Fleet $1 started: $(date) [Trace: $CAFAYE_TRACE_ID] ---"
 fi
 
 CAFAYE_DIR=""
@@ -227,8 +230,8 @@ fleet_apply() {
     remote_opts="-o ConnectTimeout=5 -o StrictHostKeyChecking=no"
 
     for remote in $remotes; do
-        echo "🛠️  Applying on $remote..."
-        with_retry ssh $SSH_OPT $remote_opts "$remote" "caf apply" || echo "❌ Failed to reach $remote"
+        echo "🛠️  Applying on $remote (trace: $CAFAYE_TRACE_ID)..."
+        with_retry ssh $SSH_OPT $remote_opts "$remote" "export CAFAYE_TRACE_ID=$CAFAYE_TRACE_ID && caf apply" || echo "❌ Failed to reach $remote"
     done
 }
 

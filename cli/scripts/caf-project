@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CAFAYE_DIR="${HOME}/.config/cafaye"
-PROJECTS_FILE="${CAFAYE_DIR}/projects.json"
+if [[ -z "${PROJECTS_FILE:-}" ]]; then
+    CAFAYE_DIR="${HOME}/.config/cafaye"
+    PROJECTS_FILE="${CAFAYE_DIR}/projects.json"
+else
+    CAFAYE_DIR=$(dirname "$PROJECTS_FILE")
+fi
 
 mkdir -p "$CAFAYE_DIR"
 if [[ ! -f "$PROJECTS_FILE" ]]; then
