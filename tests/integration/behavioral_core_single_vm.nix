@@ -44,10 +44,10 @@ if pkgs.stdenv.isLinux then
       machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-search status >/tmp/caf-search.out")
       machine.succeed("grep -q 'Cafaye Status' /tmp/caf-search.out")
 
-      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-fleet status >/tmp/caf-fleet.out || true")
+      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-fleet status >/tmp/caf-fleet.out 2>&1 || true")
       machine.succeed("test -s /tmp/caf-fleet.out")
 
-      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-workspace-run --dry-run >/tmp/caf-workspace.out || true")
+      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-workspace-run --dry-run >/tmp/caf-workspace.out 2>&1 || true")
       machine.succeed("test -s /tmp/caf-workspace.out")
 
       machine.succeed("tmux -V >/tmp/tmux-version.out")
