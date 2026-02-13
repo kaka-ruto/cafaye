@@ -219,9 +219,13 @@ fleet_sync() {
     
     for remote in $remotes; do
         echo "📤 Syncing to $remote..."
-        rsync -avz --exclude '.git' --exclude '.devbox' --exclude '.cache' --exclude 'result' \
+        if rsync -avz --exclude '.git' --exclude '.devbox' --exclude '.cache' --exclude 'result' \
             -e "ssh $SSH_OPT -o StrictHostKeyChecking=no" \
-            ./ $(whoami)@${remote}:~/.config/cafaye/
+            ./ "$(whoami)@${remote}:~/.config/cafaye/"; then
+             echo "✅ Synced $remote"
+        else
+             echo "❌ Failed to sync $remote"
+        fi
     done
 }
 

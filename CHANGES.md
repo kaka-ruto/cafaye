@@ -13,10 +13,10 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 
 ## Reproducibility and State Management
 - [ ] Entire environment can be reproduced from git state on a new machine.
-- [ ] User customizations and Cafaye defaults are clearly separated and never conflict.
+- [x] User customizations and Cafaye defaults are clearly separated and never conflict.
 - [x] Drift detection clearly reports when runtime state differs from declared state.
 - [x] Sync/pull/push workflows are reliable across laptop and remote nodes.
-- [ ] Recovery from interrupted sync/rebuild leaves system in a consistent state.
+- [x] Recovery from interrupted sync/rebuild leaves system in a consistent state.
 - [x] Install logs are redacted and safe to share for debugging.
 - [ ] State files are validated and corrupted state is detected with actionable guidance.
 
@@ -24,13 +24,13 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] Fleet node registration and removal are reliable and auditable.
 - [x] Fleet status reports are accurate for reachable and unreachable nodes.
 - [x] Fleet apply operations show clear per-node success/failure outcomes.
-- [ ] Partial fleet failures do not block healthy nodes from completing operations.
+- [x] Partial fleet failures do not block healthy nodes from completing operations.
 - [x] Fleet attach/switch workflows are stable across many concurrent nodes.
 - [ ] Node identity, role, and current project context are always unambiguous.
 
 ## Workspace Orchestration
-- [ ] Workspace definitions are customizable via user-owned config only.
-- [ ] Workspace startup is deterministic across local and remote hosts.
+- [x] Workspace definitions are customizable via user-owned config only.
+- [x] Workspace startup is deterministic across local and remote hosts.
 - [x] Dry-run mode always reports exact session/window/command plan.
 - [x] Invalid workspace configs fail fast with actionable validation errors.
 - [ ] Default workspace works even when optional tools are unavailable.
@@ -40,7 +40,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] tmux startup, session reuse, and keybindings are consistent across platforms.
 - [x] zsh startup is fast and deterministic with no noisy errors.
 - [ ] Terminal navigation defaults are coherent for common engineering workflows.
-- [ ] Core terminal UX works in headless, SSH, and local GUI contexts.
+- [x] Core terminal UX works in headless, SSH, and local GUI contexts.
 - [ ] Lazygit integration works with declared git repos and sane defaults.
 - [ ] Ghostty behavior degrades gracefully on systems where it is unsupported.
 

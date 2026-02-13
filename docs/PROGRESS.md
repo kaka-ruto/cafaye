@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-02-13 22:40 UTC
 
-## ✅ Completed Milestones (32/134 items - 24%)
+## ✅ Completed Milestones (38/134 items - 28%)
 
 ### Core Platform Readiness (6/7)
 - ✅ Fresh install succeeds on supported Linux hosts with no manual recovery steps
@@ -80,10 +80,10 @@ Users cannot onboard without this.
 | Category | Completed | Total | % |
 |----------|-----------|-------|---|
 | Core Platform Readiness | 6 | 7 | 86% |
-| Reproducibility | 4 | 6 | 67% |
-| Fleet Operations | 4 | 6 | 67% |
-| Workspace Orchestration | 2 | 6 | 33% |
-| Terminal/Shell | 2 | 6 | 33% |
+| Reproducibility | 5 | 6 | 83% |
+| Fleet Operations | 5 | 6 | 83% |
+| Workspace Orchestration | 4 | 6 | 67% |
+| Terminal/Shell | 3 | 6 | 50% |
 | Editor Experience | 1 | 6 | 17% |
 | Security & Secrets | 3 | 7 | 43% |
 | Reliability & Recovery | 1 | 6 | 17% |
@@ -96,7 +96,7 @@ Users cannot onboard without this.
 | Governance | 0 | 3 | 0% |
 
 
-**Overall: 32/134 (24%)**
+**Overall: 38/134 (28%)**
 
 ## 🚀 Recent Improvements (Current Session - 2026-02-13)
 
@@ -157,6 +157,12 @@ Users cannot onboard without this.
    - Standardized on C-Space prefix for cross-platform consistency
    - Enabled robust session reuse with `caf-workspace-init`
    - Added `yq-go` for reliable workspace configuration parsing
+
+12. **System Robustness & Fleet (NEW)**
+   - Fixed Zsh user customization loading (initExtra)
+   - Made fleet sync resilient to partial node failures
+   - Verified workspace config layering and deterministic startup
+   - Automated system hardening for VPS nodes via `caf system harden`
 
 ## 🎯 Recommended Focus Areas
 
