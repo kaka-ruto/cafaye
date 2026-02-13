@@ -98,3 +98,18 @@ load "../../lib/test_helper"
   run rg -n "preview_theme_change|Previewing|Keep this theme|caf-hook-run theme-set" cli/main.sh
   [ "$status" -eq 0 ]
 }
+
+@test "installer exposes full backup strategy options" {
+  run rg -n "GitHub \\(recommended\\)|GitLab|Local only|Skip for now|Push immediately|Push daily|Push manually" install.sh
+  [ "$status" -eq 0 ]
+}
+
+@test "installer secure-access options include account help and direct ssh" {
+  run rg -n "Yes, help me create an account|Remind me later|No, I'll use direct SSH|NETWORK_MODE|open \"https://login.tailscale.com/start\"|xdg-open" install.sh
+  [ "$status" -eq 0 ]
+}
+
+@test "installer supports ssh key import modes and no auto-shutdown path" {
+  run rg -n "From SSH agent|From file: ~/.ssh/id_ed25519.pub|Paste manually|Skip \\(configure later with: caf config ssh\\)|AUTO_SHUTDOWN=.*yes.*echo.*no" install.sh
+  [ "$status" -eq 0 ]
+}

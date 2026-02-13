@@ -267,13 +267,13 @@ Where would you like to back up?
 [✓] GitHub (recommended)
     Setup walkthrough included
 
-[ ] GitLab
+[x] GitLab
     Alternative Git hosting
 
-[ ] Local only
+[x] Local only
     Stored on this machine only
 
-[ ] Skip for now
+[x] Skip for now
     We'll still auto-commit locally
 
 Push strategy:
@@ -318,14 +318,14 @@ Set up Tailscale?
 [✓] Yes, I have an account
     Enter auth key: [tskey-auth-xxx]
 
-[ ] Yes, help me create an account
+[x] Yes, help me create an account
     Opens browser to tailscale.com
     Guides you through signup
 
-[ ] Remind me later
+[x] Remind me later
     Configure anytime with: caf network tailscale
 
-[ ] No, I'll use direct SSH
+[x] No, I'll use direct SSH
     Less secure, but works
 ```
 
@@ -381,9 +381,9 @@ SSH Key Setup (optional):
 🔑 Import SSH keys for server access?
 
 [✓] From SSH agent (3 keys found)
-[ ] From file: ~/.ssh/id_ed25519.pub
-[ ] Paste manually
-[ ] Skip (configure later with: caf config ssh)
+[x] From file: ~/.ssh/id_ed25519.pub
+[x] Paste manually
+[x] Skip (configure later with: caf config ssh)
 ```
 
 - Auto-detect SSH agent keys
@@ -400,7 +400,7 @@ Save costs by automatically shutting down when idle.
 Enable auto-shutdown after 1 hour of inactivity?
 
 [✓] Yes (recommended - saves money)
-[ ] No (keep running 24/7)
+[x] No (keep running 24/7)
 ```
 
 - Default: Yes
@@ -1875,9 +1875,9 @@ Email: [john@example.com] >
 Backup Configuration:
 Where would you like to back up?
 > [✓] GitHub (recommended)
-  [ ] GitLab
-  [ ] Local only
-  [ ] Skip for now
+  [x] GitLab
+  [x] Local only
+  [x] Skip for now
 
 Push strategy:
 ( ) Push immediately

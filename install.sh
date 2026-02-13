@@ -16,7 +16,17 @@ if [[ "$1" == "--yes" ]] || [[ "$1" == "-y" ]]; then
     NVIM_DISTRO="LazyVim (recommended)"
     THEME_CHOICE="Catppuccin Mocha"
     SET_TAILSCALE="no"
+    NETWORK_MODE="tailscale"
     IS_VPS="no"
+    IMPORT_SSH="no"
+    SSH_PROVIDER="skip"
+    SSH_USER=""
+    SSH_IMPORT_MODE="Skip (configure later with: caf config ssh)"
+    SSH_KEY_PATH=""
+    SSH_KEY_VALUE=""
+    AUTO_SHUTDOWN="yes"
+    REPO_URL=""
+    TAILSCALE_KEY=""
 fi
 set -e
 set -o pipefail
@@ -88,6 +98,21 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 PURPLE='\033[38;2;203;166;247m' # Mauve TrueColor
 NC='\033[0m'
+CYAN='\033[0;36m'
+
+# Defaults to avoid unbound variables in optional branches
+REPO_URL="${REPO_URL:-}"
+TAILSCALE_KEY="${TAILSCALE_KEY:-}"
+SET_TAILSCALE="${SET_TAILSCALE:-no}"
+NETWORK_MODE="${NETWORK_MODE:-tailscale}"
+IS_VPS="${IS_VPS:-no}"
+IMPORT_SSH="${IMPORT_SSH:-no}"
+SSH_PROVIDER="${SSH_PROVIDER:-skip}"
+SSH_USER="${SSH_USER:-}"
+SSH_IMPORT_MODE="${SSH_IMPORT_MODE:-Skip (configure later with: caf config ssh)}"
+SSH_KEY_PATH="${SSH_KEY_PATH:-}"
+SSH_KEY_VALUE="${SSH_KEY_VALUE:-}"
+AUTO_SHUTDOWN="${AUTO_SHUTDOWN:-yes}"
 
 show_logo() {
     if [[ "$NON_INTERACTIVE" != "true" ]] && [[ -n "$TERM" ]]; then
@@ -222,17 +247,37 @@ plan_phase() {
     echo "   You don't need to download any apps now."
     echo ""
 
-    TS_ACTION=$(gum choose "Set up Tailscale now (Recommended)" "I'll do it later" "What is Tailscale?")
+    TS_ACTION=$(gum choose \
+        "Set up Tailscale now (Recommended)" \
+        "Yes, help me create an account" \
+        "Remind me later" \
+        "No, I'll use direct SSH" \
+        "What is Tailscale?")
     
+    if [[ "$TS_ACTION" == "Yes, help me create an account" ]]; then
+        if command -v open >/dev/null 2>&1; then
+            open "https://login.tailscale.com/start" >/dev/null 2>&1 || true
+        elif command -v xdg-open >/dev/null 2>&1; then
+            xdg-open "https://login.tailscale.com/start" >/dev/null 2>&1 || true
+        fi
+        TS_ACTION="Set up Tailscale now (Recommended)"
+    fi
+
     if [[ "$TS_ACTION" == "What is Tailscale?" ]]; then
         gum style --border normal --margin "1 2" --padding "1 2" --foreground 212 \
             "Tailscale is a zero-config VPN. It creates a 'Tailnet' where all your" \
             "devices get a private 100.x.x.x IP address. It's built on WireGuard," \
             "is end-to-end encrypted, and works through any NAT or Firewall."
-        TS_ACTION=$(gum choose "Set up Tailscale now" "Skip for now")
+        TS_ACTION=$(gum choose "Set up Tailscale now" "Remind me later" "No, I'll use direct SSH")
     fi
 
     SET_TAILSCALE="no"
+    NETWORK_MODE="tailscale"
+    if [[ "$TS_ACTION" == "No, I'll use direct SSH" ]]; then
+        NETWORK_MODE="direct-ssh"
+        SET_TAILSCALE="no"
+    fi
+
     if [[ "$TS_ACTION" == *"Set up Tailscale"* ]]; then
         HAS_ACCOUNT=$(gum confirm "Do you already have a Tailscale account?" --affirmative "Yes, let's connect" --negative "No, not yet" && echo "yes" || echo "no")
         
@@ -273,11 +318,38 @@ plan_phase() {
     fi
 
     if [[ "$IS_VPS" == "yes" ]]; then
-        IMPORT_SSH=$(gum confirm "Import SSH keys from GitHub/GitLab?" && echo "yes" || echo "no")
-        if [[ "$IMPORT_SSH" == "yes" ]]; then
-            SSH_USER=$(gum input --placeholder "What is your GitHub/GitLab username?")
-            SSH_PROVIDER=$(gum choose "GitHub" "GitLab")
-        fi
+        SSH_IMPORT_MODE=$(gum choose \
+            "From SSH agent" \
+            "From file: ~/.ssh/id_ed25519.pub" \
+            "Paste manually" \
+            "Skip (configure later with: caf config ssh)")
+
+        IMPORT_SSH="no"
+        SSH_PROVIDER="none"
+        SSH_USER=""
+        SSH_KEY_PATH=""
+        SSH_KEY_VALUE=""
+        case "$SSH_IMPORT_MODE" in
+            "From SSH agent")
+                IMPORT_SSH="yes"
+                SSH_PROVIDER="agent"
+                ;;
+            "From file: ~/.ssh/id_ed25519.pub")
+                IMPORT_SSH="yes"
+                SSH_PROVIDER="file"
+                SSH_KEY_PATH="$HOME/.ssh/id_ed25519.pub"
+                [[ -f "$SSH_KEY_PATH" ]] && SSH_KEY_VALUE="$(cat "$SSH_KEY_PATH")"
+                ;;
+            "Paste manually")
+                IMPORT_SSH="yes"
+                SSH_PROVIDER="manual"
+                SSH_KEY_VALUE=$(gum input --placeholder "ssh-ed25519 AAAA... user@host" --header "Paste public SSH key")
+                ;;
+            *)
+                IMPORT_SSH="no"
+                SSH_PROVIDER="skip"
+                ;;
+        esac
         
         AUTO_SHUTDOWN=$(gum confirm "Enable auto-shutdown after 1 hour of inactivity?" && echo "yes" || echo "no")
     fi
@@ -300,6 +372,7 @@ confirm_phase() {
     echo "📝 Editor: $EDITOR_CHOICE"
     [[ -n "$NVIM_DISTRO" ]] && echo "   Distro: $NVIM_DISTRO"
     echo "🔐 Tailscale: $SET_TAILSCALE"
+    [[ -n "${NETWORK_MODE:-}" ]] && echo "   Network mode: ${NETWORK_MODE}"
     if [[ "$IS_VPS" == "yes" ]]; then
         echo "🌐 VPS Mode: Enabled"
         echo "   Import SSH: $IMPORT_SSH ($SSH_PROVIDER: $SSH_USER)"
@@ -376,18 +449,22 @@ EOF
         echo "📝 Saving tool settings..."
         cat > "$CAFAYE_DIR/settings.json" <<EOF
 {
-  "core": {
-    "vps": $([[ "$IS_VPS" == "yes" ]] && echo true || echo false),
-    "auto_shutdown": $([[ "$AUTO_SHUTDOWN" == "yes" ]] && echo true || echo false),
-    "tailscale": {
-      "enabled": $([[ "$SET_TAILSCALE" == "yes" ]] && echo true || echo false),
-      "key": "$TAILSCALE_KEY"
-    },
-    "ssh": {
-      "import": $([[ "$IMPORT_SSH" == "yes" ]] && echo true || echo false),
-      "provider": "$(echo "$SSH_PROVIDER" | tr '[:upper:]' '[:lower:]')",
-      "username": "$SSH_USER"
-    }
+    "core": {
+      "vps": $([[ "$IS_VPS" == "yes" ]] && echo true || echo false),
+      "auto_shutdown": $([[ "$AUTO_SHUTDOWN" == "yes" ]] && echo true || echo false),
+      "network_mode": "${NETWORK_MODE:-tailscale}",
+      "tailscale": {
+        "enabled": $([[ "$SET_TAILSCALE" == "yes" ]] && echo true || echo false),
+        "key": "$TAILSCALE_KEY"
+      },
+      "ssh": {
+        "import": $([[ "$IMPORT_SSH" == "yes" ]] && echo true || echo false),
+        "provider": "$(echo "$SSH_PROVIDER" | tr '[:upper:]' '[:lower:]')",
+        "username": "$SSH_USER",
+        "mode": "${SSH_IMPORT_MODE:-skip}",
+        "path": "${SSH_KEY_PATH:-}",
+        "public_key": "${SSH_KEY_VALUE:-}"
+      }
   },
   "git": {
     "name": "$GIT_NAME",
