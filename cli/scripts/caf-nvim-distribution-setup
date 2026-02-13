@@ -50,14 +50,12 @@ case "$distribution" in
         ;;
         
     astronvim)
-        echo "📥 Cloning AstroNvim..."
-        git clone --depth 1 https://github.com/AstroNvim/template "$NVIM_CONFIG"
-        rm -rf "$NVIM_CONFIG/.git"
-        
-        if [[ -f "${CAFAYE_REPO}/config/user/nvim/astronvim/init.lua" ]]; then
-            cp "${CAFAYE_REPO}/config/user/nvim/astronvim/init.lua" \
-               "$NVIM_CONFIG/lua/user/init.lua" 2>/dev/null || true
-        fi
+        echo "📥 AstroNvim Configuration..."
+        echo "ℹ️  AstroNvim v5+ is managed declaratively via Home Manager."
+        echo "    Skipping template clone to avoid conflicts."
+        # Ensure directory is empty so HM can link files
+        rm -rf "$NVIM_CONFIG"
+        mkdir -p "$NVIM_CONFIG"
         ;;
         
     nvchad)

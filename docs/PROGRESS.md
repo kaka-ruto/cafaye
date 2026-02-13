@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-02-13 22:40 UTC
 
-## ✅ Completed Milestones (38/134 items - 28%)
+## ✅ Completed Milestones (44/134 items - 33%)
 
 ### Core Platform Readiness (6/7)
 - ✅ Fresh install succeeds on supported Linux hosts with no manual recovery steps
@@ -83,8 +83,8 @@ Users cannot onboard without this.
 | Reproducibility | 5 | 6 | 83% |
 | Fleet Operations | 5 | 6 | 83% |
 | Workspace Orchestration | 4 | 6 | 67% |
-| Terminal/Shell | 3 | 6 | 50% |
-| Editor Experience | 1 | 6 | 17% |
+| Terminal/Shell | 5 | 6 | 83% |
+| Editor Experience | 5 | 6 | 83% |
 | Security & Secrets | 3 | 7 | 43% |
 | Reliability & Recovery | 1 | 6 | 17% |
 | Testing | 1 | 8 | 13% |
@@ -96,7 +96,7 @@ Users cannot onboard without this.
 | Governance | 0 | 3 | 0% |
 
 
-**Overall: 38/134 (28%)**
+**Overall: 44/134 (33%)**
 
 ## 🚀 Recent Improvements (Current Session - 2026-02-13)
 
@@ -163,6 +163,12 @@ Users cannot onboard without this.
    - Made fleet sync resilient to partial node failures
    - Verified workspace config layering and deterministic startup
    - Automated system hardening for VPS nodes via `caf system harden`
+
+13. **Editor & Terminal Integration (NEW)**
+   - Verified AstroNvim v5+ boot and conflict-free setup (HM vs Script)
+   - Confirmed Editor distribution switching safety
+   - Validated Lazygit integration with GitHub CLI dependency
+   - Ensured Ghostty degradation on headless/remote systems
 
 ## 🎯 Recommended Focus Areas
 

@@ -41,15 +41,15 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] zsh startup is fast and deterministic with no noisy errors.
 - [ ] Terminal navigation defaults are coherent for common engineering workflows.
 - [x] Core terminal UX works in headless, SSH, and local GUI contexts.
-- [ ] Lazygit integration works with declared git repos and sane defaults.
-- [ ] Ghostty behavior degrades gracefully on systems where it is unsupported.
+- [x] Lazygit integration works with declared git repos and sane defaults.
+- [x] Ghostty behavior degrades gracefully on systems where it is unsupported.
 
 ## Editor Experience (AstroNvim-first)
-- [ ] AstroNvim boots cleanly with Cafaye defaults and user overrides.
-- [ ] Plugin pinning and update behavior are deterministic and reproducible.
-- [ ] Editor distribution switching is safe and reversible.
+- [x] AstroNvim boots cleanly with Cafaye defaults and user overrides.
+- [x] Plugin pinning and update behavior are deterministic and reproducible.
+- [x] Editor distribution switching is safe and reversible.
 - [x] LSP/tooling defaults work for major stacks without manual patching.
-- [ ] Local and remote editor experiences are consistent for core workflows.
+- [x] Local and remote editor experiences are consistent for core workflows.
 - [ ] Broken plugin states are detected and recoverable without manual surgery.
 
 ## Security and Secrets

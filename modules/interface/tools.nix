@@ -17,6 +17,7 @@
     
     # Development
     git          # Version control
+    gh           # GitHub CLI
     mise         # Polyglot runtime manager (asdf successor)
   ] ++ (with pkgs; [
     # Git/Docker TUI improvements
