@@ -1,8 +1,8 @@
 # Cafaye OS Release Progress Summary
 
-**Last Updated:** 2026-02-13
+**Last Updated:** 2026-02-13 22:40 UTC
 
-## ✅ Completed Milestones (24/134 items)
+## ✅ Completed Milestones (28/134 items - 21%)
 
 ### Core Platform Readiness (3/7)
 - ✅ Installer is idempotent and can be safely re-run without data loss
@@ -83,22 +83,23 @@ Users cannot onboard without this.
 | Reproducibility | 4 | 6 | 67% |
 | Fleet Operations | 4 | 6 | 67% |
 | Workspace Orchestration | 2 | 6 | 33% |
-| Terminal/Shell | 0 | 6 | 0% |
+| Terminal/Shell | 1 | 6 | 17% |
 | Editor Experience | 1 | 6 | 17% |
 | Security & Secrets | 3 | 7 | 43% |
 | Reliability & Recovery | 1 | 6 | 17% |
-| Testing | 0 | 8 | 0% |
+| Testing | 1 | 8 | 13% |
 | CI/CD | 1 | 7 | 14% |
 | Performance | 0 | 6 | 0% |
 | Observability | 2 | 5 | 40% |
-| Documentation | 0 | 6 | 0% |
+| Documentation | 2 | 6 | 33% |
 | Product Fit | 0 | 5 | 0% |
 | Governance | 0 | 3 | 0% |
 
-**Overall: 24/134 (18%)**
+**Overall: 28/134 (21%)**
 
-## 🚀 Recent Improvements (Last Session)
+## 🚀 Recent Improvements (Current Session - 2026-02-13)
 
+### Session 1: Workspace, Observability, and Editor Stack
 1. **Workspace Orchestration**
    - Enhanced dry-run with beautiful formatting and command validation
    - Added PATH warnings for missing commands
@@ -119,6 +120,32 @@ Users cannot onboard without this.
 5. **Security**
    - Install logs auto-redact sensitive information
    - Added .gitignore rules for logs and broken state files
+
+### Session 2: Terminal, Documentation, and Testing
+6. **Terminal/Shell Experience**
+   - Added zsh startup profiling support (CAFAYE_PROFILE_ZSH=1)
+   - Suppressed common noisy errors (NO_NOMATCH)
+   - Shell startup is now fast and deterministic
+
+7. **Documentation (NEW - 2 items ✓)**
+   - Created comprehensive GETTING-STARTED.md
+     - Installation walkthrough
+     - Core concepts and common workflows
+     - Keyboard shortcuts and troubleshooting
+   - Created detailed CUSTOMIZATION.md
+     - Layered configuration philosophy
+     - DO/DON'T guidelines
+     - Examples for all major customization points
+
+8. **Testing (NEW - 1 item ✓)**
+   - Created automated fresh install test suite
+     - Tests on VPS, existing host, or local
+     - Validates installation, idempotency, and uninstall
+     - Auto-cleanup for CI integration
+
+9. **Progress Tracking**
+   - Created PROGRESS.md with category breakdowns
+   - Identified high-priority gaps for beta/stable releases
 
 ## 🎯 Recommended Focus Areas
 
