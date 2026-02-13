@@ -4,7 +4,21 @@ set -euo pipefail
 # Cafaye Fleet Management
 # Usage: caf-fleet [status|add|apply|attach|switch]
 
-CAFAYE_DIR=$(git rev-parse --show-toplevel 2>/dev/null || echo "$HOME/.config/cafaye")
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOCAL_REPO_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+CAFAYE_DIR=""
+if git_root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+    CAFAYE_DIR="$git_root"
+elif [[ -f "${LOCAL_REPO_DIR}/flake.nix" && -d "${LOCAL_REPO_DIR}/cli/scripts" ]]; then
+    CAFAYE_DIR="$LOCAL_REPO_DIR"
+elif [[ -d "$HOME/.config/cafaye" ]]; then
+    CAFAYE_DIR="$HOME/.config/cafaye"
+else
+    echo "❌ Could not locate Cafaye repository. Expected git checkout or ~/.config/cafaye."
+    exit 1
+fi
+
 cd "$CAFAYE_DIR" || exit 1
 
 command="$1"
