@@ -113,3 +113,8 @@ load "../../lib/test_helper"
   run rg -n "From SSH agent|From file: ~/.ssh/id_ed25519.pub|Paste manually|Skip \\(configure later with: caf config ssh\\)|AUTO_SHUTDOWN=.*yes.*echo.*no" install.sh
   [ "$status" -eq 0 ]
 }
+
+@test "single-vm real-world audit exists and is wired in test runner" {
+  run rg -n "single-vm-audit\\.sh|cafaye-vps-test|us-central1-a|real-world" tests/integration/real-world/single-vm-audit.sh bin/test.sh
+  [ "$status" -eq 0 ]
+}

@@ -70,6 +70,13 @@ run_remote() {
     return $?
 }
 
+run_real_world_single_vm() {
+    echo -e "\n${BLUE}☁️  Running single-VM real-world audit...${NC}"
+    INSTANCE_NAME="${INSTANCE_NAME:-cafaye-vps-test}" \
+    ZONE="${ZONE:-us-central1-a}" \
+    bash tests/integration/real-world/single-vm-audit.sh
+}
+
 # --- Main Logic ---
 
 TARGET=""
@@ -98,6 +105,7 @@ while [[ "$#" -gt 0 ]]; do
             echo "Targets:"
             echo "  modules.languages.ruby"
             echo "  installer"
+            echo "  real-world"
             exit 0
             ;;
         *)
@@ -115,6 +123,9 @@ else
     case "$TARGET" in
         "--lint")
             run_syntax
+            ;;
+        "real-world")
+            run_real_world_single_vm
             ;;
         "unit")
             run_unit
