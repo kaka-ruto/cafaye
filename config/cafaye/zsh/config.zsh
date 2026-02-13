@@ -22,6 +22,14 @@ if [[ $- == *i* ]] && [[ -t 0 ]] && [[ -t 1 ]] && [[ -z "${TMUX:-}" ]] && [[ "${
   fi
 fi
 
+# Show Cafaye status at shell startup unless explicitly disabled.
+if [[ $- == *i* ]] && command -v caf-state-read >/dev/null 2>&1 && command -v caf-status >/dev/null 2>&1; then
+  autostatus="$(caf-state-read core.autostatus 2>/dev/null || echo null)"
+  if [[ "$autostatus" != "false" ]]; then
+    caf-status
+  fi
+fi
+
 # Example function: extract many types of archives
 extract() {
   if [ -f "$1" ] ; then

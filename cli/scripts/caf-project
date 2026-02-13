@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CAFAYE_DIR="${HOME}/.config/cafaye"
+PROJECTS_FILE="${CAFAYE_DIR}/projects.json"
+
+mkdir -p "$CAFAYE_DIR"
+if [[ ! -f "$PROJECTS_FILE" ]]; then
+  cat > "$PROJECTS_FILE" <<'EOF'
+{"current":null,"projects":[]}
+EOF
+fi
+
+save() {
+  local tmp
+  tmp="$(mktemp)"
+  cat > "$tmp"
+  mv "$tmp" "$PROJECTS_FILE"
+}
+
+list_projects() {
+  jq -r '.projects[]? | "\(.name)\t\(.path)\t\(.last_accessed // "-")"' "$PROJECTS_FILE"
+}
+
+create_project() {
+  local name="${1:-}"
+  local path="${2:-}"
+  if [[ -z "$name" ]]; then
+    echo "Usage: caf project create <name> [--path <dir>]" >&2
+    exit 1
+  fi
+  if [[ -z "$path" ]]; then
+    path="${PWD}"
+  fi
+  mkdir -p "$path"
+  local ts
+  ts="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+  jq --arg name "$name" --arg path "$path" --arg ts "$ts" '
+    if any(.projects[]?; .name == $name) then .
+    else .projects += [{name:$name,path:$path,last_accessed:$ts,tags:[]}] end
+    | .current = $name
+  ' "$PROJECTS_FILE" | save
+  tmux new-session -d -s "proj-${name}" -c "$path" 2>/dev/null || true
+  echo "Created project ${name} at ${path}"
+}
+
+switch_project() {
+  local name="${1:-}"
+  if [[ -z "$name" ]]; then
+    if command -v fzf >/dev/null 2>&1; then
+      name="$(jq -r '.projects[]?.name' "$PROJECTS_FILE" | fzf --height=40% --reverse --prompt='project> ' || true)"
+    fi
+  fi
+  if [[ -z "$name" ]]; then
+    echo "Usage: caf project switch <name>" >&2
+    exit 1
+  fi
+  local path
+  path="$(jq -r --arg name "$name" '.projects[]? | select(.name==$name) | .path' "$PROJECTS_FILE" | head -n1)"
+  if [[ -z "$path" ]]; then
+    echo "Project not found: $name" >&2
+    exit 1
+  fi
+  local ts
+  ts="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+  jq --arg name "$name" --arg ts "$ts" '
+    .current = $name
+    | .projects = (.projects | map(if .name==$name then .last_accessed=$ts else . end))
+  ' "$PROJECTS_FILE" | save
+  tmux new-session -d -s "proj-${name}" -c "$path" 2>/dev/null || true
+  echo "Switched to project ${name}"
+}
+
+delete_project() {
+  local name="${1:-}"
+  if [[ -z "$name" ]]; then
+    echo "Usage: caf project delete <name>" >&2
+    exit 1
+  fi
+  jq --arg name "$name" '
+    .projects = (.projects | map(select(.name != $name)))
+    | if .current == $name then .current = null else . end
+  ' "$PROJECTS_FILE" | save
+  tmux kill-session -t "proj-${name}" 2>/dev/null || true
+  echo "Deleted project ${name}"
+}
+
+show_list() {
+  local rows
+  rows="$(list_projects || true)"
+  if [[ -z "$rows" ]]; then
+    echo "No projects configured."
+  else
+    printf "NAME\tPATH\tLAST ACCESSED\n"
+    printf "%s\n" "$rows"
+  fi
+  echo "Current: $(jq -r '.current // "none"' "$PROJECTS_FILE")"
+}
+
+sub="${1:-list}"
+shift || true
+
+case "$sub" in
+  list) show_list ;;
+  create)
+    name=""
+    path=""
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --path) path="${2:-}"; shift 2 ;;
+        *) if [[ -z "$name" ]]; then name="$1"; shift; else shift; fi ;;
+      esac
+    done
+    create_project "$name" "$path"
+    ;;
+  switch) switch_project "${1:-}" ;;
+  delete) delete_project "${1:-}" ;;
+  *)
+    echo "Usage: caf project [list|create|switch|delete]" >&2
+    exit 1
+    ;;
+esac

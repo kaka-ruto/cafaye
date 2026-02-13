@@ -33,6 +33,10 @@ show_main_menu() {
     esac
 }
 
+show_status_plain() {
+    caf-status
+}
+
 show_install_menu() {
     choice=$(gum choose --cursor "👉 " --header "Install Submenu" \
         "🛤️  Ruby on Rails" \
@@ -280,7 +284,22 @@ case "$1" in
         fi
         ;;
     config)
-        show_main_menu
+        if [[ "$2" == "autostatus" ]]; then
+            case "$3" in
+                on) caf-state-write "core.autostatus" "true"; echo "Enabled autostatus." ;;
+                off) caf-state-write "core.autostatus" "false"; echo "Disabled autostatus." ;;
+                *) echo "Usage: caf config autostatus <on|off>"; exit 1 ;;
+            esac
+        else
+            show_main_menu
+        fi
+        ;;
+    status)
+        show_status_plain
+        ;;
+    project)
+        shift
+        caf-project "$@"
         ;;
     doctor)
         caf-system-doctor
@@ -320,7 +339,10 @@ case "$1" in
         echo "Commands:"
         echo "  install [tool]  Install a tool (ruby, rails, etc.)"
         echo "  config          Open interactive configuration"
+        echo "  config autostatus <on|off> Toggle status on shell startup"
         echo "  doctor          Check system health"
+        echo "  status          Show Cafaye status"
+        echo "  project ...     Manage project sessions"
         echo "  apply           Apply state changes (rebuild)"
         echo "  sync [push/pull] Sync state with Git source of truth"
         echo "  fleet [status/add/apply] Manage remote nodes"

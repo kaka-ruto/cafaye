@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CAFAYE_DIR="${HOME}/.config/cafaye"
+ENV_FILE="${CAFAYE_DIR}/environment.json"
+SETTINGS_FILE="${CAFAYE_DIR}/settings.json"
+PROJECTS_FILE="${CAFAYE_DIR}/projects.json"
+
+hostname_value="$(hostname 2>/dev/null || echo unknown)"
+os_value="$(uname -s 2>/dev/null || echo unknown)"
+uptime_value="$(uptime -p 2>/dev/null || uptime 2>/dev/null || echo unknown)"
+
+theme="$(jq -r '.interface.theme // "default"' "$ENV_FILE" 2>/dev/null || echo default)"
+editor="$(jq -r '.editors.default // "nvim"' "$ENV_FILE" 2>/dev/null || echo nvim)"
+shell_name="$(jq -r '.interface.terminal.shell // "zsh"' "$ENV_FILE" 2>/dev/null || echo zsh)"
+tailscale_enabled="$(jq -r '.core.tailscale.enabled // false' "$SETTINGS_FILE" 2>/dev/null || echo false)"
+
+current_project="none"
+if [[ -f "$PROJECTS_FILE" ]]; then
+  current_project="$(jq -r '.current // "none"' "$PROJECTS_FILE" 2>/dev/null || echo none)"
+fi
+
+echo "☕ Cafaye Status"
+echo "Host: ${hostname_value}"
+echo "OS: ${os_value}"
+echo "Uptime: ${uptime_value}"
+echo "Shell: ${shell_name}"
+echo "Editor: ${editor}"
+echo "Theme: ${theme}"
+echo "Tailscale: ${tailscale_enabled}"
+echo "Project: ${current_project}"
+echo ""
+echo "Quick actions: caf install <tool> | caf project list | caf apply"

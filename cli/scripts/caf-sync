@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Cafaye Sync: Sync state between nodes via Git
 # Usage: caf-sync [push|pull]
@@ -20,12 +21,21 @@ case "$command" in
         if ! git diff-index --quiet HEAD --; then
             git commit -m "Sync: environment update from $(hostname)"
         fi
-        git push origin master
+        current_branch="$(git rev-parse --abbrev-ref HEAD)"
+        git push origin "$current_branch"
         echo "✅ Changes pushed."
         ;;
     pull)
         echo "📥 Pulling updates from Git Source of Truth..."
-        git pull --rebase origin master
+        current_branch="$(git rev-parse --abbrev-ref HEAD)"
+        if ! git pull --rebase origin "$current_branch"; then
+            echo "⚠️  Rebase conflict detected."
+            echo "Run these steps to recover:"
+            echo "  git status"
+            echo "  git rebase --continue   # after resolving files"
+            echo "  or git rebase --abort   # to cancel"
+            exit 1
+        fi
         echo "🔨 Applying changes..."
         caf-system-rebuild
         echo "✅ Sync complete."

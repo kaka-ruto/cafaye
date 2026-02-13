@@ -752,11 +752,11 @@ Press Enter to start coding...
 
 Whenever a new terminal opens (Ghostty auto-launches or user opens new window):
 
-- [ ] Automatically display `caf status` before the prompt
-- [ ] Shows system information (hostname, OS, uptime)
-- [ ] Shows Cafaye environment status
-- [ ] Shows quick tips for common actions
-- [ ] Can be disabled via `caf config autostatus off`
+- [x] Automatically display `caf status` before the prompt
+- [x] Shows system information (hostname, OS, uptime)
+- [x] Shows Cafaye environment status
+- [x] Shows quick tips for common actions
+- [x] Can be disabled via `caf config autostatus off`
 
 **Display Format:**
 
@@ -1545,9 +1545,9 @@ Cafaye provides a `bin/` directory with utility scripts that are automatically a
 
 **Project Management:**
 
-- [ ] `caf-project-create` - Create new project with tmux session
-- [ ] `caf-project-switch` - Switch between project sessions
-- [ ] `caf-project-list` - List all projects with status
+- [x] `caf-project-create` - Create new project with tmux session
+- [x] `caf-project-switch` - Switch between project sessions
+- [x] `caf-project-list` - List all projects with status
 
 **Git Helpers:**
 
@@ -1579,13 +1579,13 @@ caf project restore <name>     # Restore from backup
 
 **Behavior:**
 
-- [ ] Each project gets its own tmux session
-- [ ] Projects stored in `~/.config/cafaye/projects.json`
-- [ ] Project directory can be anywhere (not just ~/projects/)
-- [ ] `caf project create myapp --path ~/work/myapp` creates session linked to directory
+- [x] Each project gets its own tmux session
+- [x] Projects stored in `~/.config/cafaye/projects.json`
+- [x] Project directory can be anywhere (not just ~/projects/)
+- [x] `caf project create myapp --path ~/work/myapp` creates session linked to directory
 - [ ] Switching projects preserves tmux session state
 - [ ] Projects can have custom tmux layouts
-- [ ] `caf project list` shows all projects with:
+- [x] `caf project list` shows all projects with:
   - Project name
   - Directory path
   - Active/Inactive status
@@ -1594,14 +1594,14 @@ caf project restore <name>     # Restore from backup
 
 **Session Management:**
 
-- [ ] `caf project switch` uses fzf if no name provided
+- [x] `caf project switch` uses fzf if no name provided
 - [ ] Sessions persist across reboots (tmux-resurrect)
 - [ ] Auto-save session every 15 minutes (tmux-continuum)
 - [ ] Projects can be organized with tags/categories
 
 **Integration:**
 
-- [ ] `caf status` shows current project
+- [x] `caf status` shows current project
 - [ ] Fleet view shows projects across nodes
 - [ ] Projects can be synced between nodes via git
 
@@ -1774,7 +1774,7 @@ caf project restore <name>     # Restore from backup
 - [ ] Search interface (Super+S)
 - [ ] Installation progress display
 - [ ] lazygit installed and configured
-- [ ] Auto-status on terminal startup
+- [x] Auto-status on terminal startup
 
 ### Version Manager & CLI Tools
 
@@ -1824,13 +1824,13 @@ caf project restore <name>     # Restore from backup
 
 ### caf project Command
 
-- [ ] caf project list - show all projects
-- [ ] caf project create <name> - create project session
-- [ ] caf project switch <name> - switch to project
-- [ ] caf project delete <name> - delete project
-- [ ] Project directory can be anywhere
-- [ ] Projects stored in projects.json
-- [ ] fzf-based selection if no name provided
+- [x] caf project list - show all projects
+- [x] caf project create <name> - create project session
+- [x] caf project switch <name> - switch to project
+- [x] caf project delete <name> - delete project
+- [x] Project directory can be anywhere
+- [x] Projects stored in projects.json
+- [x] fzf-based selection if no name provided
 - [ ] tmux-resurrect persistence
 - [ ] Auto-save with tmux-continuum
 

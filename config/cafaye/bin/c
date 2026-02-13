@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+base="${1:-$HOME}"
+
+if ! command -v fzf >/dev/null 2>&1; then
+  echo "fzf is required for c." >&2
+  exit 1
+fi
+
+if ! command -v fd >/dev/null 2>&1; then
+  echo "fd is required for c." >&2
+  exit 1
+fi
+
+target="$(fd --type d . "$base" 2>/dev/null | fzf --height=40% --reverse --prompt='cd> ' || true)"
+if [[ -z "${target:-}" ]]; then
+  exit 0
+fi
+
+echo "cd \"$target\""

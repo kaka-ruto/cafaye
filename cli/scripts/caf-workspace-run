@@ -1,10 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
 DEFAULT_WORKSPACE_YML="${HOME}/.config/cafaye/config/cafaye/tmux/workspace.yml"
 USER_WORKSPACE_YML="${HOME}/.config/cafaye/config/user/tmux/workspace.yml"
 DEFAULT_WORKSPACE="${HOME}/.config/cafaye/config/cafaye/tmux/workspace.sh"
 USER_WORKSPACE="${HOME}/.config/cafaye/config/user/tmux/workspace.sh"
+
+# Development fallback (repo-local paths) when ~/.config/cafaye is not yet synced.
+if [[ ! -f "$DEFAULT_WORKSPACE_YML" ]]; then
+  DEFAULT_WORKSPACE_YML="${REPO_ROOT}/config/cafaye/tmux/workspace.yml"
+fi
+if [[ ! -f "$USER_WORKSPACE_YML" ]]; then
+  USER_WORKSPACE_YML="${REPO_ROOT}/config/user/tmux/workspace.yml"
+fi
+if [[ ! -f "$DEFAULT_WORKSPACE" ]]; then
+  DEFAULT_WORKSPACE="${REPO_ROOT}/config/cafaye/tmux/workspace.sh"
+fi
+if [[ ! -f "$USER_WORKSPACE" ]]; then
+  USER_WORKSPACE="${REPO_ROOT}/config/user/tmux/workspace.sh"
+fi
 
 parse_workspace_yaml() {
   local yml="$1"
