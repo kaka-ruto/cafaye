@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+public_ip="$(curl -fsSL https://api.ipify.org || true)"
+local_ips="$(hostname -I 2>/dev/null || true)"
+
+if [[ -z "$local_ips" ]]; then
+  local_ips="$(ipconfig getifaddr en0 2>/dev/null || true)"
+fi
+
+echo "Public IP: ${public_ip:-unavailable}"
+echo "Local IP(s): ${local_ips:-unavailable}"

@@ -1,6 +1,6 @@
 return {
-  dir = "~/Code/lua/notre.nvim", -- Path to your local clone
-  name = "notre.nvim",
+  "kaka-ruto/notre.nvim",
+  name = "notre.nvim", -- Falls back to GitHub so VPS installs don't break
   dependencies = { "nvim-lua/plenary.nvim" },
   config = function()
     require("notre").setup {

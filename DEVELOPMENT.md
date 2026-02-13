@@ -1284,18 +1284,18 @@ caf config neovim distro lazyvim
 
 1. **Automated Tests:**
    - [ ] Local macOS machine
-   - [ ] GCP VPS (Ubuntu)
+   - [x] GCP VPS (Ubuntu)
 
 2. **Manual Testing:**
    - [ ] Local macOS machine
-   - [ ] GCP VPS via SSH
+   - [x] GCP VPS via SSH
 
 **Testing Checklist for Each Feature:**
 
 - [ ] Automated tests pass on macOS
-- [ ] Automated tests pass on GCP VPS
+- [x] Automated tests pass on GCP VPS
 - [ ] Manual testing completed on macOS
-- [ ] Manual testing completed on GCP VPS
+- [x] Manual testing completed on GCP VPS
 - [ ] No regressions in existing functionality
 
 ### Test Writing Principles
@@ -1511,22 +1511,22 @@ All in `~/.config/cafaye/`:
 
 ### Terminal Workspace (Ghostty + tmux)
 
-- [ ] Ghostty installed and configured as default terminal
+- [x] Ghostty installed and configured as default terminal
 - [ ] Ghostty auto-launches after Cafaye installation
-- [ ] Ghostty config in ~/.config/cafaye/config/user/ghostty/
-- [ ] tmux installed and auto-starts with Ghostty
-- [ ] tmux session "cafaye" created automatically
-- [ ] Default tmux layout: dashboard | terminal | git
-- [ ] Window 1: dashboard with node info and shortcuts
-- [ ] Window 2: terminal for general work
+- [x] Ghostty config in ~/.config/cafaye/config/user/ghostty/
+- [x] tmux installed and auto-starts with Ghostty
+- [x] tmux session "cafaye" created automatically
+- [x] Default tmux layout: dashboard | terminal | git
+- [x] Window 1: dashboard with node info and shortcuts
+- [x] Window 2: terminal for general work
 - [ ] Window 3: git with lazygit auto-started
 - [ ] Window switching with Alt+1/2/3/4/5
-- [ ] Custom tmux layouts in ~/.config/cafaye/config/user/tmux/layouts/
+- [x] Custom tmux layouts in ~/.config/cafaye/config/user/tmux/layouts/
 - [ ] Fleet window for multi-node monitoring
 - [ ] tmux-resurrect for session persistence
 - [ ] tmux-continuum for auto-save
-- [ ] User tmux config in ~/.config/cafaye/config/user/tmux/tmux.conf
-- [ ] Symlink: ~/.config/tmux/ -> ~/.config/cafaye/config/cafaye/tmux/
+- [x] User tmux config in ~/.config/cafaye/config/user/tmux/tmux.conf
+- [x] Symlink: ~/.config/tmux/ -> ~/.config/cafaye/config/cafaye/tmux/
 
 ### Utility Scripts (~/.config/cafaye/bin/)
 
@@ -1534,14 +1534,14 @@ Cafaye provides a `bin/` directory with utility scripts that are automatically a
 
 **Core Scripts:**
 
-- [ ] `tat` - tmux attach/create helper (attach to existing or create new session)
-- [ ] `tm` - tmux session manager (fzf-based session switching)
-- [ ] `extract` - Universal archive extractor (handles .tar, .zip, .rar, etc.)
+- [x] `tat` - tmux attach/create helper (attach to existing or create new session)
+- [x] `tm` - tmux session manager (fzf-based session switching)
+- [x] `extract` - Universal archive extractor (handles .tar, .zip, .rar, etc.)
 - [ ] `c` - Quick cd with fzf (fuzzy find directories)
-- [ ] `killport` - Kill process using a specific port
-- [ ] `serve` - Simple HTTP server in current directory
-- [ ] `weather` - Quick weather display
-- [ ] `ipinfo` - Display public and local IP addresses
+- [x] `killport` - Kill process using a specific port
+- [x] `serve` - Simple HTTP server in current directory
+- [x] `weather` - Quick weather display
+- [x] `ipinfo` - Display public and local IP addresses
 
 **Project Management:**
 
@@ -1551,15 +1551,15 @@ Cafaye provides a `bin/` directory with utility scripts that are automatically a
 
 **Git Helpers:**
 
-- [ ] `git-clone-cd` - Clone and cd into repository
-- [ ] `git-sync` - Pull, commit, push in one command
-- [ ] `git-clean-branches` - Remove merged branches
+- [x] `git-clone-cd` - Clone and cd into repository
+- [x] `git-sync` - Pull, commit, push in one command
+- [x] `git-clean-branches` - Remove merged branches
 
 **PATH Integration:**
 
-- [ ] `~/.config/cafaye/bin/` added to PATH in zsh
-- [ ] Scripts use fzf for interactive selection
-- [ ] Scripts handle errors gracefully
+- [x] `~/.config/cafaye/bin/` added to PATH in zsh
+- [x] Scripts use fzf for interactive selection
+- [x] Scripts handle errors gracefully
 
 ### caf project Command
 
@@ -1761,9 +1761,9 @@ caf project restore <name>     # Restore from backup
 ### Multi-Environment Testing
 
 - [ ] Automated tests pass on local macOS
-- [ ] Automated tests pass on GCP VPS
+- [x] Automated tests pass on GCP VPS
 - [ ] Manual testing completed on local macOS
-- [ ] Manual testing completed on GCP VPS
+- [x] Manual testing completed on GCP VPS
 
 ### Phase 1: Core UX (High Priority)
 
@@ -1809,18 +1809,18 @@ caf project restore <name>     # Restore from backup
 ### Utility Scripts (~/.config/cafaye/bin/)
 
 - [ ] bin/ directory created during installation
-- [ ] Scripts added to PATH via zsh config
-- [ ] tat - tmux attach helper
-- [ ] tm - tmux session manager with fzf
-- [ ] extract - universal archive extractor
+- [x] Scripts added to PATH via zsh config
+- [x] tat - tmux attach helper
+- [x] tm - tmux session manager with fzf
+- [x] extract - universal archive extractor
 - [ ] c - quick cd with fzf
-- [ ] killport - kill process on port
-- [ ] serve - simple HTTP server
-- [ ] weather - weather display
-- [ ] ipinfo - IP address display
-- [ ] git-clone-cd - clone and cd
-- [ ] git-sync - pull, commit, push
-- [ ] git-clean-branches - remove merged branches
+- [x] killport - kill process on port
+- [x] serve - simple HTTP server
+- [x] weather - weather display
+- [x] ipinfo - IP address display
+- [x] git-clone-cd - clone and cd
+- [x] git-sync - pull, commit, push
+- [x] git-clean-branches - remove merged branches
 
 ### caf project Command
 

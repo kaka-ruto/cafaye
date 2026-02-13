@@ -12,6 +12,6 @@
   # Ensure the test user has a stable state version
   home.stateVersion = lib.mkDefault "24.11";
   
-  home.username = lib.mkDefault "test-user";
-  home.homeDirectory = lib.mkDefault "/home/test-user";
+  home.username = lib.mkForce "test-user";
+  home.homeDirectory = lib.mkForce "/home/test-user";
 }

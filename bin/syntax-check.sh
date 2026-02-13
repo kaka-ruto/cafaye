@@ -31,8 +31,21 @@ for script in cli/scripts/*; do
     fi
 done
 
-# 3. Flake Check (Dynamic for current system)
-echo -e "\n${BLUE}Step 3: Checking Flake Logic...${NC}"
+# 3. Check utility scripts syntax
+echo -e "\n${BLUE}Step 3: Checking utility scripts syntax...${NC}"
+for script in config/cafaye/bin/*; do
+    if [[ -f "$script" ]]; then
+        if bash -n "$script"; then
+            echo -e "✓ $(basename $script)"
+        else
+            echo -e "✗ $(basename $script) has syntax errors."
+            exit 1
+        fi
+    fi
+done
+
+# 4. Flake Check (Dynamic for current system)
+echo -e "\n${BLUE}Step 4: Checking Flake Logic...${NC}"
 if nix flake check --no-build --show-trace --extra-experimental-features "nix-command flakes"; then
     echo -e "${GREEN}✓ Flake syntax and inputs are valid.${NC}"
 else
@@ -40,8 +53,8 @@ else
     exit 1
 fi
 
-# 4. Home Configuration Evaluation
-echo -e "\n${BLUE}Step 4: Verifying Home Configuration Buildability...${NC}"
+# 5. Home Configuration Evaluation
+echo -e "\n${BLUE}Step 5: Verifying Home Configuration Buildability...${NC}"
 SYSTEM_ARCH=$(uname -m)
 [[ "$SYSTEM_ARCH" == "arm64" ]] && SYSTEM_ARCH="aarch64"
 SYSTEM_OS=$(uname -s | tr '[:upper:]' '[:lower:]')
@@ -57,8 +70,8 @@ else
     exit 1
 fi
 
-# 5. Module-level 1:1 Tests
-echo -e "\n${BLUE}Step 5: All module tests are integrated into 'nix flake check'.${NC}"
+# 6. Module-level 1:1 Tests
+echo -e "\n${BLUE}Step 6: All module tests are integrated into 'nix flake check'.${NC}"
 echo -e "✓ Modules verified via Step 3."
 
 echo -e "\n${GREEN}✓ Cafaye Foundation is Ready!${NC}"

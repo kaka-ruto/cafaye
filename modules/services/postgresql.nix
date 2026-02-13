@@ -1,7 +1,8 @@
 { config, pkgs, lib, userState, ... }:
 
 let
-  enabled = userState.services.postgresql or false;
+  raw = userState.services.postgresql or false;
+  enabled = if builtins.isAttrs raw then (raw.enable or false) else raw;
 in
 {
   config = lib.mkIf enabled {

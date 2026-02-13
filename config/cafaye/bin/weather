@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+query="${*:-}"
+if [[ -z "$query" ]]; then
+  query="auto:ip"
+fi
+
+url_query="${query// /+}"
+exec curl -fsSL "https://wttr.in/${url_query}?format=3"

@@ -4,9 +4,22 @@
 # Note: Basic aliases (ls, grep, etc.) are already handled by the HM module
 # This file is for extra shell logic/defaults.
 
+# Ensure Cafaye helper scripts are available first.
+export PATH="$HOME/.config/cafaye/bin:$PATH"
+
 # Greet if interactive
 if [[ $- == *i* ]]; then
-  # fastfetch
+  :
+fi
+
+# Auto-attach to the Cafaye tmux workspace for terminal-first workflows.
+# Disable by setting: export CAFAYE_AUTO_TMUX=0
+if [[ $- == *i* ]] && [[ -t 0 ]] && [[ -t 1 ]] && [[ -z "${TMUX:-}" ]] && [[ "${CAFAYE_AUTO_TMUX:-1}" == "1" ]]; then
+  if command -v caf-workspace-init >/dev/null 2>&1; then
+    exec caf-workspace-init --attach
+  elif command -v tmux >/dev/null 2>&1; then
+    exec tmux attach -t "${CAFAYE_TMUX_SESSION:-cafaye}" || exec tmux new -s "${CAFAYE_TMUX_SESSION:-cafaye}"
+  fi
 fi
 
 # Example function: extract many types of archives

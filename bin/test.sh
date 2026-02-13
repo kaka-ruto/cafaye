@@ -25,6 +25,16 @@ run_syntax() {
     return $?
 }
 
+run_unit() {
+    echo -e "\n${BLUE}🧪 Running unit tests (Bats)...${NC}"
+    if ! command -v bats >/dev/null 2>&1; then
+        echo "⚠️  bats not found, skipping unit tests."
+        return 0
+    fi
+    bats tests/unit
+    return $?
+}
+
 run_nix_all() {
     echo -e "\n${BLUE}❄️  Running All Behavioral Tests (Nix)...${NC}"
     nix build ".#checks.${SYSTEM}.all-modules" --no-link --show-trace
@@ -106,8 +116,11 @@ else
         "--lint")
             run_syntax
             ;;
+        "unit")
+            run_unit
+            ;;
         "all"|"")
-            run_syntax && run_nix_all
+            run_syntax && run_unit && run_nix_all
             ;;
         *)
             run_nix_target "$TARGET"

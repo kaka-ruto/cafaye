@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  echo "Usage: git-clone-cd <repository-url>" >&2
+  exit 1
+fi
+
+repo="$1"
+git clone "$repo"
+
+dir="$(basename "$repo")"
+dir="${dir%.git}"
+echo "cd \"$dir\""

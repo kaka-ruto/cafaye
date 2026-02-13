@@ -1,0 +1,2 @@
+-- Cafaye LunarVim user config placeholder.
+-- Add your LunarVim customizations here.

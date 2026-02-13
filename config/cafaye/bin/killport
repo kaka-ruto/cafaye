@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  echo "Usage: killport <port>" >&2
+  exit 1
+fi
+
+port="$1"
+if ! [[ "$port" =~ ^[0-9]+$ ]]; then
+  echo "Port must be numeric." >&2
+  exit 1
+fi
+
+pids="$(lsof -ti tcp:"$port" || true)"
+if [[ -z "$pids" ]]; then
+  echo "No process found on port $port."
+  exit 0
+fi
+
+echo "$pids" | xargs kill -9
+echo "Killed process(es) on port $port: $pids"
