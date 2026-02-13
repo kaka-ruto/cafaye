@@ -1,10 +1,12 @@
 #!/bin/bash
+set -euo pipefail
 
 # Cafaye OS Neovim Distribution Setup
 # Sets up the selected distribution with Cafaye theming
 
 NVIM_CONFIG="$HOME/.config/nvim"
-BACKUP_DIR="$NVIM_CONFIG.backup.$(date +%s)"
+BACKUP_DIR="$HOME/.config/nvim-backup-$(date +%Y%m%d%H%M%S)"
+MARKER_FILE="$HOME/.config/nvim/.cafaye-distro"
 
 # Get active distribution
 get_active_distribution() {
@@ -19,6 +21,7 @@ get_active_distribution() {
 }
 
 distribution=$(get_active_distribution)
+CAFAYE_REPO="${HOME}/.config/cafaye"
 
 if [[ "$distribution" == "none" ]]; then
     echo "❌ No distribution selected. Run: caf-editor-distribution-set nvim <distribution>"
@@ -39,9 +42,11 @@ case "$distribution" in
         git clone https://github.com/LazyVim/starter "$NVIM_CONFIG" --depth 1
         rm -rf "$NVIM_CONFIG/.git"
         
-        # Copy Cafaye theme config
-        cp /etc/cafaye/editors/distributions/nvim/lazyvim/lua/plugins/colorscheme.lua \
-           "$NVIM_CONFIG/lua/plugins/colorscheme.lua"
+        # Copy Cafaye user-layer defaults when available
+        if [[ -f "${CAFAYE_REPO}/config/user/nvim/lazyvim/plugins/user.lua" ]]; then
+            cp "${CAFAYE_REPO}/config/user/nvim/lazyvim/plugins/user.lua" \
+               "$NVIM_CONFIG/lua/plugins/user.lua"
+        fi
         ;;
         
     astronvim)
@@ -49,9 +54,10 @@ case "$distribution" in
         git clone --depth 1 https://github.com/AstroNvim/template "$NVIM_CONFIG"
         rm -rf "$NVIM_CONFIG/.git"
         
-        # Copy Cafaye theme config
-        cp /etc/cafaye/editors/distributions/nvim/astronvim/init.lua \
-           "$NVIM_CONFIG/lua/user/init.lua" 2>/dev/null || true
+        if [[ -f "${CAFAYE_REPO}/config/user/nvim/astronvim/init.lua" ]]; then
+            cp "${CAFAYE_REPO}/config/user/nvim/astronvim/init.lua" \
+               "$NVIM_CONFIG/lua/user/init.lua" 2>/dev/null || true
+        fi
         ;;
         
     nvchad)
@@ -59,9 +65,10 @@ case "$distribution" in
         git clone https://github.com/NvChad/starter "$NVIM_CONFIG" --depth 1
         rm -rf "$NVIM_CONFIG/.git"
         
-        # Copy Cafaye theme config
-        cp /etc/cafaye/editors/distributions/nvim/nvchad/chadrc.lua \
-           "$NVIM_CONFIG/lua/chadrc.lua"
+        if [[ -f "${CAFAYE_REPO}/config/user/nvim/nvchad/chadrc.lua" ]]; then
+            cp "${CAFAYE_REPO}/config/user/nvim/nvchad/chadrc.lua" \
+               "$NVIM_CONFIG/lua/chadrc.lua"
+        fi
         ;;
         
     lunarvim)
@@ -69,11 +76,16 @@ case "$distribution" in
         # LunarVim has its own installer
         LV_BRANCH='release-1.4/neovim-0.9' bash <(curl -s https://raw.githubusercontent.com/LunarVim/LunarVim/release-1.4/neovim-0.9/utils/installer/install.sh) -y
         
-        # Copy Cafaye theme config
-        cp /etc/cafaye/editors/distributions/nvim/lunarvim/config.lua \
-           "$HOME/.config/lvim/config.lua"
+        if [[ -f "${CAFAYE_REPO}/config/user/nvim/lunarvim/config.lua" ]]; then
+            cp "${CAFAYE_REPO}/config/user/nvim/lunarvim/config.lua" \
+               "$HOME/.config/lvim/config.lua"
+        fi
         ;;
 esac
+
+# Mark active distro for downstream tooling.
+mkdir -p "$NVIM_CONFIG"
+echo "$distribution" > "$MARKER_FILE"
 
 echo "✅ $distribution configured with Catppuccin theme!"
 echo ""

@@ -1583,7 +1583,7 @@ caf project restore <name>     # Restore from backup
 - [x] Projects stored in `~/.config/cafaye/projects.json`
 - [x] Project directory can be anywhere (not just ~/projects/)
 - [x] `caf project create myapp --path ~/work/myapp` creates session linked to directory
-- [ ] Switching projects preserves tmux session state
+- [x] Switching projects preserves tmux session state
 - [x] Projects can have custom tmux layouts
 - [x] `caf project list` shows all projects with:
   - Project name
@@ -1607,14 +1607,14 @@ caf project restore <name>     # Restore from backup
 
 ### Configuration Architecture
 
-- [ ] Single directory: ~/.config/cafaye/config/
-- [ ] cafaye/ subdirectory for defaults (auto-updated)
-- [ ] user/ subdirectory for customizations (user-edited)
+- [x] Single directory: ~/.config/cafaye/config/
+- [x] cafaye/ subdirectory for defaults (auto-updated)
+- [x] user/ subdirectory for customizations (user-edited)
 - [x] Symlinks from ~/.config/ to cafaye/config/cafaye/
-- [ ] All user configs tracked in git
-- [ ] Defaults never overwritten by user edits
-- [ ] User configs survive Cafaye updates
-- [ ] README.md in config/user/ explaining structure
+- [x] All user configs tracked in git
+- [x] Defaults never overwritten by user edits
+- [x] User configs survive Cafaye updates
+- [x] README.md in config/user/ explaining structure
 
 ### Git UI (lazygit)
 
@@ -1656,17 +1656,17 @@ caf project restore <name>     # Restore from backup
 
 **General:**
 
-- [ ] caf install neovim --distro <astronvim|lazyvim|nvchad>
-- [ ] caf config neovim distro <distro> to switch
-- [ ] Backup created before switching distros
-- [ ] .cafaye-distro marker file
+- [x] caf install neovim --distro <astronvim|lazyvim|nvchad>
+- [x] caf config neovim distro <distro> to switch
+- [x] Backup created before switching distros
+- [x] .cafaye-distro marker file
 
 ### Shell (Zsh)
 
 - [x] Zsh configured with Starship prompt
 - [x] User aliases/functions: config/user/zsh/custom.zsh
 - [ ] Cafaye integration in prompt
-- [ ] Space leader detection in Zsh
+- [x] Space leader detection in Zsh
 - [ ] Symlink: ~/.zshrc -> ~/.config/cafaye/config/cafaye/zsh/.zshrc
 - [x] fzf integration (Ctrl+R history, Ctrl+T files)
 - [x] zoxide integration (auto-cd to frequent directories)
@@ -1696,11 +1696,11 @@ caf project restore <name>     # Restore from backup
 - [ ] Installation creates correct directory structure
 - [ ] Symlinks created correctly
 - [ ] Ghostty auto-launches
-- [ ] tmux auto-starts
-- [ ] Default layout loads
-- [ ] Space leader works
-- [ ] User configs override defaults
-- [ ] Configs tracked in git
+- [x] tmux auto-starts
+- [x] Default layout loads
+- [x] Space leader works
+- [x] User configs override defaults
+- [x] Configs tracked in git
 
 **Manual Tests (macOS + GCP VPS):**
 
@@ -1709,9 +1709,9 @@ caf project restore <name>     # Restore from backup
 - [ ] User can add lazygit custom command
 - [ ] User can customize ghostty theme
 - [ ] User can add nvim plugin (each distro)
-- [ ] User can switch nvim distro
-- [ ] User configs persist across sync
-- [ ] Fleet window shows multiple nodes
+- [x] User can switch nvim distro
+- [x] User configs persist across sync
+- [x] Fleet window shows multiple nodes
 
 ### Technical
 
@@ -1772,7 +1772,7 @@ caf project restore <name>     # Restore from backup
 - [x] Main menu system (`caf` with hierarchical menus)
 - [ ] Global keyboard shortcuts (Super+C, Super+S, etc.)
 - [ ] Search interface (Super+S)
-- [ ] Installation progress display
+- [x] Installation progress display
 - [x] lazygit installed and configured
 - [x] Auto-status on terminal startup
 
@@ -1781,7 +1781,7 @@ caf project restore <name>     # Restore from backup
 **mise (Version Manager):**
 
 - [x] mise installed as universal version manager
-- [ ] mise auto-installs language runtimes on first use
+- [x] mise auto-installs language runtimes on first use
 - [x] mise config in ~/.config/cafaye/config/user/mise/
 - [x] User can override versions per project with .tool-versions
 - [x] mise plugins for: ruby, nodejs, python, rust, go, java, etc.

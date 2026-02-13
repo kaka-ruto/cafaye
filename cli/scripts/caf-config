@@ -51,7 +51,8 @@ interactive_config() {
       ;;
     "Switch Neovim distro")
       distro="$(gum choose astronvim lazyvim nvchad lunarvim)"
-      caf-editor-distribution-set "$distro"
+      caf-editor-distribution-set nvim "$distro"
+      "$HOME/.config/cafaye/cli/scripts/caf-nvim-distribution-setup"
       ;;
     "Switch theme")
       theme="$(gum choose "catppuccin-mocha" "catppuccin-latte")"
@@ -91,7 +92,8 @@ case "${1:-}" in
     ;;
   neovim)
     if [[ "${2:-}" == "distro" ]] && [[ -n "${3:-}" ]]; then
-      caf-editor-distribution-set "$3"
+      caf-editor-distribution-set nvim "$3"
+      "$HOME/.config/cafaye/cli/scripts/caf-nvim-distribution-setup"
     else
       usage
       exit 1

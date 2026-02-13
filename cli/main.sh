@@ -260,9 +260,24 @@ case "$1" in
         if [[ -n "$2" ]]; then
             # Direct tool installation eg: caf install ruby
             tool="$2"
+            distro=""
+            while [[ $# -gt 0 ]]; do
+                case "$1" in
+                    --distro) distro="${2:-}"; shift 2 ;;
+                    *) shift ;;
+                esac
+            done
             echo "⏳ Enabling ${tool}..."
             # Map tool to state key (simplified for MVP)
             case "$tool" in
+                neovim|nvim)
+                    if [[ -z "$distro" ]]; then
+                        echo "Usage: caf install neovim --distro <astronvim|lazyvim|nvchad|lunarvim>"
+                        exit 1
+                    fi
+                    caf-editor-distribution-set nvim "$distro"
+                    "$HOME/.config/cafaye/cli/scripts/caf-nvim-distribution-setup"
+                    ;;
                 ruby) caf-state-write "languages.ruby" "true" ;;
                 python) caf-state-write "languages.python" "true" ;;
                 nodejs) caf-state-write "languages.nodejs" "true" ;;
