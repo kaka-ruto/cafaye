@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Hints:"
+echo "  - Use \`caf project switch\` to jump between project tmux sessions."
+echo "  - Use \`caf sync push\` after local config edits."
+echo "  - Use \`caf backup status\` to inspect backup health."

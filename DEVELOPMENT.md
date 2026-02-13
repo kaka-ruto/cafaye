@@ -1782,38 +1782,38 @@ caf project restore <name>     # Restore from backup
 
 - [ ] mise installed as universal version manager
 - [ ] mise auto-installs language runtimes on first use
-- [ ] mise config in ~/.config/cafaye/config/user/mise/
-- [ ] User can override versions per project with .tool-versions
+- [x] mise config in ~/.config/cafaye/config/user/mise/
+- [x] User can override versions per project with .tool-versions
 - [ ] mise plugins for: ruby, nodejs, python, rust, go, java, etc.
 
 **CLI Utilities:**
 
-- [ ] bat - cat alternative with syntax highlighting
-- [ ] eza - modern ls alternative with icons
-- [ ] fd - fast find alternative
-- [ ] ripgrep - fast grep alternative
-- [ ] fzf - fuzzy finder (used throughout)
-- [ ] zoxide - smart cd with history
+- [x] bat - cat alternative with syntax highlighting
+- [x] eza - modern ls alternative with icons
+- [x] fd - fast find alternative
+- [x] ripgrep - fast grep alternative
+- [x] fzf - fuzzy finder (used throughout)
+- [x] zoxide - smart cd with history
 
 **Dev Tools:**
 
-- [ ] lazydocker - terminal Docker UI
-- [ ] git-delta - modern git diff viewer
-- [ ] git-standup - show yesterday's commits
+- [x] lazydocker - terminal Docker UI
+- [x] git-delta - modern git diff viewer
+- [x] git-standup - show yesterday's commits
 
 **System Tools:**
 
-- [ ] btop - modern htop alternative
-- [ ] fastfetch - neofetch alternative
+- [x] btop - modern htop alternative
+- [x] fastfetch - neofetch alternative
 
 ### Utility Scripts (~/.config/cafaye/bin/)
 
-- [ ] bin/ directory created during installation
+- [x] bin/ directory created during installation
 - [x] Scripts added to PATH via zsh config
 - [x] tat - tmux attach helper
 - [x] tm - tmux session manager with fzf
 - [x] extract - universal archive extractor
-- [ ] c - quick cd with fzf
+- [x] c - quick cd with fzf
 - [x] killport - kill process on port
 - [x] serve - simple HTTP server
 - [x] weather - weather display
@@ -1831,8 +1831,8 @@ caf project restore <name>     # Restore from backup
 - [x] Project directory can be anywhere
 - [x] Projects stored in projects.json
 - [x] fzf-based selection if no name provided
-- [ ] tmux-resurrect persistence
-- [ ] Auto-save with tmux-continuum
+- [x] tmux-resurrect persistence
+- [x] Auto-save with tmux-continuum
 
 ### Phase 2: Fleet & Sync (High Priority)
 
@@ -1845,10 +1845,10 @@ caf project restore <name>     # Restore from backup
 ### Phase 3: Polish (Medium Priority)
 
 - [ ] Theme switching with live preview
-- [ ] Configuration editor (`caf config`)
-- [ ] Backup status detailed view
-- [ ] Error recovery (rollback, retry)
-- [ ] Inline hints system
+- [x] Configuration editor (`caf config`)
+- [x] Backup status detailed view
+- [x] Error recovery (rollback, retry)
+- [x] Inline hints system
 
 ---
 

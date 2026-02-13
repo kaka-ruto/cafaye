@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Rebuilds the Cafaye distributed development infrastructure using Home Manager
 # Usage: caf-system-rebuild
@@ -23,6 +24,21 @@ FLAKE_CONFIG="${SYSTEM_ARCH}-${OS_SUFFIX}"
 echo "🔨 Switching to flake: .#${FLAKE_CONFIG}"
 git add -A || true
 
-nix run --extra-experimental-features "nix-command flakes" nixpkgs#home-manager -- switch --flake ".#${FLAKE_CONFIG}" --show-trace
+attempt=1
+max_attempts=2
+while true; do
+    if nix run --extra-experimental-features "nix-command flakes" nixpkgs#home-manager -- switch --flake ".#${FLAKE_CONFIG}" --show-trace; then
+        break
+    fi
+    if [[ "$attempt" -ge "$max_attempts" ]]; then
+        echo "❌ Rebuild failed after ${max_attempts} attempts."
+        echo "Recovery options:"
+        echo "  - Retry: caf apply"
+        echo "  - Roll back: home-manager generations && home-manager switch --rollback"
+        exit 1
+    fi
+    attempt=$((attempt + 1))
+    echo "⚠️  Rebuild failed, retrying (${attempt}/${max_attempts})..."
+done
 
 echo "✅ Changes applied successfully!"

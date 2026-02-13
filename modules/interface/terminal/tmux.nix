@@ -33,5 +33,22 @@ in
 
     # Link the theme script to the expected location
     xdg.configFile."tmux/base16.sh".source = ../../../config/user/tmux/base16.sh;
+
+    # Ensure TPM/plugins exist so resurrect+continuum are functional on first run.
+    home.activation.cafayeTmuxPlugins = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      TPM_DIR="$HOME/.tmux/plugins/tpm"
+      if [ ! -d "$TPM_DIR/.git" ]; then
+        run ${pkgs.git}/bin/git clone https://github.com/tmux-plugins/tpm "$TPM_DIR" >/dev/null 2>&1 || true
+      fi
+      if [ ! -d "$HOME/.tmux/plugins/tmux-resurrect/.git" ]; then
+        run ${pkgs.git}/bin/git clone https://github.com/tmux-plugins/tmux-resurrect "$HOME/.tmux/plugins/tmux-resurrect" >/dev/null 2>&1 || true
+      fi
+      if [ ! -d "$HOME/.tmux/plugins/tmux-continuum/.git" ]; then
+        run ${pkgs.git}/bin/git clone https://github.com/tmux-plugins/tmux-continuum "$HOME/.tmux/plugins/tmux-continuum" >/dev/null 2>&1 || true
+      fi
+      if [ -x "$TPM_DIR/bin/install_plugins" ]; then
+        run "$TPM_DIR/bin/install_plugins" >/dev/null 2>&1 || true
+      fi
+    '';
   };
 }

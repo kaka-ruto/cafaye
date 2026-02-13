@@ -542,7 +542,8 @@ show_success() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "🎯  Quick Start:"
-    echo "    Start terminal:      zellij"
+    echo "    Start terminal:      ghostty (or tmux)"
+    echo "    Start workspace:     caf-workspace-init --attach"
     echo "    Open editor:         nvim"
     echo "    Main menu:           caf"
     echo ""
@@ -551,6 +552,23 @@ show_success() {
     echo "    Install AI tools:    caf install claude-code"
     echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+
+auto_launch_workspace() {
+    # Only auto-launch on interactive local GUI sessions.
+    if [[ -n "${SSH_CONNECTION:-}" ]]; then
+        return
+    fi
+
+    if [[ "$OS" == "Darwin" ]]; then
+        if command -v open >/dev/null 2>&1; then
+            open -a Ghostty >/dev/null 2>&1 || true
+        fi
+    else
+        if [[ -n "${DISPLAY:-}" ]] && command -v ghostty >/dev/null 2>&1; then
+            (ghostty -e bash -lc 'caf-workspace-init --attach' >/dev/null 2>&1 &) || true
+        fi
+    fi
 }
 
 # --- Main Flow Start ---
@@ -564,3 +582,4 @@ while true; do
 done
 
 execute_phase
+auto_launch_workspace

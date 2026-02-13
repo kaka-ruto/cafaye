@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   cafaye-scripts = pkgs.stdenv.mkDerivation {
@@ -25,4 +25,13 @@ EOF
 in
 {
   home.packages = [ cafaye-scripts ];
+
+  # Expose utility scripts at ~/.config/cafaye/bin for compatibility with docs/zsh PATH.
+  home.activation.cafayeUtilityBin = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    mkdir -p "$HOME/.config/cafaye/bin"
+    for f in "$HOME/.config/cafaye/config/cafaye/bin/"*; do
+      [ -f "$f" ] || continue
+      ln -sfn "$f" "$HOME/.config/cafaye/bin/$(basename "$f")"
+    done
+  '';
 }

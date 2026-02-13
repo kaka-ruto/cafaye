@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage:
+  caf config                      # interactive quick config (gum if available)
+  caf config autostatus on|off
+  caf config show
+  caf config edit
+  caf config neovim distro <astronvim|lazyvim|nvchad|lunarvim>
+EOF
+}
+
+show_config() {
+  echo "⚙️  Cafaye Config"
+  echo "autostatus: $(caf-state-read core.autostatus 2>/dev/null || echo null)"
+  echo "theme:      $(caf-state-read interface.theme 2>/dev/null || echo null)"
+  echo "editor:     $(caf-state-read editors.default 2>/dev/null || echo null)"
+}
+
+edit_config() {
+  editor="${EDITOR:-nvim}"
+  "$editor" "$HOME/.config/cafaye/settings.json" "$HOME/.config/cafaye/environment.json"
+}
+
+interactive_config() {
+  if ! command -v gum >/dev/null 2>&1; then
+    usage
+    return
+  fi
+
+  choice="$(gum choose \
+    "Toggle autostatus" \
+    "Switch Neovim distro" \
+    "Show config" \
+    "Edit config files")"
+
+  case "$choice" in
+    "Toggle autostatus")
+      current="$(caf-state-read core.autostatus 2>/dev/null || echo true)"
+      if [[ "$current" == "false" ]]; then
+        caf-state-write core.autostatus true
+        echo "✅ autostatus enabled"
+      else
+        caf-state-write core.autostatus false
+        echo "✅ autostatus disabled"
+      fi
+      ;;
+    "Switch Neovim distro")
+      distro="$(gum choose astronvim lazyvim nvchad lunarvim)"
+      caf-editor-distribution-set "$distro"
+      ;;
+    "Show config")
+      show_config
+      ;;
+    "Edit config files")
+      edit_config
+      ;;
+  esac
+}
+
+case "${1:-}" in
+  "")
+    interactive_config
+    ;;
+  autostatus)
+    case "${2:-}" in
+      on) caf-state-write core.autostatus true; echo "✅ autostatus enabled" ;;
+      off) caf-state-write core.autostatus false; echo "✅ autostatus disabled" ;;
+      *) usage; exit 1 ;;
+    esac
+    ;;
+  show)
+    show_config
+    ;;
+  edit)
+    edit_config
+    ;;
+  neovim)
+    if [[ "${2:-}" == "distro" ]] && [[ -n "${3:-}" ]]; then
+      caf-editor-distribution-set "$3"
+    else
+      usage
+      exit 1
+    fi
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac

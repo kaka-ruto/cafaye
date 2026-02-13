@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CAFAYE_DIR="$HOME/.config/cafaye"
+if [[ ! -d "$CAFAYE_DIR" ]]; then
+  CAFAYE_DIR="$(pwd)"
+fi
+
+cd "$CAFAYE_DIR"
+
+echo "📊 Backup Status"
+echo "Repo:    $(pwd)"
+echo "Branch:  $(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
+echo "Remote:  $(git remote get-url origin 2>/dev/null || echo none)"
+echo "HEAD:    $(git rev-parse --short HEAD 2>/dev/null || echo none)"
+echo "Last:    $(git log -1 --pretty=format:'%ad %s' --date=iso 2>/dev/null || echo none)"
+echo ""
+echo "Working tree:"
+git status --short || true
+echo ""
+echo "Ahead/Behind (origin):"
+if git rev-parse --verify origin/"$(git rev-parse --abbrev-ref HEAD)" >/dev/null 2>&1; then
+  git rev-list --left-right --count HEAD...origin/"$(git rev-parse --abbrev-ref HEAD)" | awk '{print "ahead=" $1 ", behind=" $2}'
+else
+  echo "no upstream"
+fi

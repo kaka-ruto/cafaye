@@ -18,7 +18,11 @@
     # Development
     git          # Version control
     mise         # Polyglot runtime manager (asdf successor)
-  ];
+  ] ++ (with pkgs; [
+    # Git/Docker TUI improvements
+    delta
+  ]) ++ (if pkgs ? lazydocker then [ pkgs.lazydocker ] else [])
+    ++ (if pkgs ? git-standup then [ pkgs.git-standup ] else []);
 
   # Modern alternatives enabled via HM
   programs.zoxide.enable = true;

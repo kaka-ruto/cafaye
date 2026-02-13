@@ -284,15 +284,8 @@ case "$1" in
         fi
         ;;
     config)
-        if [[ "$2" == "autostatus" ]]; then
-            case "$3" in
-                on) caf-state-write "core.autostatus" "true"; echo "Enabled autostatus." ;;
-                off) caf-state-write "core.autostatus" "false"; echo "Disabled autostatus." ;;
-                *) echo "Usage: caf config autostatus <on|off>"; exit 1 ;;
-            esac
-        else
-            show_main_menu
-        fi
+        shift
+        caf-config "$@"
         ;;
     status)
         show_status_plain
@@ -324,11 +317,7 @@ case "$1" in
         ;;
     backup)
         if [[ "$2" == "status" ]]; then
-            echo "📊 Backup Status"
-            cd "$HOME/.config/cafaye"
-            git status
-            echo ""
-            echo "Remote: $(git remote -v | grep fetch | awk '{print $2}')"
+            caf-backup-status
         else
             echo "Usage: caf backup status"
         fi
@@ -339,7 +328,7 @@ case "$1" in
         echo "Commands:"
         echo "  install [tool]  Install a tool (ruby, rails, etc.)"
         echo "  config          Open interactive configuration"
-        echo "  config autostatus <on|off> Toggle status on shell startup"
+        echo "  config ...      Manage autostatus/editor/distro settings"
         echo "  doctor          Check system health"
         echo "  status          Show Cafaye status"
         echo "  project ...     Manage project sessions"

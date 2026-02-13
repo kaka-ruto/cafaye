@@ -6,6 +6,7 @@
 
 # Ensure Cafaye helper scripts are available first.
 export PATH="$HOME/.config/cafaye/bin:$PATH"
+export PATH="$HOME/.config/cafaye/config/cafaye/bin:$PATH"
 
 # Greet if interactive
 if [[ $- == *i* ]]; then

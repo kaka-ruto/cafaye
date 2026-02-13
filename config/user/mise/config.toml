@@ -1,0 +1,12 @@
+# ~/.config/cafaye/config/user/mise/config.toml
+# Cafaye user overrides for mise.
+#
+# Project-specific versions should be set with `.tool-versions` in your repo.
+
+[tools]
+ruby = "latest"
+node = "lts"
+python = "3.12"
+rust = "stable"
+go = "latest"
+java = "temurin-21"

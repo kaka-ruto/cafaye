@@ -31,3 +31,7 @@ echo "Tailscale: ${tailscale_enabled}"
 echo "Project: ${current_project}"
 echo ""
 echo "Quick actions: caf install <tool> | caf project list | caf apply"
+if command -v caf-hints >/dev/null 2>&1; then
+  echo ""
+  caf-hints
+fi
