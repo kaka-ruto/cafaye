@@ -31,6 +31,11 @@
     curl
     jq
     gum
+    yq-go # Portable YAML parsing for workspace config
+    ripgrep
+    fd
+    bat
+    fzf
   ];
 
   home.sessionVariables = {

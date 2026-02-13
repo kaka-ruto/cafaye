@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-02-13 22:40 UTC
 
-## ✅ Completed Milestones (31/134 items - 23%)
+## ✅ Completed Milestones (32/134 items - 24%)
 
 ### Core Platform Readiness (6/7)
 - ✅ Fresh install succeeds on supported Linux hosts with no manual recovery steps
@@ -83,7 +83,7 @@ Users cannot onboard without this.
 | Reproducibility | 4 | 6 | 67% |
 | Fleet Operations | 4 | 6 | 67% |
 | Workspace Orchestration | 2 | 6 | 33% |
-| Terminal/Shell | 1 | 6 | 17% |
+| Terminal/Shell | 2 | 6 | 33% |
 | Editor Experience | 1 | 6 | 17% |
 | Security & Secrets | 3 | 7 | 43% |
 | Reliability & Recovery | 1 | 6 | 17% |
@@ -96,7 +96,7 @@ Users cannot onboard without this.
 | Governance | 0 | 3 | 0% |
 
 
-**Overall: 31/134 (23%)**
+**Overall: 32/134 (24%)**
 
 ## 🚀 Recent Improvements (Current Session - 2026-02-13)
 
@@ -144,14 +144,19 @@ Users cannot onboard without this.
      - Validates installation, idempotency, and uninstall
      - Auto-cleanup for CI integration
 
+9. **Progress Tracking**
+   - Created PROGRESS.md with category breakdowns
+   - Identified high-priority gaps for beta/stable releases
+
 10. **Installer Robustness**
    - Switched to Determinate Systems Nix installer for better reliability
    - Improved dependency handling for apt/dnf/pacman
    - Added `caf-harden-system` script for VPS security
 
-9. **Progress Tracking**
-   - Created PROGRESS.md with category breakdowns
-   - Identified high-priority gaps for beta/stable releases
+11. **Tmux Experience (NEW)**
+   - Standardized on C-Space prefix for cross-platform consistency
+   - Enabled robust session reuse with `caf-workspace-init`
+   - Added `yq-go` for reliable workspace configuration parsing
 
 ## 🎯 Recommended Focus Areas
 
