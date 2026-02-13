@@ -162,26 +162,96 @@ detect_system() {
 }
 
 # --- Dependencies ---
+install_gum_binary() {
+    local os="$1"
+    local arch="$2"
+    local version="0.14.3"
+    
+    echo "⬇️  Downloading gum binary..."
+    if [[ "$os" == "Darwin" ]]; then
+        [[ "$arch" == "x86_64" ]] && GUM_ARCH="x86_64" || GUM_ARCH="arm64"
+        URL="https://github.com/charmbracelet/gum/releases/download/v${version}/gum_${version}_Darwin_${GUM_ARCH}.tar.gz"
+    else
+        [[ "$arch" == "x86_64" ]] && GUM_ARCH="x86_64" || GUM_ARCH="arm64"
+        URL="https://github.com/charmbracelet/gum/releases/download/v${version}/gum_${version}_Linux_${GUM_ARCH}.tar.gz"
+    fi
+
+    mkdir -p "$HOME/.local/bin"
+    curl -fL "$URL" -o /tmp/gum.tar.gz
+    tar -xzf /tmp/gum.tar.gz -C /tmp
+    
+    # Verify extraction
+    local extracted_dir
+    extracted_dir=$(find /tmp -type d -name "gum_*_${os}_${GUM_ARCH}" | head -n 1)
+    
+    if [[ -n "$extracted_dir" && -f "$extracted_dir/gum" ]]; then
+        mv "$extracted_dir/gum" "$HOME/.local/bin/gum"
+        chmod +x "$HOME/.local/bin/gum"
+        export PATH="$HOME/.local/bin:$PATH"
+        echo "✅ Installed gum to ~/.local/bin"
+    else
+        echo "❌ Failed to install gum binary. Please install manually."
+        exit 1
+    fi
+}
+
 ensure_dependencies() {
-    if ! command -v gum &> /dev/null; then
-        echo "Installing bootstrap tools..."
-        # Simplified gum install for Mac/Linux
-        if [[ "$(uname -s)" == "Darwin" ]]; then
-            if ! command -v brew &> /dev/null; then
-                 # Fallback to direct download if no brew
-                 ARCH=$(uname -m)
-                 [[ "$ARCH" == "x86_64" ]] && GUM_ARCH="x86_64" || GUM_ARCH="arm64"
-                 URL="https://github.com/charmbracelet/gum/releases/download/v0.14.3/gum_0.14.3_Darwin_${GUM_ARCH}.tar.gz"
-                 curl -fL "$URL" -o gum.tar.gz
-                 tar xzf gum.tar.gz
-                 mv gum_0.14.3_Darwin_${GUM_ARCH}/gum /usr/local/bin/gum || cp gum_0.14.3_Darwin_${GUM_ARCH}/gum /tmp/gum
-                 export PATH="/tmp:$PATH"
-            else
-                 brew install gum jq
-            fi
+    echo "🔍 Checking dependencies..."
+    local missing_deps=()
+    
+    for dep in git curl jq gum; do
+        if ! command -v "$dep" &> /dev/null; then
+            missing_deps+=("$dep")
+        fi
+    done
+
+    if [[ ${#missing_deps[@]} -eq 0 ]]; then
+        echo "✅ All dependencies met."
+        return 0
+    fi
+
+    echo "📦 Installing missing dependencies: ${missing_deps[*]}"
+    OS=$(uname -s)
+    ARCH=$(uname -m)
+
+    if [[ "$OS" == "Darwin" ]]; then
+        if ! command -v brew &> /dev/null; then
+             echo "⚠️  Homebrew not found. Installing binary dependencies where possible..."
+             # We can install gum manually, but git/curl usually come with macOS or Xcode CLI
+             for dep in "${missing_deps[@]}"; do
+                if [[ "$dep" == "gum" ]]; then
+                    install_gum_binary "Darwin" "$ARCH"
+                elif [[ "$dep" == "git" ]]; then
+                    # Trigged Xcode CLI install prompt if missing
+                    git --version || echo "❌ Please install Xcode Command Line Tools (xcode-select --install)" && exit 1
+                elif [[ "$dep" == "jq" ]]; then
+                    # Download jq binary
+                    echo "⬇️  Downloading jq..."
+                    [[ "$ARCH" == "arm64" ]] && JQ_ARCH="arm64" || JQ_ARCH="amd64"
+                     curl -L -o /tmp/jq "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-macos-${JQ_ARCH}"
+                    chmod +x /tmp/jq
+                    mkdir -p "$HOME/.local/bin"
+                    mv /tmp/jq "$HOME/.local/bin/"
+                    export PATH="$HOME/.local/bin:$PATH"
+                fi
+             done
         else
-            # Linux (simplified)
-            apt-get update && apt-get install -y gum jq git curl || true
+             brew install ${missing_deps[*]}
+        fi
+    elif [[ "$OS" == "Linux" ]]; then
+        if command -v apt-get &> /dev/null; then
+            sudo apt-get update && sudo apt-get install -y ${missing_deps[*]} || install_gum_binary "Linux" "$ARCH"
+        elif command -v dnf &> /dev/null; then
+            sudo dnf install -y ${missing_deps[*]} || install_gum_binary "Linux" "$ARCH"
+        elif command -v pacman &> /dev/null; then
+            sudo pacman -S --noconfirm ${missing_deps[*]} || install_gum_binary "Linux" "$ARCH"
+        else
+            # Try to handle gum at least
+            for dep in "${missing_deps[@]}"; do
+                if [[ "$dep" == "gum" ]]; then
+                    install_gum_binary "Linux" "$ARCH"
+                fi
+            done
         fi
     fi
 }
@@ -540,10 +610,15 @@ EOF
 EOF
     fi
 
-    # 5. Install Nix if needed
+    # 5. Install Nix (Determinate Systems Installer for reliability)
     if ! command -v nix &> /dev/null; then
         echo "❄️  Installing Nix package manager..."
-        curl -L https://nixos.org/nix/install | sh -s -- --daemon --yes
+        if [[ "$OS" == "Darwin" ]]; then
+            curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --no-confirm
+        else
+            curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --no-confirm
+        fi
+        
         if [[ -f "/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh" ]]; then
             . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
         fi
