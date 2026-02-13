@@ -27,11 +27,7 @@ if [[ -n "$SSH_PRIVATE_KEY" && -z "${SOPS_AGE_KEY:-}" ]]; then
 fi
 
 run_sops() {
-    if command -v sops &> /dev/null; then
-        sops "$@"
-    else
-        nix --extra-experimental-features "nix-command flakes" shell nixpkgs#sops --command sops "$@"
-    fi
+    nix --extra-experimental-features "nix-command flakes" shell nixpkgs#sops --command sops "$@"
 }
 
 show_fleet_status() {
@@ -69,6 +65,11 @@ add_fleet_node() {
         echo "Usage: caf fleet add <name> <age-key> <tailscale-ip> [role]"
         exit 1
     fi
+    if [[ ! "$key" =~ ^age1[0-9a-z]+$ ]]; then
+        echo "❌ Invalid age recipient key: '$key'"
+        echo "Expected format: age1..."
+        exit 1
+    fi
     echo "💾 Adding node '$name' to fleet..."
     
     if [[ -f ".sops.yaml" ]] && ! grep -q "$key" .sops.yaml; then
@@ -77,14 +78,24 @@ add_fleet_node() {
           - \"$key\"" .sops.yaml || sed -i "/- \"age1/a \          - \"$key\"" .sops.yaml
     fi
 
-    echo "🔓 Decrypting registry..."
-    # Always work in JSON for better manipulation
-    run_sops -d --output-type json secrets/fleet.yaml > fleet.tmp 2>/dev/null || echo '{"fleet": {}}' > fleet.tmp
-    jq ".fleet[\"$name\"] = { \"tailscale_ip\": \"$ip\", \"role\": \"$role\", \"hostname\": \"$name\" }" fleet.tmp > fleet.new
-    
-    echo "🔒 Re-encrypting registry..."
-    run_sops -e --input-type json --output-type yaml fleet.new > secrets/fleet.yaml
-    rm -f fleet.tmp fleet.new
+    mkdir -p secrets
+    tmp_plain="$(mktemp)"
+    tmp_new="$(mktemp)"
+    trap 'rm -f "$tmp_plain" "$tmp_new"' EXIT
+
+    if [[ -s "secrets/fleet.yaml" ]] && run_sops -d --output-type json secrets/fleet.yaml >"$tmp_plain" 2>/dev/null; then
+      :
+    else
+      echo "⚠️  Existing fleet registry is invalid or undecryptable. Reinitializing..."
+      cp secrets/fleet.yaml "secrets/fleet.yaml.broken.$(date +%s)" 2>/dev/null || true
+      echo '{"fleet":{}}' >"$tmp_plain"
+    fi
+
+    jq ".fleet[\"$name\"] = {\"tailscale_ip\":\"$ip\",\"role\":\"$role\",\"hostname\":\"$name\"}" "$tmp_plain" >"$tmp_new"
+
+    echo "🔄 Updating encrypted registry..."
+    run_sops -e --input-type json --output-type yaml --filename-override secrets/fleet.yaml "$tmp_new" > secrets/fleet.yaml
+
     echo "✅ Node '$name' added."
 }
 

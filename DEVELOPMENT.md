@@ -1836,11 +1836,11 @@ caf project restore <name>     # Restore from backup
 
 ### Phase 2: Fleet & Sync (High Priority)
 
-- [ ] Fleet status dashboard
-- [ ] Fleet add workflow
-- [ ] Sync push/pull with auto-commit
-- [ ] Conflict resolution UI
-- [ ] Fleet apply orchestration
+- [x] Fleet status dashboard
+- [x] Fleet add workflow
+- [x] Sync push/pull with auto-commit
+- [x] Conflict resolution UI
+- [x] Fleet apply orchestration
 
 ### Phase 3: Polish (Medium Priority)
 
