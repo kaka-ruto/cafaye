@@ -78,6 +78,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [ ] Test runtime is bounded and fast enough for PR feedback loops.
 - [ ] Flaky tests are tracked, quarantined, and driven to zero.
 - [ ] Real-world smoke tests validate fleet workflows against remote hosts.
+- [x] Fresh install test suite validates installer on clean VPS/VM.
 
 ## CI/CD and Release Gates
 - [ ] CI runs on every PR and on every push to the main branch.
@@ -104,10 +105,10 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [ ] Failure telemetry can be correlated across local and remote nodes.
 
 ## Documentation and Onboarding
-- [ ] Getting-started docs lead a new user to productive setup without support.
+- [x] Getting-started docs lead a new user to productive setup without support.
 - [ ] Supported OS versions, limitations, and known constraints are explicit.
 - [ ] Migration guides exist for users coming from other dotfile/dev-env systems.
-- [ ] Customization docs clearly explain what users should and should not edit.
+- [x] Customization docs clearly explain what users should and should not edit.
 - [ ] Distributed workflow docs cover fleet setup, daily flow, and troubleshooting.
 - [ ] Security model and threat assumptions are clearly documented.
 
