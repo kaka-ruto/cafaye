@@ -118,3 +118,11 @@ load "../../lib/test_helper"
   run rg -n "single-vm-audit\\.sh|cafaye-vps-test|us-central1-a|real-world" tests/integration/real-world/single-vm-audit.sh bin/test.sh
   [ "$status" -eq 0 ]
 }
+
+@test "single behavioral nix vm test and ci workflow wiring exist" {
+  run rg -n "runNixOSTest|cafaye-behavioral-single-vm|cli/scripts/caf-status|caf-workspace-run --dry-run" tests/integration/behavioral-single-vm.nix
+  [ "$status" -eq 0 ]
+
+  run rg -n "pull_request|push:|behavioral-single-vm|checks.x86_64-linux.integration.behavioral-single-vm|bin/test.sh --lint|bin/test.sh unit" .github/workflows/factory.yml
+  [ "$status" -eq 0 ]
+}

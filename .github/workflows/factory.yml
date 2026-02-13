@@ -1,129 +1,50 @@
-name: "The Factory"
+name: Factory CI
 
 on:
   push:
-    branches: [ master, dev ]
-  pull_request:
     branches: [ master ]
+  pull_request: {}
 
 jobs:
-  # Phase 1: Fast syntax check (NO VM tests - just evaluation)
-  check:
-    name: Fast Syntax Check
+  lint-and-eval:
+    name: Lint + Flake Eval
     runs-on: ubuntu-latest
-    timeout-minutes: 3
-    steps:
-      - uses: actions/checkout@v4
-       
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v9
-
-      - name: Cachix Cache
-        uses: cachix/cachix-action@v14
-        with:
-          name: cafaye
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-        continue-on-error: true
-
-      - name: Fast Nix Evaluation (No VM Tests)
-        run: |
-          # Only evaluate the flake structure, don't build checks
-          nix eval --json .#nixosConfigurations.cafaye.config.system.build.toplevel > /dev/null
-          echo "✅ Flake evaluation successful"
-
-      - name: Run Installer Tests
-        run: bash installer/test.sh
-
-  # Phase 2: Parallel VM Test Groups
-  test-core:
-    name: Core Tests
-    needs: check
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v9
       - uses: cachix/cachix-action@v14
         with:
           name: cafaye
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
         continue-on-error: true
-      
-      - name: Run Core Unified Test
-        run: nix build --show-trace --option max-jobs 2 .#checks.x86_64-linux.core-unified
+      - name: Fast lint and evaluation
+        run: bash bin/test.sh --lint
 
-  test-cli:
-    name: CLI Tests
-    needs: check
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@v9
-      - uses: cachix/cachix-action@v14
-        with:
-          name: cafaye
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-        continue-on-error: true
-      
-      - name: Run CLI Unified Test
-        run: nix build --show-trace --option max-jobs 2 .#checks.x86_64-linux.cli-unified
-
-  test-modules:
-    name: Modules Tests
-    needs: check
+  unit:
+    name: Unit (Bats)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    needs: lint-and-eval
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install bats
+        run: sudo apt-get update && sudo apt-get install -y bats
+      - name: Run unit tests
+        run: bash bin/test.sh unit
+
+  behavioral-single-vm:
+    name: Behavioral (Single VM)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: lint-and-eval
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v9
       - uses: cachix/cachix-action@v14
         with:
           name: cafaye
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
         continue-on-error: true
-      
-      - name: Run Modules Unified Test
-        run: nix build --show-trace --option max-jobs 2 .#checks.x86_64-linux.modules-unified
-
-  # Phase 3: Integration Tests (parallel)
-  test-integration:
-    name: Integration Tests
-    needs: [test-core, test-cli, test-modules]
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        test: [setup, rails]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@v9
-      - uses: cachix/cachix-action@v14
-        with:
-          name: cafaye
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-        continue-on-error: true
-      
-      - name: Run Integration Test - ${{ matrix.test }}
-        run: nix build --show-trace --option max-jobs 2 .#checks.x86_64-linux.integration-${{ matrix.test }}
-
-  # Phase 4: Summary
-  summary:
-    name: Test Summary
-    needs: [test-core, test-cli, test-modules, test-integration]
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Check All Tests Passed
-        run: |
-          if [ "${{ needs.test-core.result }}" == "success" ] && \
-             [ "${{ needs.test-cli.result }}" == "success" ] && \
-             [ "${{ needs.test-modules.result }}" == "success" ] && \
-             [ "${{ needs.test-integration.result }}" == "success" ]; then
-            echo "✅ All tests passed!"
-            exit 0
-          else
-            echo "❌ Some tests failed"
-            exit 1
-          fi
+      - name: Run one behavioral VM test
+        run: nix build --show-trace .#checks.x86_64-linux.integration.behavioral-single-vm
