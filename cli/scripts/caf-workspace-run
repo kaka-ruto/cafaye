@@ -1,17 +1,87 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+DEFAULT_WORKSPACE_YML="${HOME}/.config/cafaye/config/cafaye/tmux/workspace.yml"
+USER_WORKSPACE_YML="${HOME}/.config/cafaye/config/user/tmux/workspace.yml"
 DEFAULT_WORKSPACE="${HOME}/.config/cafaye/config/cafaye/tmux/workspace.sh"
 USER_WORKSPACE="${HOME}/.config/cafaye/config/user/tmux/workspace.sh"
 
-if [[ -f "$DEFAULT_WORKSPACE" ]]; then
-  # shellcheck disable=SC1090
-  source "$DEFAULT_WORKSPACE"
-fi
+parse_workspace_yaml() {
+  local yml="$1"
+  local parsed
+  local line t name cmd
 
-if [[ -f "$USER_WORKSPACE" ]]; then
-  # shellcheck disable=SC1090
-  source "$USER_WORKSPACE"
+  if command -v yq >/dev/null 2>&1; then
+    parsed="$(yq -r '
+      .session // "cafaye",
+      .start_window // "terminal",
+      (.windows // [] | map("\(.name // "")|\(.command // "")") | .[])
+    ' "$yml" 2>/dev/null)" || return 1
+
+    CAF_WORKSPACE_SESSION="$(printf '%s\n' "$parsed" | sed -n '1p')"
+    CAF_WORKSPACE_START_WINDOW="$(printf '%s\n' "$parsed" | sed -n '2p')"
+    mapfile -t CAF_WORKSPACE_WINDOWS < <(printf '%s\n' "$parsed" | sed -n '3,$p')
+    return 0
+  fi
+
+  # Minimal fallback parser for tmuxinator-lite YAML:
+  # session, start_window, windows: [{name, command}]
+  CAF_WORKSPACE_WINDOWS=()
+  name=""
+  cmd=""
+  while IFS= read -r line; do
+    t="${line#"${line%%[![:space:]]*}"}"
+    case "$t" in
+      session:*)
+        CAF_WORKSPACE_SESSION="${t#session: }"
+        CAF_WORKSPACE_SESSION="${CAF_WORKSPACE_SESSION%\"}"
+        CAF_WORKSPACE_SESSION="${CAF_WORKSPACE_SESSION#\"}"
+        ;;
+      start_window:*)
+        CAF_WORKSPACE_START_WINDOW="${t#start_window: }"
+        CAF_WORKSPACE_START_WINDOW="${CAF_WORKSPACE_START_WINDOW%\"}"
+        CAF_WORKSPACE_START_WINDOW="${CAF_WORKSPACE_START_WINDOW#\"}"
+        ;;
+      -\ name:*)
+        if [[ -n "$name" ]]; then
+          CAF_WORKSPACE_WINDOWS+=("$name|$cmd")
+        fi
+        name="${t#- name: }"
+        name="${name%\"}"
+        name="${name#\"}"
+        cmd=""
+        ;;
+      command:*)
+        cmd="${t#command: }"
+        cmd="${cmd%\"}"
+        cmd="${cmd#\"}"
+        ;;
+    esac
+  done <"$yml"
+
+  if [[ -n "$name" ]]; then
+    CAF_WORKSPACE_WINDOWS+=("$name|$cmd")
+  fi
+  [[ ${#CAF_WORKSPACE_WINDOWS[@]} -gt 0 ]]
+}
+
+load_workspace_shell() {
+  local file="$1"
+  if [[ -f "$file" ]]; then
+    # shellcheck disable=SC1090
+    source "$file"
+    return 0
+  fi
+  return 1
+}
+
+if [[ -f "$USER_WORKSPACE_YML" ]] && parse_workspace_yaml "$USER_WORKSPACE_YML"; then
+  :
+elif [[ -f "$DEFAULT_WORKSPACE_YML" ]] && parse_workspace_yaml "$DEFAULT_WORKSPACE_YML"; then
+  :
+else
+  load_workspace_shell "$DEFAULT_WORKSPACE" || true
+  load_workspace_shell "$USER_WORKSPACE" || true
 fi
 
 CAF_WORKSPACE_SESSION="${CAF_WORKSPACE_SESSION:-${CAFAYE_TMUX_SESSION:-cafaye}}"

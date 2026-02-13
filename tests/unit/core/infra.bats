@@ -19,9 +19,12 @@ load "../../lib/test_helper"
   run rg -n "caf-workspace-run" cli/scripts/caf-workspace-init
   [ "$status" -eq 0 ]
 
-  run rg -n "CAF_WORKSPACE_WINDOWS" cli/scripts/caf-workspace-run
+  run rg -n "workspace\\.yml|parse_workspace_yaml|CAF_WORKSPACE_WINDOWS" cli/scripts/caf-workspace-run
   [ "$status" -eq 0 ]
 
-  run rg -n "config/user/tmux/workspace.sh|CAF_WORKSPACE_WINDOWS" config/user/tmux/workspace.sh
+  run rg -n "session:|start_window:|windows:" config/user/tmux/workspace.yml
+  [ "$status" -eq 0 ]
+
+  run rg -n "config/user/tmux/workspace.sh|config/user/tmux/workspace.yml|CAF_WORKSPACE_WINDOWS" config/user/tmux/workspace.sh
   [ "$status" -eq 0 ]
 }
