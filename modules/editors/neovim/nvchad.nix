@@ -5,6 +5,9 @@ let
 in
 {
   config = lib.mkIf enabled {
-    xdg.configFile."nvim/lua/custom".source = ../../../config/user/nvim/nvchad;
+    xdg.configFile."nvim/lua/custom" = {
+      source = ../../../config/user/nvim/nvchad;
+      force = true;
+    };
   };
 }

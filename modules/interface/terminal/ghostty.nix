@@ -35,13 +35,5 @@ in
       '';
     };
 
-    # Keep canonical config path as a symlink into Cafaye-managed defaults.
-    home.activation.cafayeGhosttyConfigSymlink = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      mkdir -p "$HOME/.config"
-      if [ -d "$HOME/.config/ghostty" ] && [ ! -L "$HOME/.config/ghostty" ]; then
-        rm -rf "$HOME/.config/ghostty"
-      fi
-      ln -sfn "$HOME/.config/cafaye/config/cafaye/ghostty" "$HOME/.config/ghostty"
-    '';
   };
 }

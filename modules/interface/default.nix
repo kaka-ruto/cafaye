@@ -4,6 +4,7 @@
   imports = [
     ./theme.nix
     ./tools.nix
+    ./fonts.nix
     ./terminal/zsh.nix
     ./terminal/starship.nix
     ./terminal/zellij.nix

@@ -87,6 +87,10 @@ esac
 mkdir -p "$NVIM_CONFIG"
 echo "$distribution" > "$MARKER_FILE"
 
+# Keep user override path visible from standard lua/user location.
+mkdir -p "$NVIM_CONFIG/lua"
+ln -sfn "$HOME/.config/cafaye/config/user/nvim/$distribution" "$NVIM_CONFIG/lua/user"
+
 echo "✅ $distribution configured with Catppuccin theme!"
 echo ""
 echo "💡 Launch with: nvim"
