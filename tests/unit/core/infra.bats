@@ -83,3 +83,8 @@ load "../../lib/test_helper"
   run rg -n "auto_launch_workspace|open -a Ghostty|ghostty -e bash -lc 'caf-workspace-init --attach'" install.sh
   [ "$status" -eq 0 ]
 }
+
+@test "menu system supports vim keys arrows search and submenu back/select" {
+  run rg -n "caf_choose_menu|fzf|j:down|k:up|up:up|down:down|h:abort|l:accept|/:change-prompt" cli/main.sh
+  [ "$status" -eq 0 ]
+}

@@ -1073,9 +1073,9 @@ Sensitive metadata about your nodes (IPs, provider info, roles) is stored in a S
 - [x] User can trigger commands with Space leader (Space s for search, Space r for rebuild, etc.)
 - [x] User can trigger commands with Alt shortcuts (Alt+S, Alt+R, Alt+D, etc.)
 - [x] User sees [LEADER] in prompt when Space leader is active
-- [ ] User can navigate menus with arrow keys or vim keys (j/k)
-- [ ] User can search within menus using / key
-- [ ] User can access submenus and go back with arrow keys or h/l
+- [x] User can navigate menus with arrow keys or vim keys (j/k)
+- [x] User can search within menus using / key
+- [x] User can access submenus and go back with arrow keys or h/l
 - [x] Leader timeout works correctly (500ms default)
 - [x] Double-tap detection prevents accidental menu opening
 - [x] Leader key is customizable via config

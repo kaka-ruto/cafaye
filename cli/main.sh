@@ -6,12 +6,28 @@
 export CLI_DIR="$(dirname "$(realpath "$0")")"
 export PATH="$CLI_DIR/scripts:$PATH"
 
+caf_choose_menu() {
+    local header="$1"
+    shift
+    local -a options=("$@")
+
+    if command -v fzf >/dev/null 2>&1; then
+        printf '%s\n' "${options[@]}" | \
+            fzf --height=14 --reverse --prompt "${header}> " \
+                --header "j/k or arrows: move • enter/l: select • h: back • /: search" \
+                --bind "j:down,k:up,up:up,down:down,l:accept,h:abort,/:change-prompt(${header} search> )"
+        return $?
+    fi
+
+    gum choose --cursor "👉 " --header "$header" "${options[@]}"
+}
+
 show_main_menu() {
     clear
     caf-logo-show
     echo ""
-    
-    choice=$(gum choose --cursor "👉 " --header "Main Menu" \
+
+    choice=$(caf_choose_menu "Main Menu" \
         "📦 Install (Languages & Frameworks)" \
         "⚙️  Services (Postgres, Redis)" \
         "🎨 Style (Themes & UI)" \
@@ -30,6 +46,7 @@ show_main_menu() {
         *"Update"*) run_system_update ;;
         *"About"*) show_about ;;
         *"Exit"*) exit 0 ;;
+        *) show_main_menu ;;
     esac
 }
 
@@ -38,7 +55,7 @@ show_status_plain() {
 }
 
 show_install_menu() {
-    choice=$(gum choose --cursor "👉 " --header "Install Submenu" \
+    choice=$(caf_choose_menu "Install Submenu" \
         "🛤️  Ruby on Rails" \
         "🐎 Django" \
         "⚛️  Next.js" \
@@ -63,11 +80,12 @@ show_install_menu() {
         "🐳 Docker") toggle_service "docker" ;;
         *"Docker DBs"*) caf-docker-db-install ;;
         "⬅️  Back") show_main_menu ;;
+        *) show_main_menu ;;
     esac
 }
 
 show_services_menu() {
-    choice=$(gum choose --cursor "👉 " --header "Backend Services" \
+    choice=$(caf_choose_menu "Backend Services" \
         "🐘 PostgreSQL" \
         "🧠 Redis" \
         "⬅️  Back")
@@ -76,6 +94,7 @@ show_services_menu() {
         *"PostgreSQL"*) toggle_backend_service "postgresql" ;;
         *"Redis"*) toggle_backend_service "redis" ;;
         "⬅️  Back") show_main_menu ;;
+        *) show_main_menu ;;
     esac
 }
 
@@ -113,7 +132,7 @@ run_system_update() {
 }
 
 show_status_menu() {
-    choice=$(gum choose --cursor "👉 " --header "Status Submenu" \
+    choice=$(caf_choose_menu "Status Submenu" \
         "🏥 System Health" \
         "🏭 Factory CI/CD Status" \
         "👁️  Watch Factory (Live)" \
@@ -126,6 +145,7 @@ show_status_menu() {
         *"Watch Factory"*) caf-factory-check --watch ;;
         *"Current Commit"*) check_current_commit ;;
         "⬅️  Back") show_main_menu ;;
+        *) show_main_menu ;;
     esac
     
     read -p "Press enter to return..."
@@ -176,7 +196,7 @@ show_system_health() {
 }
 
 show_style_menu() {
-    choice=$(gum choose --cursor "👉 " --header "Style Submenu" \
+    choice=$(caf_choose_menu "Style Submenu" \
         "🌙 Catppuccin Mocha" \
         "☀️  Light Mode (Coming Soon)" \
         "⬅️  Back")
@@ -189,6 +209,7 @@ show_style_menu() {
             sleep 1
             ;;
         "⬅️  Back") show_main_menu ;;
+        *) show_main_menu ;;
     esac
     show_style_menu
 }
@@ -354,7 +375,7 @@ case "$1" in
         echo "  project ...     Manage project sessions"
         echo "  apply           Apply state changes (rebuild)"
         echo "  sync [push/pull] Sync state with Git source of truth"
-        echo "  fleet [status/add/apply] Manage remote nodes"
+        echo "  fleet [status/add/apply/attach/switch] Manage remote nodes"
         echo "  test [--nix]    Run syntax or behavioral tests"
         echo "  update          Update Cafaye foundation to latest version"
         echo "  backup status   Show backup repository status"
