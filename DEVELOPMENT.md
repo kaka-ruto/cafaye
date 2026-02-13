@@ -1484,13 +1484,13 @@ All in `~/.config/cafaye/`:
 - [x] Tool addition examples
 - [x] Quick start commands
 - [x] Documentation links
-- [ ] Auto-launch Ghostty with tmux
-- [ ] Welcome message in tmux
-- [ ] Keyboard shortcuts hint
+- [x] Auto-launch Ghostty with tmux
+- [x] Welcome message in tmux
+- [x] Keyboard shortcuts hint
 
 ### Terminal Workspace
 
-- [ ] Ghostty as default terminal
+- [x] Ghostty as default terminal
 - [x] tmux auto-start on terminal open
 - [x] Cafaye layout for tmux
 - [x] lazygit for all git operations
@@ -1512,7 +1512,7 @@ All in `~/.config/cafaye/`:
 ### Terminal Workspace (Ghostty + tmux)
 
 - [x] Ghostty installed and configured as default terminal
-- [ ] Ghostty auto-launches after Cafaye installation
+- [x] Ghostty auto-launches after Cafaye installation
 - [x] Ghostty config in ~/.config/cafaye/config/user/ghostty/
 - [x] tmux installed and auto-starts with Ghostty
 - [x] tmux session "cafaye" created automatically
@@ -1767,7 +1767,7 @@ caf project restore <name>     # Restore from backup
 
 ### Phase 1: Core UX (High Priority)
 
-- [ ] Auto-launch Ghostty with tmux after install
+- [x] Auto-launch Ghostty with tmux after install
 - [x] Welcome screen in tmux with shortcuts
 - [x] Main menu system (`caf` with hierarchical menus)
 - [ ] Global keyboard shortcuts (Super+C, Super+S, etc.)
