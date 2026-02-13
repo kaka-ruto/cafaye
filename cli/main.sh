@@ -398,6 +398,28 @@ case "$1" in
         shift
         caf-update "$@"
         ;;
+    system)
+        action="$2"
+        shift 2
+        case "$action" in
+            harden)
+                caf-system-harden "$@"
+                ;;
+            doctor)
+                caf-system-doctor "$@"
+                ;;
+            rebuild|apply)
+                caf-system-rebuild "$@"
+                ;;
+            update)
+                caf-update "$@"
+                ;;
+            *)
+                echo "Usage: caf system <harden|doctor|rebuild|update>"
+                exit 1
+                ;;
+        esac
+        ;;
     backup)
         if [[ "$2" == "status" ]]; then
             caf-backup-status

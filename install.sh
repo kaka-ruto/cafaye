@@ -736,6 +736,22 @@ EOF
         sed -E 's/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}/[REDACTED-EMAIL]/g' > "$INSTALL_LOG.tmp" && mv "$INSTALL_LOG.tmp" "$INSTALL_LOG"
     fi
 
+    # --- System Hardening (VPS Only) ---
+    if [[ "$OS" == "Linux" && "$IS_VPS" == "yes" ]]; then
+        echo "🔒 Hardening system security (SSH, Firewall)..."
+        if command -v sudo >/dev/null 2>&1; then
+            # We use the script directly as 'caf' wrapper might not be fully active in shell
+            # Sudo might prompt for password
+            if sudo "$CAFAYE_DIR/cli/scripts/caf-system-harden"; then
+                echo "✅ System hardened."
+            else
+                echo "⚠️  System hardening failed. You can run 'caf system harden' manually."
+            fi
+        else
+            echo "ℹ️  Skipping system hardening (sudo not available)."
+        fi
+    fi
+
     show_success
 }
 
