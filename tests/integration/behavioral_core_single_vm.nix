@@ -32,8 +32,9 @@ if pkgs.stdenv.isLinux then
       machine.succeed("cp -r ${repoSrc} /tmp/cafaye")
       machine.succeed("chmod -R u+w /tmp/cafaye")
 
-      # Fast static/runtime sanity checks in one VM.
-      machine.succeed("cd /tmp/cafaye && bash bin/syntax-check.sh")
+      # Fast static/runtime sanity checks in one VM (no nested flake/VM checks).
+      machine.succeed("cd /tmp/cafaye && bash -n install.sh")
+      machine.succeed("cd /tmp/cafaye && for s in cli/scripts/* config/cafaye/bin/*; do [ -f \"$s\" ] && bash -n \"$s\"; done")
       machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-version >/tmp/caf-version.out")
       machine.succeed("test -s /tmp/caf-version.out")
 
