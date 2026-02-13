@@ -1466,9 +1466,9 @@ All in `~/.config/cafaye/`:
 - [x] Error handling
 - [x] Warning display
 - [x] Time estimation
-- [ ] Ghostty terminal installation
-- [ ] tmux workspace setup
-- [ ] lazygit installation
+- [x] Ghostty terminal installation
+- [x] tmux workspace setup
+- [x] lazygit installation
 
 ### Backup Initialization
 
@@ -1491,14 +1491,14 @@ All in `~/.config/cafaye/`:
 ### Terminal Workspace
 
 - [ ] Ghostty as default terminal
-- [ ] tmux auto-start on terminal open
-- [ ] Cafaye layout for tmux
-- [ ] lazygit for all git operations
+- [x] tmux auto-start on terminal open
+- [x] Cafaye layout for tmux
+- [x] lazygit for all git operations
 
 ### Menu System (Menu-First Design)
 
-- [ ] Main menu (`caf` or Space Space)
-- [ ] Hierarchical submenus with keyboard navigation
+- [x] Main menu (`caf` or Space Space)
+- [x] Hierarchical submenus with keyboard navigation
 - [ ] Search interface (Space s)
 - [ ] Space leader key system (double-tap Space)
 - [ ] Alt shortcuts for power users (Alt+M, Alt+S, Alt+R, etc.)
@@ -1519,12 +1519,12 @@ All in `~/.config/cafaye/`:
 - [x] Default tmux layout: dashboard | terminal | git
 - [x] Window 1: dashboard with node info and shortcuts
 - [x] Window 2: terminal for general work
-- [ ] Window 3: git with lazygit auto-started
+- [x] Window 3: git with lazygit auto-started
 - [ ] Window switching with Alt+1/2/3/4/5
 - [x] Custom tmux layouts in ~/.config/cafaye/config/user/tmux/layouts/
 - [ ] Fleet window for multi-node monitoring
-- [ ] tmux-resurrect for session persistence
-- [ ] tmux-continuum for auto-save
+- [x] tmux-resurrect for session persistence
+- [x] tmux-continuum for auto-save
 - [x] User tmux config in ~/.config/cafaye/config/user/tmux/tmux.conf
 - [x] Symlink: ~/.config/tmux/ -> ~/.config/cafaye/config/cafaye/tmux/
 
@@ -1537,7 +1537,7 @@ Cafaye provides a `bin/` directory with utility scripts that are automatically a
 - [x] `tat` - tmux attach/create helper (attach to existing or create new session)
 - [x] `tm` - tmux session manager (fzf-based session switching)
 - [x] `extract` - Universal archive extractor (handles .tar, .zip, .rar, etc.)
-- [ ] `c` - Quick cd with fzf (fuzzy find directories)
+- [x] `c` - Quick cd with fzf (fuzzy find directories)
 - [x] `killport` - Kill process using a specific port
 - [x] `serve` - Simple HTTP server in current directory
 - [x] `weather` - Quick weather display
@@ -1595,8 +1595,8 @@ caf project restore <name>     # Restore from backup
 **Session Management:**
 
 - [x] `caf project switch` uses fzf if no name provided
-- [ ] Sessions persist across reboots (tmux-resurrect)
-- [ ] Auto-save session every 15 minutes (tmux-continuum)
+- [x] Sessions persist across reboots (tmux-resurrect)
+- [x] Auto-save session every 15 minutes (tmux-continuum)
 - [ ] Projects can be organized with tags/categories
 
 **Integration:**
@@ -1618,10 +1618,10 @@ caf project restore <name>     # Restore from backup
 
 ### Git UI (lazygit)
 
-- [ ] lazygit installed and auto-starts in tmux window 3
-- [ ] lazygit config in ~/.config/cafaye/config/user/lazygit/
-- [ ] Catppuccin theme applied
-- [ ] Custom commands can be added
+- [x] lazygit installed and auto-starts in tmux window 3
+- [x] lazygit config in ~/.config/cafaye/config/user/lazygit/
+- [x] Catppuccin theme applied
+- [x] Custom commands can be added
 - [ ] Symlink: ~/.config/lazygit/ -> ~/.config/cafaye/config/cafaye/lazygit/
 
 ### Neovim (All Distributions)
@@ -1663,13 +1663,13 @@ caf project restore <name>     # Restore from backup
 
 ### Shell (Zsh)
 
-- [ ] Zsh configured with Starship prompt
-- [ ] User aliases/functions: config/user/zsh/custom.zsh
+- [x] Zsh configured with Starship prompt
+- [x] User aliases/functions: config/user/zsh/custom.zsh
 - [ ] Cafaye integration in prompt
 - [ ] Space leader detection in Zsh
 - [ ] Symlink: ~/.zshrc -> ~/.config/cafaye/config/cafaye/zsh/.zshrc
 - [ ] fzf integration (Ctrl+R history, Ctrl+T files)
-- [ ] zoxide integration (auto-cd to frequent directories)
+- [x] zoxide integration (auto-cd to frequent directories)
 - [ ] Better history search (fzf-based)
 - [ ] Custom completion for caf commands
 
@@ -1780,11 +1780,11 @@ caf project restore <name>     # Restore from backup
 
 **mise (Version Manager):**
 
-- [ ] mise installed as universal version manager
+- [x] mise installed as universal version manager
 - [ ] mise auto-installs language runtimes on first use
 - [x] mise config in ~/.config/cafaye/config/user/mise/
 - [x] User can override versions per project with .tool-versions
-- [ ] mise plugins for: ruby, nodejs, python, rust, go, java, etc.
+- [x] mise plugins for: ruby, nodejs, python, rust, go, java, etc.
 
 **CLI Utilities:**
 

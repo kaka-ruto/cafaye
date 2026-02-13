@@ -6,6 +6,7 @@ usage() {
 Usage:
   caf config                      # interactive quick config (gum if available)
   caf config autostatus on|off
+  caf config theme [catppuccin-mocha]
   caf config show
   caf config edit
   caf config neovim distro <astronvim|lazyvim|nvchad|lunarvim>
@@ -32,6 +33,7 @@ interactive_config() {
 
   choice="$(gum choose \
     "Toggle autostatus" \
+    "Switch theme" \
     "Switch Neovim distro" \
     "Show config" \
     "Edit config files")"
@@ -50,6 +52,11 @@ interactive_config() {
     "Switch Neovim distro")
       distro="$(gum choose astronvim lazyvim nvchad lunarvim)"
       caf-editor-distribution-set "$distro"
+      ;;
+    "Switch theme")
+      theme="$(gum choose "catppuccin-mocha" "catppuccin-latte")"
+      caf-state-write interface.theme "$theme"
+      echo "✅ theme set: $theme"
       ;;
     "Show config")
       show_config
@@ -70,6 +77,11 @@ case "${1:-}" in
       off) caf-state-write core.autostatus false; echo "✅ autostatus disabled" ;;
       *) usage; exit 1 ;;
     esac
+    ;;
+  theme)
+    theme="${2:-catppuccin-mocha}"
+    caf-state-write interface.theme "$theme"
+    echo "✅ theme set: $theme"
     ;;
   show)
     show_config
