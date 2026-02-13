@@ -70,3 +70,16 @@ load "../../lib/test_helper"
   run rg -n "\\[current\\]|local_node|hostname -s" cli/scripts/caf-fleet
   [ "$status" -eq 0 ]
 }
+
+@test "installer provisions standard symlinks for tmux ghostty and zshrc" {
+  run rg -n "create_standard_symlinks|safe_symlink" install.sh
+  [ "$status" -eq 0 ]
+
+  run rg -n "\\.config/cafaye/config/cafaye/tmux|\\.config/cafaye/config/cafaye/ghostty|\\.config/cafaye/config/cafaye/zsh/\\.zshrc" install.sh
+  [ "$status" -eq 0 ]
+}
+
+@test "installer includes ghostty auto-launch behavior" {
+  run rg -n "auto_launch_workspace|open -a Ghostty|ghostty -e bash -lc 'caf-workspace-init --attach'" install.sh
+  [ "$status" -eq 0 ]
+}

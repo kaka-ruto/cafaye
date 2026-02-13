@@ -1183,11 +1183,11 @@ Sensitive metadata about your nodes (IPs, provider info, roles) is stored in a S
 
 **Standard locations symlinked:**
 
-- [ ] ~/.config/tmux/ → ~/.config/cafaye/config/cafaye/tmux/
-- [ ] ~/.config/ghostty/ → ~/.config/cafaye/config/cafaye/ghostty/
+- [x] ~/.config/tmux/ → ~/.config/cafaye/config/cafaye/tmux/
+- [x] ~/.config/ghostty/ → ~/.config/cafaye/config/cafaye/ghostty/
 - [x] ~/.config/lazygit/ → ~/.config/cafaye/config/cafaye/lazygit/
 - [x] ~/.config/nvim/lua/user/ → ~/.config/cafaye/config/user/nvim/{distro}/
-- [ ] ~/.zshrc → ~/.config/cafaye/config/cafaye/zsh/.zshrc
+- [x] ~/.zshrc → ~/.config/cafaye/config/cafaye/zsh/.zshrc
 
 **Behavior:**
 
@@ -1283,7 +1283,7 @@ caf config neovim distro lazyvim
 **All features MUST be tested on:**
 
 1. **Automated Tests:**
-   - [ ] Local macOS machine
+   - [x] Local macOS machine
    - [x] GCP VPS (Ubuntu)
 
 2. **Manual Testing:**
@@ -1292,11 +1292,11 @@ caf config neovim distro lazyvim
 
 **Testing Checklist for Each Feature:**
 
-- [ ] Automated tests pass on macOS
+- [x] Automated tests pass on macOS
 - [x] Automated tests pass on GCP VPS
 - [ ] Manual testing completed on macOS
 - [x] Manual testing completed on GCP VPS
-- [ ] No regressions in existing functionality
+- [x] No regressions in existing functionality
 
 ### Test Writing Principles
 
@@ -1526,7 +1526,7 @@ All in `~/.config/cafaye/`:
 - [x] tmux-resurrect for session persistence
 - [x] tmux-continuum for auto-save
 - [x] User tmux config in ~/.config/cafaye/config/user/tmux/tmux.conf
-- [ ] Symlink: ~/.config/tmux/ -> ~/.config/cafaye/config/cafaye/tmux/
+- [x] Symlink: ~/.config/tmux/ -> ~/.config/cafaye/config/cafaye/tmux/
 
 ### Utility Scripts (~/.config/cafaye/bin/)
 
@@ -1610,7 +1610,7 @@ caf project restore <name>     # Restore from backup
 - [x] Single directory: ~/.config/cafaye/config/
 - [x] cafaye/ subdirectory for defaults (auto-updated)
 - [x] user/ subdirectory for customizations (user-edited)
-- [ ] Symlinks from ~/.config/ to cafaye/config/cafaye/
+- [x] Symlinks from ~/.config/ to cafaye/config/cafaye/
 - [x] All user configs tracked in git
 - [x] Defaults never overwritten by user edits
 - [x] User configs survive Cafaye updates
@@ -1667,7 +1667,7 @@ caf project restore <name>     # Restore from backup
 - [x] User aliases/functions: config/user/zsh/custom.zsh
 - [x] Cafaye integration in prompt
 - [x] Space leader detection in Zsh
-- [ ] Symlink: ~/.zshrc -> ~/.config/cafaye/config/cafaye/zsh/.zshrc
+- [x] Symlink: ~/.zshrc -> ~/.config/cafaye/config/cafaye/zsh/.zshrc
 - [x] fzf integration (Ctrl+R history, Ctrl+T files)
 - [x] zoxide integration (auto-cd to frequent directories)
 - [x] Better history search (fzf-based)
@@ -1695,7 +1695,7 @@ caf project restore <name>     # Restore from backup
 
 - [x] Installation creates correct directory structure
 - [x] Symlinks created correctly
-- [ ] Ghostty auto-launches
+- [x] Ghostty auto-launches
 - [x] tmux auto-starts
 - [x] Default layout loads
 - [x] Space leader works
@@ -1760,7 +1760,7 @@ caf project restore <name>     # Restore from backup
 
 ### Multi-Environment Testing
 
-- [ ] Automated tests pass on local macOS
+- [x] Automated tests pass on local macOS
 - [x] Automated tests pass on GCP VPS
 - [ ] Manual testing completed on local macOS
 - [x] Manual testing completed on GCP VPS

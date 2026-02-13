@@ -571,6 +571,29 @@ auto_launch_workspace() {
     fi
 }
 
+safe_symlink() {
+    local target="$1"
+    local link_path="$2"
+
+    mkdir -p "$(dirname "$link_path")"
+    if [[ -e "$link_path" || -L "$link_path" ]]; then
+        if [[ -L "$link_path" ]] && [[ "$(readlink "$link_path")" == "$target" ]]; then
+            return 0
+        fi
+        local backup="${link_path}.cafaye-backup-$(date +%Y%m%d%H%M%S)"
+        echo "   Backing up existing $(basename "$link_path") to $backup"
+        mv "$link_path" "$backup"
+    fi
+    ln -s "$target" "$link_path"
+}
+
+create_standard_symlinks() {
+    echo "🔗 Creating standard config symlinks..."
+    safe_symlink "$HOME/.config/cafaye/config/cafaye/tmux" "$HOME/.config/tmux"
+    safe_symlink "$HOME/.config/cafaye/config/cafaye/ghostty" "$HOME/.config/ghostty"
+    safe_symlink "$HOME/.config/cafaye/config/cafaye/zsh/.zshrc" "$HOME/.zshrc"
+}
+
 # --- Main Flow Start ---
 show_logo
 detect_system
@@ -582,4 +605,5 @@ while true; do
 done
 
 execute_phase
+create_standard_symlinks
 auto_launch_workspace
