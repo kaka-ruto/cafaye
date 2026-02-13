@@ -22,3 +22,8 @@ secrets/secrets.yaml
 .DS_Store
 .devbox/
 .factory/
+
+# Runtime utility links generated in ~/.config/cafaye/bin
+bin/*
+!bin/syntax-check.sh
+!bin/test.sh
