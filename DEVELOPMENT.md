@@ -1520,9 +1520,9 @@ All in `~/.config/cafaye/`:
 - [x] Window 1: dashboard with node info and shortcuts
 - [x] Window 2: terminal for general work
 - [x] Window 3: git with lazygit auto-started
-- [ ] Window switching with Alt+1/2/3/4/5
+- [x] Window switching with Alt+1/2/3/4/5
 - [x] Custom tmux layouts in ~/.config/cafaye/config/user/tmux/layouts/
-- [ ] Fleet window for multi-node monitoring
+- [x] Fleet window for multi-node monitoring
 - [x] tmux-resurrect for session persistence
 - [x] tmux-continuum for auto-save
 - [x] User tmux config in ~/.config/cafaye/config/user/tmux/tmux.conf
@@ -1610,7 +1610,7 @@ caf project restore <name>     # Restore from backup
 - [ ] Single directory: ~/.config/cafaye/config/
 - [ ] cafaye/ subdirectory for defaults (auto-updated)
 - [ ] user/ subdirectory for customizations (user-edited)
-- [ ] Symlinks from ~/.config/ to cafaye/config/cafaye/
+- [x] Symlinks from ~/.config/ to cafaye/config/cafaye/
 - [ ] All user configs tracked in git
 - [ ] Defaults never overwritten by user edits
 - [ ] User configs survive Cafaye updates
@@ -1682,7 +1682,7 @@ caf project restore <name>     # Restore from backup
 
 ### Multi-Node (Fleet)
 
-- [ ] Fleet window in tmux for node overview
+- [x] Fleet window in tmux for node overview
 - [ ] SSH attach to each node in separate panes
 - [ ] Session per node (tmux sessions)
 - [ ] Switch sessions with caf or Space .

@@ -34,6 +34,15 @@ in
     # Link the theme script to the expected location
     xdg.configFile."tmux/base16.sh".source = ../../../config/user/tmux/base16.sh;
 
+    # Keep the canonical tmux config location as a symlink to Cafaye defaults.
+    home.activation.cafayeTmuxConfigSymlink = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      mkdir -p "$HOME/.config"
+      if [ -d "$HOME/.config/tmux" ] && [ ! -L "$HOME/.config/tmux" ]; then
+        rm -rf "$HOME/.config/tmux"
+      fi
+      ln -sfn "$HOME/.config/cafaye/config/cafaye/tmux" "$HOME/.config/tmux"
+    '';
+
     # Ensure TPM/plugins exist so resurrect+continuum are functional on first run.
     home.activation.cafayeTmuxPlugins = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       TPM_DIR="$HOME/.tmux/plugins/tpm"

@@ -109,6 +109,25 @@ if [[ -z "${CAF_WORKSPACE_WINDOWS+x}" ]] || [[ ${#CAF_WORKSPACE_WINDOWS[@]} -eq 
   exit 1
 fi
 
+# Auto-add a fleet window when two or more nodes are configured.
+maybe_add_fleet_window() {
+  local has_fleet=0
+  local node_count=0
+  local w
+  for w in "${CAF_WORKSPACE_WINDOWS[@]}"; do
+    [[ "${w%%|*}" == "fleet" ]] && has_fleet=1 && break
+  done
+  [[ "$has_fleet" -eq 1 ]] && return
+
+  if command -v caf-fleet >/dev/null 2>&1; then
+    node_count="$(caf-fleet status 2>/dev/null | awk '/^  - /{c++} END{print c+0}')"
+    if [[ "${node_count:-0}" -ge 2 ]]; then
+      CAF_WORKSPACE_WINDOWS+=("fleet|watch -n 5 caf-fleet status")
+    fi
+  fi
+}
+maybe_add_fleet_window
+
 create_session() {
   local first=1
   local window_def name cmd
