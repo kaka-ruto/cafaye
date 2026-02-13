@@ -130,7 +130,7 @@ create_session() {
     fi
 
     if [[ "$cmd" != "$window_def" ]] && [[ -n "$cmd" ]]; then
-      tmux send-keys -t "${CAF_WORKSPACE_SESSION}:${name}" "$cmd" C-m
+      tmux send-keys -t "${CAF_WORKSPACE_SESSION}:${name}" "PATH=\"${SCRIPT_DIR}:\$PATH\"; $cmd" C-m
     fi
   done
 

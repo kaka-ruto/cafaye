@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+clear 2>/dev/null || true
+if command -v fastfetch >/dev/null 2>&1; then
+  fastfetch || true
+else
+  echo "☕ Cafaye dashboard"
+fi
+
+cat <<'EOF'
+
+Shortcuts
+---------
+  Alt+1 / Alt+2 / Alt+3   Switch tmux windows
+  caf status              Show node and project status
+  caf project list        List configured projects
+  caf fleet status        Show fleet connectivity
+  caf                     Open main menu
+EOF

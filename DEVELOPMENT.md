@@ -1768,12 +1768,12 @@ caf project restore <name>     # Restore from backup
 ### Phase 1: Core UX (High Priority)
 
 - [ ] Auto-launch Ghostty with tmux after install
-- [ ] Welcome screen in tmux with shortcuts
+- [x] Welcome screen in tmux with shortcuts
 - [ ] Main menu system (`caf` with hierarchical menus)
 - [ ] Global keyboard shortcuts (Super+C, Super+S, etc.)
 - [ ] Search interface (Super+S)
 - [ ] Installation progress display
-- [ ] lazygit installed and configured
+- [x] lazygit installed and configured
 - [x] Auto-status on terminal startup
 
 ### Version Manager & CLI Tools

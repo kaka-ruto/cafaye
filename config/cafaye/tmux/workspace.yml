@@ -3,7 +3,7 @@ session: cafaye
 start_window: terminal
 windows:
   - name: dashboard
-    command: "clear; command -v fastfetch >/dev/null 2>&1 && fastfetch || echo 'Cafaye dashboard'"
+    command: "command -v caf-dashboard >/dev/null 2>&1 && caf-dashboard || (clear; command -v fastfetch >/dev/null 2>&1 && fastfetch || echo 'Cafaye dashboard')"
   - name: terminal
   - name: git
     command: "command -v lazygit >/dev/null 2>&1 && lazygit || echo 'lazygit unavailable on PATH'"
