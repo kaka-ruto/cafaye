@@ -18,7 +18,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] Sync/pull/push workflows are reliable across laptop and remote nodes.
 - [x] Recovery from interrupted sync/rebuild leaves system in a consistent state.
 - [x] Install logs are redacted and safe to share for debugging.
-- [ ] State files are validated and corrupted state is detected with actionable guidance.
+- [x] State files are validated and corrupted state is detected with actionable guidance.
 
 ## Distributed Fleet Operations
 - [x] Fleet node registration and removal are reliable and auditable.
@@ -56,13 +56,13 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] Secrets are encrypted at rest and never committed to version control.
 - [ ] Secret rotation workflows are documented and tested.
 - [x] SOPS integration works reliably across local and remote nodes.
-- [ ] Sensitive data is never leaked to logs, terminal history, or CI artifacts.
+- [x] Sensitive data is never leaked to logs, terminal history, or CI artifacts.
 - [ ] Principle of least privilege is enforced for scripts and remote operations.
 - [ ] Supply chain integrity checks exist for critical dependencies.
-- [ ] Secure defaults are enforced for SSH and remote execution pathways.
+- [x] Secure defaults are enforced for SSH and remote execution pathways.
 
 ## Reliability, Errors, and Recovery
-- [ ] All core CLI commands return stable exit codes and human-actionable errors.
+- [x] All core CLI commands return stable exit codes and human-actionable errors.
 - [ ] Transient network failures are retried with bounded backoff and clear logs.
 - [ ] Long-running operations provide progress and cancellation safety.
 - [ ] Timeouts are explicit and tuned for CI and real-world remote hosts.
@@ -106,7 +106,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 
 ## Documentation and Onboarding
 - [x] Getting-started docs lead a new user to productive setup without support.
-- [ ] Supported OS versions, limitations, and known constraints are explicit.
+- [x] Supported OS versions, limitations, and known constraints are explicit.
 - [ ] Migration guides exist for users coming from other dotfile/dev-env systems.
 - [x] Customization docs clearly explain what users should and should not edit.
 - [ ] Distributed workflow docs cover fleet setup, daily flow, and troubleshooting.

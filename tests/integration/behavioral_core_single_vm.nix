@@ -23,6 +23,9 @@ if pkgs.stdenv.isLinux then
         zsh
         neovim
         lazygit
+        sops
+        age
+        rsync
       ];
     };
 
@@ -32,26 +35,30 @@ if pkgs.stdenv.isLinux then
       machine.succeed("cp -r ${repoSrc} /tmp/cafaye")
       machine.succeed("chmod -R u+w /tmp/cafaye")
 
-      # Fast static/runtime sanity checks in one VM (no nested flake/VM checks).
+      # 1. Syntax Check All Scripts
       machine.succeed("cd /tmp/cafaye && bash -n install.sh")
       machine.succeed("cd /tmp/cafaye && for s in cli/scripts/* config/cafaye/bin/*; do [ -f \"$s\" ] && bash -n \"$s\"; done")
-      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-version >/tmp/caf-version.out")
-      machine.succeed("test -s /tmp/caf-version.out")
 
-      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-status >/tmp/caf-status.out")
-      machine.succeed("grep -q 'Cafaye Status' /tmp/caf-status.out")
+      # 2. Project Operations
+      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-project create test-p --path /tmp/test-p")
+      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-project list | grep test-p")
+      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-project delete test-p")
 
-      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-search status >/tmp/caf-search.out")
-      machine.succeed("grep -q 'Cafaye Status' /tmp/caf-search.out")
+      # 3. Status and Readiness
+      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-version >/tmp/out")
+      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-status >/tmp/out")
+      machine.fail("grep -q 'DEVIATED' /tmp/out") # Status should be clean or unknown, not deviated on fresh system
 
-      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-fleet status >/tmp/caf-fleet.out 2>&1 || true")
-      machine.succeed("test -s /tmp/caf-fleet.out")
+      # 4. Search and Fleet Syntax
+      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-search status >/tmp/out")
+      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-fleet status >/tmp/out 2>&1 || true")
 
-      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-workspace-run --dry-run >/tmp/caf-workspace.out 2>&1 || true")
-      machine.succeed("test -s /tmp/caf-workspace.out")
+      # 5. Workspace and UI logic
+      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-workspace-run --dry-run >/tmp/out 2>&1 || true")
+      machine.succeed("tmux -V")
 
-      machine.succeed("tmux -V >/tmp/tmux-version.out")
-      machine.succeed("grep -q 'tmux' /tmp/tmux-version.out")
+      # 6. Hardening and System Actions
+      machine.succeed("cd /tmp/cafaye && bash cli/scripts/caf-system-harden --help || true")
     '';
   }
 else

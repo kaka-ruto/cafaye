@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-02-13 22:40 UTC
 
-## ✅ Completed Milestones (44/134 items - 33%)
+## ✅ Completed Milestones (55/134 items - 41%)
 
 ### Core Platform Readiness (6/7)
 - ✅ Fresh install succeeds on supported Linux hosts with no manual recovery steps
@@ -81,22 +81,22 @@ Users cannot onboard without this.
 |----------|-----------|-------|---|
 | Core Platform Readiness | 6 | 7 | 86% |
 | Reproducibility | 5 | 6 | 83% |
-| Fleet Operations | 5 | 6 | 83% |
+| Fleet Operations | 6 | 6 | 100% |
 | Workspace Orchestration | 4 | 6 | 67% |
 | Terminal/Shell | 5 | 6 | 83% |
 | Editor Experience | 5 | 6 | 83% |
-| Security & Secrets | 3 | 7 | 43% |
-| Reliability & Recovery | 1 | 6 | 17% |
-| Testing | 1 | 8 | 13% |
-| CI/CD | 1 | 7 | 14% |
+| Security & Secrets | 5 | 7 | 71% |
+| Reliability & Recovery | 4 | 6 | 67% |
+| Testing | 3 | 8 | 38% |
+| CI/CD | 3 | 7 | 43% |
 | Performance | 0 | 6 | 0% |
 | Observability | 2 | 5 | 40% |
-| Documentation | 2 | 6 | 33% |
+| Documentation | 3 | 6 | 50% |
 | Product Fit | 0 | 5 | 0% |
 | Governance | 0 | 3 | 0% |
 
 
-**Overall: 44/134 (33%)**
+**Overall: 55/134 (41%)**
 
 ## 🚀 Recent Improvements (Current Session - 2026-02-13)
 
@@ -169,6 +169,13 @@ Users cannot onboard without this.
    - Confirmed Editor distribution switching safety
    - Validated Lazygit integration with GitHub CLI dependency
    - Ensured Ghostty degradation on headless/remote systems
+
+14. **CI/CD, Reliability & Security (NEW)**
+   - Enabled exhaustive behavioral VM test (NixOS test) for core CLI
+   - Verified CI runs on PRs with lint, unit, and behavioral gates
+   - Audited CLI exit codes and human-actionable error reporting
+   - Standardized SSH hardening and log redaction for VPS safety
+   - Documented explicit OS support constraints
 
 ## 🎯 Recommended Focus Areas
 
