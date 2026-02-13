@@ -7,6 +7,7 @@ in
   config = lib.mkIf enabled {
     home.packages = with pkgs; [
       ruby_3_3
+      ruby-lsp
       
       # Essential headers for native gems
       zlib

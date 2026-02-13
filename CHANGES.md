@@ -13,24 +13,24 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 ## Reproducibility and State Management
 - [ ] Entire environment can be reproduced from git state on a new machine.
 - [ ] User customizations and Cafaye defaults are clearly separated and never conflict.
-- [ ] Drift detection clearly reports when runtime state differs from declared state.
-- [ ] Sync/pull/push workflows are reliable across laptop and remote nodes.
+- [x] Drift detection clearly reports when runtime state differs from declared state.
+- [x] Sync/pull/push workflows are reliable across laptop and remote nodes.
 - [ ] Recovery from interrupted sync/rebuild leaves system in a consistent state.
 - [ ] State files are validated and corrupted state is detected with actionable guidance.
 
 ## Distributed Fleet Operations
-- [ ] Fleet node registration and removal are reliable and auditable.
-- [ ] Fleet status reports are accurate for reachable and unreachable nodes.
-- [ ] Fleet apply operations show clear per-node success/failure outcomes.
+- [x] Fleet node registration and removal are reliable and auditable.
+- [x] Fleet status reports are accurate for reachable and unreachable nodes.
+- [x] Fleet apply operations show clear per-node success/failure outcomes.
 - [ ] Partial fleet failures do not block healthy nodes from completing operations.
-- [ ] Fleet attach/switch workflows are stable across many concurrent nodes.
+- [x] Fleet attach/switch workflows are stable across many concurrent nodes.
 - [ ] Node identity, role, and current project context are always unambiguous.
 
 ## Workspace Orchestration
 - [ ] Workspace definitions are customizable via user-owned config only.
 - [ ] Workspace startup is deterministic across local and remote hosts.
-- [ ] Dry-run mode always reports exact session/window/command plan.
-- [ ] Invalid workspace configs fail fast with actionable validation errors.
+- [x] Dry-run mode always reports exact session/window/command plan.
+- [x] Invalid workspace configs fail fast with actionable validation errors.
 - [ ] Default workspace works even when optional tools are unavailable.
 - [ ] Multi-node workspace behavior is predictable and does not duplicate windows.
 
@@ -46,7 +46,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [ ] AstroNvim boots cleanly with Cafaye defaults and user overrides.
 - [ ] Plugin pinning and update behavior are deterministic and reproducible.
 - [ ] Editor distribution switching is safe and reversible.
-- [ ] LSP/tooling defaults work for major stacks without manual patching.
+- [x] LSP/tooling defaults work for major stacks without manual patching.
 - [ ] Local and remote editor experiences are consistent for core workflows.
 - [ ] Broken plugin states are detected and recoverable without manual surgery.
 
@@ -64,7 +64,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [ ] Long-running operations provide progress and cancellation safety.
 - [ ] Timeouts are explicit and tuned for CI and real-world remote hosts.
 - [ ] Interrupted operations can resume or safely restart without data loss.
-- [ ] System doctor diagnostics can identify and prioritize root causes.
+- [x] System doctor diagnostics can identify and prioritize root causes.
 
 ## Testing Architecture and Coverage
 - [ ] Single-VM integration test suite covers all core infra behaviors end-to-end.
@@ -79,7 +79,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 ## CI/CD and Release Gates
 - [ ] CI runs on every PR and on every push to the main branch.
 - [ ] Required checks enforce lint, unit, behavioral integration, and packaging gates.
-- [ ] CI status tooling can fetch latest/commit-specific runs with logs in one command.
+- [x] CI status tooling can fetch latest/commit-specific runs with logs in one command.
 - [ ] Failed CI jobs provide enough diagnostics to debug without reruns.
 - [ ] Release builds are reproducible and signed where applicable.
 - [ ] Versioning, changelog generation, and release notes are consistent and automated.
@@ -94,9 +94,9 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [ ] Cache strategy materially improves CI and user install performance.
 
 ## Observability and Diagnostics
-- [ ] Structured logs exist for install, update, sync, and fleet workflows.
+- [x] Structured logs exist for install, update, sync, and fleet workflows.
 - [ ] Log verbosity can be adjusted without losing essential diagnostics.
-- [ ] Diagnostic bundles are safe to share and redact sensitive material.
+- [x] Diagnostic bundles are safe to share and redact sensitive material.
 - [ ] Health commands provide concise summary plus deep-dive details.
 - [ ] Failure telemetry can be correlated across local and remote nodes.
 

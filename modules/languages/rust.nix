@@ -6,10 +6,9 @@ in
 {
   config = lib.mkIf enabled {
     home.packages = with pkgs; [
-      rustup # Recommended for managing multiple toolchains
-      # or just the base if preferred:
-      # cargo
-      # rustc
+      rustup # Recommended for managing multiple toolchains (includes rust-analyzer component)
+      cargo-expand
+      cargo-edit
     ];
   };
 }

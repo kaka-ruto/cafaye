@@ -143,12 +143,31 @@ maybe_add_fleet_window() {
 maybe_add_fleet_window
 
 if [[ "$DRY_RUN" -eq 1 ]]; then
-  echo "Workspace Session: ${CAF_WORKSPACE_SESSION}"
+  echo -e "\033[1;34m🏗️  Cafaye Workspace Plan\033[0m"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "Session Name: ${CAF_WORKSPACE_SESSION}"
   echo "Start Window: ${CAF_WORKSPACE_START_WINDOW}"
-  echo "Windows:"
+  echo ""
+  echo "Windows & Commands:"
   for w in "${CAF_WORKSPACE_WINDOWS[@]}"; do
-    echo "  - ${w}"
+    name="${w%%|*}"
+    cmd="${w#*|}"
+    if [[ "$cmd" == "$w" ]]; then cmd="(no command)"; fi
+    
+    echo -e "  [${name}]"
+    echo -e "    └─ command: ${cmd}"
+    
+    # Simple validation check for the first word of the command
+    if [[ -n "$cmd" && "$cmd" != "(no command)" ]]; then
+      first_cmd=$(echo "$cmd" | awk '{print $1}' | tr -d '"' | tr -d "'")
+      if [[ "$first_cmd" == "command" ]] || [[ "$first_cmd" == "cd" ]]; then
+         : # complex shell command, skip simple check
+      elif ! command -v "$first_cmd" >/dev/null 2>&1; then
+         echo -e "    \033[1;33m⚠ Warning: '$first_cmd' not found on PATH\033[0m"
+      fi
+    fi
   done
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   exit 0
 fi
 

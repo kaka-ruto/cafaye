@@ -7,6 +7,14 @@ set -euo pipefail
 echo "🚀 Applying Cafaye Foundation Changes..."
 export NIX_CONFIG="experimental-features = nix-command flakes"
 
+# Structured Logging
+LOG_DIR="$HOME/.config/cafaye/logs"
+mkdir -p "$LOG_DIR"
+LOG_FILE="$LOG_DIR/rebuild.log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+echo "--- Rebuild started: $(date) ---"
+
 CAFAYE_DIR="$HOME/.config/cafaye"
 if [[ ! -d "$CAFAYE_DIR" ]]; then
     # Fallback to current directory for dev

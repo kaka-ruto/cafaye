@@ -6,6 +6,18 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOCAL_REPO_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+SECRETS_DIR="${LOCAL_REPO_DIR}/secrets"
+FLEET_YAML="${SECRETS_DIR}/fleet.yaml"
+
+# Structured Logging
+LOG_DIR="$HOME/.config/cafaye/logs"
+mkdir -p "$LOG_DIR"
+LOG_FILE="$LOG_DIR/fleet.log"
+# We only redirect for heavy operations, not status
+if [[ "${1:-}" != "status" ]] && [[ "${1:-}" != "" ]]; then
+    exec > >(tee -a "$LOG_FILE") 2>&1
+    echo "--- Fleet $1 started: $(date) ---"
+fi
 
 CAFAYE_DIR=""
 if git_root="$(git rev-parse --show-toplevel 2>/dev/null)"; then

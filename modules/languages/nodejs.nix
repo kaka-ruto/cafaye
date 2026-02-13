@@ -7,6 +7,8 @@ in
   config = lib.mkIf enabled {
     home.packages = with pkgs; [
       nodejs_22 # Latest LTS (includes corepack)
+      nodePackages.typescript-language-server
+      nodePackages.vscode-langservers-extracted
     ];
   };
 }

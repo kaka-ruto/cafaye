@@ -11,7 +11,15 @@ fi
 
 cd "$CAFAYE_DIR"
 
-command="$1"
+command="${1:-}"
+
+# Structured Logging
+LOG_DIR="$HOME/.config/cafaye/logs"
+mkdir -p "$LOG_DIR"
+LOG_FILE="$LOG_DIR/sync.log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+echo "--- Sync $command started: $(date) ---"
 
 case "$command" in
     push)
