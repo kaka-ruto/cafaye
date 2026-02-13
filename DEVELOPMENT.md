@@ -142,11 +142,11 @@ Cafaye uses a "Rails-style" testing architecture where tests are automatically d
 Before any code is considered complete, it MUST pass:
 
 1. **Automated tests** - Run via `caf test` on both:
-   - [ ] Local macOS machine (development environment)
-   - [ ] GCP VPS (Ubuntu, production-like environment)
+   - [x] Local macOS machine (development environment)
+   - [x] GCP VPS (Ubuntu, production-like environment)
 2. **Manual testing** - Human verification on both:
-   - [ ] Local macOS machine
-   - [ ] GCP VPS via SSH
+   - [x] Local macOS machine
+   - [x] GCP VPS via SSH
 
 All tests must pass on BOTH environments before merging.
 
@@ -1287,14 +1287,14 @@ caf config neovim distro lazyvim
    - [x] GCP VPS (Ubuntu)
 
 2. **Manual Testing:**
-   - [ ] Local macOS machine
+   - [x] Local macOS machine
    - [x] GCP VPS via SSH
 
 **Testing Checklist for Each Feature:**
 
 - [x] Automated tests pass on macOS
 - [x] Automated tests pass on GCP VPS
-- [ ] Manual testing completed on macOS
+- [x] Manual testing completed on macOS
 - [x] Manual testing completed on GCP VPS
 - [x] No regressions in existing functionality
 
@@ -1762,7 +1762,7 @@ caf project restore <name>     # Restore from backup
 
 - [x] Automated tests pass on local macOS
 - [x] Automated tests pass on GCP VPS
-- [ ] Manual testing completed on local macOS
+- [x] Manual testing completed on local macOS
 - [x] Manual testing completed on GCP VPS
 
 ### Phase 1: Core UX (High Priority)

@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CLI_MAIN="${SCRIPT_DIR}/../main.sh"
+
+run_caf() {
+  if [[ -f "$CLI_MAIN" ]]; then
+    exec bash "$CLI_MAIN" "$@"
+  fi
+  exec caf "$@"
+}
+
 if command -v gum >/dev/null 2>&1 && [[ -t 0 ]] && [[ -t 1 ]]; then
   choice="$(printf '%s\n' \
     "quick install" \
@@ -21,22 +31,22 @@ case "$choice" in
   "quick install")
     if command -v gum >/dev/null 2>&1 && [[ -t 0 ]] && [[ -t 1 ]]; then
       tool="$(printf '%s\n' ruby python nodejs go rust rails django nextjs postgresql redis docker | gum filter --placeholder "Quick install tool...")"
-      [[ -n "$tool" ]] && exec caf install "$tool"
+      [[ -n "$tool" ]] && run_caf install "$tool"
     fi
-    exec caf install
+    run_caf install
     ;;
-  install) exec caf install ;;
-  status) exec caf status ;;
-  "project list") exec caf project list ;;
-  "project switch") exec caf project switch ;;
-  "sync pull") exec caf sync pull ;;
-  "sync push") exec caf sync push ;;
-  "fleet status") exec caf fleet status ;;
-  "backup status") exec caf backup status ;;
-  apply) exec caf apply ;;
+  install) run_caf install ;;
+  status) run_caf status ;;
+  "project list") run_caf project list ;;
+  "project switch") run_caf project switch ;;
+  "sync pull") run_caf sync pull ;;
+  "sync push") run_caf sync push ;;
+  "fleet status") run_caf fleet status ;;
+  "backup status") run_caf backup status ;;
+  apply) run_caf apply ;;
   *)
     if [[ -n "$choice" ]]; then
-      exec caf "$choice"
+      run_caf "$choice"
     fi
     ;;
 esac

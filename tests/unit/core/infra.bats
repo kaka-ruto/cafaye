@@ -33,7 +33,7 @@ load "../../lib/test_helper"
   run rg -n "CAFAYE_LEADER_KEY|CAFAYE_LEADER_TIMEOUT_MS|CAFAYE_DOUBLE_TAP_MS|bindkey '\\\\em'|bindkey '\\\\ec'|bindkey '\\\\es'|bindkey '\\\\er'|bindkey '\\\\ed'" config/cafaye/zsh/config.zsh
   [ "$status" -eq 0 ]
 
-  run rg -n "caf-search" cli/scripts/caf-search config/cafaye/zsh/config.zsh
+  run rg -n "caf-search|run_caf|CLI_MAIN" cli/scripts/caf-search config/cafaye/zsh/config.zsh
   [ "$status" -eq 0 ]
 }
 
