@@ -6,7 +6,7 @@
     settings = {
       add_newline = true;
       command_timeout = 200;
-      format = "[$directory$git_branch$git_status]($style)$character";
+      format = "[$custom.cafaye$directory$git_branch$git_status]($style)$character";
       palette = "catppuccin_mocha";
 
       palettes.catppuccin_mocha = {
@@ -67,6 +67,19 @@
         up_to_date = " ";
         untracked = "? ";
         modified = " ";
+      };
+
+      custom.cafaye = {
+        command = ''
+          if [ -f "$HOME/.config/cafaye/projects.json" ]; then
+            p=$(jq -r '.current // "none"' "$HOME/.config/cafaye/projects.json" 2>/dev/null || echo none)
+          else
+            p=none
+          fi
+          printf "☕ %s " "$p"
+        '';
+        when = "test -d $HOME/.config/cafaye";
+        format = "[$output](bold teal)";
       };
     };
   };

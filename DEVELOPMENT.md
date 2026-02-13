@@ -1665,7 +1665,7 @@ caf project restore <name>     # Restore from backup
 
 - [x] Zsh configured with Starship prompt
 - [x] User aliases/functions: config/user/zsh/custom.zsh
-- [ ] Cafaye integration in prompt
+- [x] Cafaye integration in prompt
 - [x] Space leader detection in Zsh
 - [ ] Symlink: ~/.zshrc -> ~/.config/cafaye/config/cafaye/zsh/.zshrc
 - [x] fzf integration (Ctrl+R history, Ctrl+T files)
