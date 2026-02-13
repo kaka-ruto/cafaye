@@ -47,4 +47,4 @@ jobs:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
         continue-on-error: true
       - name: Run one behavioral VM test
-        run: nix build --show-trace .#checks.x86_64-linux.integration.behavioral-single-vm
+        run: nix build --show-trace '.#checks.x86_64-linux."integration.behavioral-single-vm"'
