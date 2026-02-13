@@ -31,6 +31,40 @@ if [[ $- == *i* ]] && command -v caf-state-read >/dev/null 2>&1 && command -v ca
   fi
 fi
 
+# fzf key bindings if available
+if command -v fzf >/dev/null 2>&1; then
+  for fzf_bindings in \
+    "/usr/share/fzf/key-bindings.zsh" \
+    "${HOME}/.nix-profile/share/fzf/key-bindings.zsh" \
+    "/etc/profiles/per-user/${USER}/share/fzf/key-bindings.zsh"; do
+    if [[ -f "$fzf_bindings" ]]; then
+      source "$fzf_bindings"
+      break
+    fi
+  done
+fi
+
+# Basic completion for `caf`
+if whence compdef >/dev/null 2>&1; then
+  _cafaye_complete() {
+    local -a cmds
+    cmds=(
+      'install:Install tools'
+      'config:Configure Cafaye'
+      'status:Show status'
+      'project:Project sessions'
+      'apply:Apply changes'
+      'sync:Sync config'
+      'fleet:Fleet operations'
+      'backup:Backup status'
+      'test:Run tests'
+      'update:Update foundation'
+    )
+    _describe 'caf commands' cmds
+  }
+  compdef _cafaye_complete caf
+fi
+
 # Example function: extract many types of archives
 extract() {
   if [ -f "$1" ] ; then

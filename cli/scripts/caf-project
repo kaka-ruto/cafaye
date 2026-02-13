@@ -19,7 +19,7 @@ save() {
 }
 
 list_projects() {
-  jq -r '.projects[]? | "\(.name)\t\(.path)\t\(.last_accessed // "-")"' "$PROJECTS_FILE"
+  jq -r '.projects[]? | "\(.name)\t\(.path)\t\(.last_accessed // "-")\t\((.tags // [])|join(","))\t\(.layout // "-")"' "$PROJECTS_FILE"
 }
 
 create_project() {
@@ -37,7 +37,7 @@ create_project() {
   ts="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
   jq --arg name "$name" --arg path "$path" --arg ts "$ts" '
     if any(.projects[]?; .name == $name) then .
-    else .projects += [{name:$name,path:$path,last_accessed:$ts,tags:[]}] end
+    else .projects += [{name:$name,path:$path,last_accessed:$ts,tags:[],layout:null}] end
     | .current = $name
   ' "$PROJECTS_FILE" | save
   tmux new-session -d -s "proj-${name}" -c "$path" 2>/dev/null || true
@@ -85,13 +85,56 @@ delete_project() {
   echo "Deleted project ${name}"
 }
 
+set_layout() {
+  local name="${1:-}"
+  local layout="${2:-}"
+  if [[ -z "$name" || -z "$layout" ]]; then
+    echo "Usage: caf project layout <name> <layout-name>" >&2
+    exit 1
+  fi
+  jq --arg name "$name" --arg layout "$layout" '
+    .projects = (.projects | map(if .name==$name then .layout=$layout else . end))
+  ' "$PROJECTS_FILE" | save
+  echo "Layout set for ${name}: ${layout}"
+}
+
+add_tag() {
+  local name="${1:-}"
+  local tag="${2:-}"
+  if [[ -z "$name" || -z "$tag" ]]; then
+    echo "Usage: caf project tag-add <name> <tag>" >&2
+    exit 1
+  fi
+  jq --arg name "$name" --arg tag "$tag" '
+    .projects = (.projects | map(
+      if .name==$name then .tags = (((.tags // []) + [$tag]) | unique) else . end
+    ))
+  ' "$PROJECTS_FILE" | save
+  echo "Added tag '${tag}' to ${name}"
+}
+
+remove_tag() {
+  local name="${1:-}"
+  local tag="${2:-}"
+  if [[ -z "$name" || -z "$tag" ]]; then
+    echo "Usage: caf project tag-rm <name> <tag>" >&2
+    exit 1
+  fi
+  jq --arg name "$name" --arg tag "$tag" '
+    .projects = (.projects | map(
+      if .name==$name then .tags = ((.tags // []) | map(select(. != $tag))) else . end
+    ))
+  ' "$PROJECTS_FILE" | save
+  echo "Removed tag '${tag}' from ${name}"
+}
+
 show_list() {
   local rows
   rows="$(list_projects || true)"
   if [[ -z "$rows" ]]; then
     echo "No projects configured."
   else
-    printf "NAME\tPATH\tLAST ACCESSED\n"
+    printf "NAME\tPATH\tLAST ACCESSED\tTAGS\tLAYOUT\n"
     printf "%s\n" "$rows"
   fi
   echo "Current: $(jq -r '.current // "none"' "$PROJECTS_FILE")"
@@ -115,8 +158,11 @@ case "$sub" in
     ;;
   switch) switch_project "${1:-}" ;;
   delete) delete_project "${1:-}" ;;
+  layout) set_layout "${1:-}" "${2:-}" ;;
+  tag-add) add_tag "${1:-}" "${2:-}" ;;
+  tag-rm) remove_tag "${1:-}" "${2:-}" ;;
   *)
-    echo "Usage: caf project [list|create|switch|delete]" >&2
+    echo "Usage: caf project [list|create|switch|delete|layout|tag-add|tag-rm]" >&2
     exit 1
     ;;
 esac

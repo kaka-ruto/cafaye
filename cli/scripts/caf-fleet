@@ -51,6 +51,8 @@ show_fleet_status() {
              ip="$(echo "$entry" | jq -r '.value.tailscale_ip')"
              if timeout 2 bash -lc "ping -c 1 -W 1 \"$ip\" >/dev/null 2>&1"; then
                  echo "  - ${name}: reachable"
+                 proj="$(ssh -o ConnectTimeout=2 "$ip" 'jq -r ".current // \"none\"" ~/.config/cafaye/projects.json 2>/dev/null || echo n/a' 2>/dev/null || echo n/a)"
+                 echo "    project: ${proj}"
              else
                  echo "  - ${name}: unreachable"
              fi

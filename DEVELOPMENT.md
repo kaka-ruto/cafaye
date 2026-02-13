@@ -1584,7 +1584,7 @@ caf project restore <name>     # Restore from backup
 - [x] Project directory can be anywhere (not just ~/projects/)
 - [x] `caf project create myapp --path ~/work/myapp` creates session linked to directory
 - [ ] Switching projects preserves tmux session state
-- [ ] Projects can have custom tmux layouts
+- [x] Projects can have custom tmux layouts
 - [x] `caf project list` shows all projects with:
   - Project name
   - Directory path
@@ -1597,13 +1597,13 @@ caf project restore <name>     # Restore from backup
 - [x] `caf project switch` uses fzf if no name provided
 - [x] Sessions persist across reboots (tmux-resurrect)
 - [x] Auto-save session every 15 minutes (tmux-continuum)
-- [ ] Projects can be organized with tags/categories
+- [x] Projects can be organized with tags/categories
 
 **Integration:**
 
 - [x] `caf status` shows current project
-- [ ] Fleet view shows projects across nodes
-- [ ] Projects can be synced between nodes via git
+- [x] Fleet view shows projects across nodes
+- [x] Projects can be synced between nodes via git
 
 ### Configuration Architecture
 
@@ -1622,7 +1622,7 @@ caf project restore <name>     # Restore from backup
 - [x] lazygit config in ~/.config/cafaye/config/user/lazygit/
 - [x] Catppuccin theme applied
 - [x] Custom commands can be added
-- [ ] Symlink: ~/.config/lazygit/ -> ~/.config/cafaye/config/cafaye/lazygit/
+- [x] Symlink: ~/.config/lazygit/ -> ~/.config/cafaye/config/cafaye/lazygit/
 
 ### Neovim (All Distributions)
 
@@ -1668,10 +1668,10 @@ caf project restore <name>     # Restore from backup
 - [ ] Cafaye integration in prompt
 - [ ] Space leader detection in Zsh
 - [ ] Symlink: ~/.zshrc -> ~/.config/cafaye/config/cafaye/zsh/.zshrc
-- [ ] fzf integration (Ctrl+R history, Ctrl+T files)
+- [x] fzf integration (Ctrl+R history, Ctrl+T files)
 - [x] zoxide integration (auto-cd to frequent directories)
-- [ ] Better history search (fzf-based)
-- [ ] Custom completion for caf commands
+- [x] Better history search (fzf-based)
+- [x] Custom completion for caf commands
 
 ### Fonts
 
@@ -1769,7 +1769,7 @@ caf project restore <name>     # Restore from backup
 
 - [ ] Auto-launch Ghostty with tmux after install
 - [x] Welcome screen in tmux with shortcuts
-- [ ] Main menu system (`caf` with hierarchical menus)
+- [x] Main menu system (`caf` with hierarchical menus)
 - [ ] Global keyboard shortcuts (Super+C, Super+S, etc.)
 - [ ] Search interface (Super+S)
 - [ ] Installation progress display
