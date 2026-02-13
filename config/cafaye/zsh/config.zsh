@@ -1,6 +1,11 @@
 # Cafaye Zsh Defaults
 # ═══════════════════════════════════════════════════════════════════
 
+# Startup profiling (enable with: CAFAYE_PROFILE_ZSH=1)
+if [[ "${CAFAYE_PROFILE_ZSH:-0}" == "1" ]]; then
+  zmodload zsh/zprof
+fi
+
 # Note: Basic aliases (ls, grep, etc.) are already handled by the HM module
 # This file is for extra shell logic/defaults.
 
@@ -8,10 +13,8 @@
 export PATH="$HOME/.config/cafaye/bin:$PATH"
 export PATH="$HOME/.config/cafaye/config/cafaye/bin:$PATH"
 
-# Greet if interactive
-if [[ $- == *i* ]]; then
-  :
-fi
+# Suppress common noisy errors
+setopt NO_NOMATCH 2>/dev/null || true
 
 # Auto-attach to the Cafaye tmux workspace for terminal-first workflows.
 # Disable by setting: export CAFAYE_AUTO_TMUX=0
@@ -180,3 +183,8 @@ extract() {
     echo "'$1' is not a valid file"
   fi
 }
+
+# Show profiling results if enabled
+if [[ "${CAFAYE_PROFILE_ZSH:-0}" == "1" ]]; then
+  zprof
+fi
