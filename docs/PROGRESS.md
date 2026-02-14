@@ -1,6 +1,6 @@
 # Cafaye OS Release Progress Summary
 
-**Last Updated:** 2026-02-14 01:05 UTC
+**Last Updated:** 2026-02-14 01:35 UTC
 
 ## ✅ Completed Milestones (64/134 items - 48%)
 
@@ -200,6 +200,12 @@ Users cannot onboard without this.
    - Added secret rotation runbook with validation and rollback procedure
    - Added CI artifact uploads for lint/unit/behavioral/packaging diagnostics on every run
    - Added adjustable log verbosity controls (`CAFAYE_LOG_LEVEL`) for core operational scripts
+
+19. **Recovery and Operator-Safety Hardening (NEW)**
+   - Added resumable fleet apply/sync (`--resume`) backed by per-operation progress state files
+   - Added explicit per-node progress counters and operation summaries for long-running fleet actions
+   - Added cancellation-safe handling with resumable hints on interrupt
+   - Added Neovim plugin state doctor and repair workflows (`caf-nvim-distribution-setup --doctor|--repair`)
 
 ## 🎯 Recommended Focus Areas
 

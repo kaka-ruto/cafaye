@@ -7,6 +7,16 @@ set -euo pipefail
 NVIM_CONFIG="$HOME/.config/nvim"
 BACKUP_DIR="$HOME/.config/nvim-backup-$(date +%Y%m%d%H%M%S)"
 MARKER_FILE="$HOME/.config/nvim/.cafaye-distro"
+MODE="setup" # setup|doctor|repair
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --doctor) MODE="doctor" ;;
+    --repair) MODE="repair" ;;
+    *) echo "Usage: caf-nvim-distribution-setup [--doctor|--repair]"; exit 1 ;;
+  esac
+  shift
+done
 
 # Get active distribution
 get_active_distribution() {
@@ -23,9 +33,61 @@ get_active_distribution() {
 distribution=$(get_active_distribution)
 CAFAYE_REPO="${HOME}/.config/cafaye"
 
+plugin_health_check() {
+    local ok=1
+    local marker_dist="unknown"
+    [[ -f "$MARKER_FILE" ]] && marker_dist="$(cat "$MARKER_FILE" 2>/dev/null || echo unknown)"
+    echo "🩺 Neovim plugin health check"
+    echo "  selected distribution: $distribution"
+    echo "  marker distribution:   $marker_dist"
+
+    if [[ ! -d "$NVIM_CONFIG" ]]; then
+        echo "  ❌ Missing $NVIM_CONFIG"
+        ok=0
+    fi
+    if [[ ! -d "$HOME/.local/share/nvim" ]]; then
+        echo "  ⚠️  Missing ~/.local/share/nvim (plugins may not be installed yet)"
+    fi
+    if [[ "$distribution" == "lazyvim" || "$distribution" == "astronvim" ]]; then
+        if [[ ! -f "$NVIM_CONFIG/lazy-lock.json" ]]; then
+            echo "  ⚠️  Missing lazy-lock.json (plugins may need bootstrap)"
+        fi
+    fi
+    if [[ "$distribution" == "none" ]]; then
+        echo "  ❌ No active Neovim distribution selected."
+        ok=0
+    fi
+
+    if [[ "$ok" -eq 1 ]]; then
+        echo "✅ Plugin health looks recoverable."
+        return 0
+    else
+        echo "❌ Plugin state appears broken."
+        return 1
+    fi
+}
+
+repair_plugin_state() {
+    echo "🧹 Repairing Neovim runtime/plugin state..."
+    rm -rf "$HOME/.local/share/nvim" "$HOME/.local/state/nvim" "$HOME/.cache/nvim"
+    mkdir -p "$NVIM_CONFIG"
+    echo "✅ Runtime caches cleared. Re-run setup/bootstrap by launching nvim."
+}
+
 if [[ "$distribution" == "none" ]]; then
     echo "❌ No distribution selected. Run: caf-editor-distribution-set nvim <distribution>"
     exit 1
+fi
+
+if [[ "$MODE" == "doctor" ]]; then
+    plugin_health_check
+    exit $?
+fi
+
+if [[ "$MODE" == "repair" ]]; then
+    repair_plugin_state
+    plugin_health_check || true
+    exit 0
 fi
 
 echo "🔧 Setting up $distribution..."

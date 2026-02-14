@@ -55,6 +55,11 @@ load "../../lib/test_helper"
   [ "$status" -eq 0 ]
 }
 
+@test "neovim distribution setup supports plugin doctor and repair flows" {
+  run rg -n "--doctor|--repair|plugin_health_check|repair_plugin_state|lazy-lock.json|Missing ~/.local/share/nvim" cli/scripts/caf-nvim-distribution-setup
+  [ "$status" -eq 0 ]
+}
+
 @test "neovim modules wire user config symlinks" {
   run rg -n "nvim/lua/user|force = true" modules/editors/neovim/astronvim.nix
   [ "$status" -eq 0 ]
@@ -68,6 +73,11 @@ load "../../lib/test_helper"
 
 @test "fleet status has current-node visual indicator" {
   run rg -n "\\[current\\]|local_node|hostname -s|ip=|role=|host=" cli/scripts/caf-fleet
+  [ "$status" -eq 0 ]
+}
+
+@test "fleet supports resumable sync/apply with progress and cancellation safety" {
+  run rg -n "--resume|Cancel requested|\\[[0-9]+/[0-9]+\\]|fleet-apply.state|fleet-sync.state|summary: success=|trap 'cancelled=1" cli/scripts/caf-fleet
   [ "$status" -eq 0 ]
 }
 

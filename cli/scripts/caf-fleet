@@ -25,7 +25,7 @@ with_retry() {
 }
 
 # Cafaye Fleet Management
-# Usage: caf-fleet [status|add|sync|apply|attach|switch]
+# Usage: caf-fleet [status|add|sync|apply|attach|switch] [--resume]
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOCAL_REPO_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
@@ -66,6 +66,10 @@ fi
 cd "$CAFAYE_DIR" || exit 1
 
 command="${1:-}"
+RESUME=0
+if [[ "${2:-}" == "--resume" ]]; then
+    RESUME=1
+fi
 
 # Identify the SSH key for SOPS
 SSH_PRIVATE_KEY=""
@@ -228,37 +232,97 @@ remove_fleet_node() {
 
 fleet_apply() {
     echo "🚀 Orchestrating fleet-wide apply..."
-    remotes=$(run_sops -d --output-type json secrets/fleet.yaml 2>/dev/null | jq -r '.fleet | to_entries[] | select(.value.role == "remote") | .value.tailscale_ip')
-    [[ -z "$remotes" ]] && { echo "No remote nodes found."; return; }
+    mapfile -t remotes < <(run_sops -d --output-type json secrets/fleet.yaml 2>/dev/null | jq -r '.fleet | to_entries[] | select(.value.role == "remote") | .value.tailscale_ip')
+    [[ "${#remotes[@]}" -eq 0 ]] && { echo "No remote nodes found."; return; }
 
     SSH_OPT=""
     [[ -f "$HOME/.ssh/cafaye" ]] && SSH_OPT="-i $HOME/.ssh/cafaye"
     remote_opts="-o ConnectTimeout=5 -o StrictHostKeyChecking=no"
 
-    for remote in $remotes; do
-        echo "🛠️  Applying on $remote (trace: $CAFAYE_TRACE_ID)..."
-        with_retry ssh $SSH_OPT $remote_opts "$remote" "export CAFAYE_TRACE_ID=$CAFAYE_TRACE_ID && caf apply" || echo "❌ Failed to reach $remote"
+    state_dir="$HOME/.config/cafaye/state"
+    mkdir -p "$state_dir"
+    state_file="$state_dir/fleet-apply.state"
+    [[ "$RESUME" -eq 0 ]] && : > "$state_file"
+    is_completed() {
+      local host="$1"
+      grep -Fxq "$host" "$state_file" 2>/dev/null
+    }
+
+    cancelled=0
+    trap 'cancelled=1; echo "⚠️  Cancel requested. You can resume with: caf-fleet apply --resume"' INT TERM
+
+    total="${#remotes[@]}"
+    index=0
+    ok=0
+    failed=0
+    for remote in "${remotes[@]}"; do
+        index=$((index + 1))
+        if is_completed "$remote"; then
+            echo "⏭️  [${index}/${total}] Skipping already completed node $remote (--resume)."
+            continue
+        fi
+        [[ "$cancelled" -eq 1 ]] && break
+        echo "🛠️  [${index}/${total}] Applying on $remote (trace: $CAFAYE_TRACE_ID)..."
+        if with_retry ssh $SSH_OPT $remote_opts "$remote" "export CAFAYE_TRACE_ID=$CAFAYE_TRACE_ID && caf apply"; then
+            echo "$remote" >> "$state_file"
+            ok=$((ok + 1))
+            echo "✅ Applied on $remote"
+        else
+            failed=$((failed + 1))
+            echo "❌ Failed to reach/apply on $remote"
+        fi
     done
+    trap - INT TERM
+    echo "📊 Apply summary: success=$ok failed=$failed total=$total"
+    [[ "$cancelled" -eq 1 || "$failed" -gt 0 ]] && return 1 || return 0
 }
 
 fleet_sync() {
     echo "📦 Syncing local codebase to all remote nodes..."
-    remotes=$(run_sops -d --output-type json secrets/fleet.yaml 2>/dev/null | jq -r '.fleet | to_entries[] | select(.value.role == "remote") | .value.tailscale_ip')
-    [[ -z "$remotes" ]] && { echo "No remote nodes found."; return; }
+    mapfile -t remotes < <(run_sops -d --output-type json secrets/fleet.yaml 2>/dev/null | jq -r '.fleet | to_entries[] | select(.value.role == "remote") | .value.tailscale_ip')
+    [[ "${#remotes[@]}" -eq 0 ]] && { echo "No remote nodes found."; return; }
 
     SSH_OPT=""
     [[ -f "$HOME/.ssh/cafaye" ]] && SSH_OPT="-i $HOME/.ssh/cafaye"
-    
-    for remote in $remotes; do
-        echo "📤 Syncing to $remote..."
+
+    state_dir="$HOME/.config/cafaye/state"
+    mkdir -p "$state_dir"
+    state_file="$state_dir/fleet-sync.state"
+    [[ "$RESUME" -eq 0 ]] && : > "$state_file"
+    is_completed() {
+      local host="$1"
+      grep -Fxq "$host" "$state_file" 2>/dev/null
+    }
+
+    cancelled=0
+    trap 'cancelled=1; echo "⚠️  Cancel requested. You can resume with: caf-fleet sync --resume"' INT TERM
+
+    total="${#remotes[@]}"
+    index=0
+    ok=0
+    failed=0
+    for remote in "${remotes[@]}"; do
+        index=$((index + 1))
+        if is_completed "$remote"; then
+            echo "⏭️  [${index}/${total}] Skipping already completed node $remote (--resume)."
+            continue
+        fi
+        [[ "$cancelled" -eq 1 ]] && break
+        echo "📤 [${index}/${total}] Syncing to $remote..."
         if with_retry rsync -avz --exclude '.git' --exclude '.devbox' --exclude '.cache' --exclude 'result' \
             -e "ssh $SSH_OPT -o StrictHostKeyChecking=no" \
             ./ "$(whoami)@${remote}:~/.config/cafaye/"; then
+             echo "$remote" >> "$state_file"
+             ok=$((ok + 1))
              echo "✅ Synced $remote"
         else
+             failed=$((failed + 1))
              echo "❌ Failed to sync $remote"
         fi
     done
+    trap - INT TERM
+    echo "📊 Sync summary: success=$ok failed=$failed total=$total"
+    [[ "$cancelled" -eq 1 || "$failed" -gt 0 ]] && return 1 || return 0
 }
 
 fleet_attach() {
@@ -301,5 +365,5 @@ case "$command" in
     apply) fleet_apply ;;
     attach) fleet_attach ;;
     switch) fleet_switch ;;
-    *) echo "Usage: caf fleet [status|add|remove|sync|apply|attach|switch]"; exit 1 ;;
+    *) echo "Usage: caf fleet [status|add|remove|sync|apply|attach|switch] [--resume]"; exit 1 ;;
 esac

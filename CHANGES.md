@@ -50,7 +50,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] Editor distribution switching is safe and reversible.
 - [x] LSP/tooling defaults work for major stacks without manual patching.
 - [x] Local and remote editor experiences are consistent for core workflows.
-- [ ] Broken plugin states are detected and recoverable without manual surgery.
+- [x] Broken plugin states are detected and recoverable without manual surgery.
 
 ## Security and Secrets
 - [x] Secrets are encrypted at rest and never committed to version control.
@@ -64,9 +64,9 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 ## Reliability, Errors, and Recovery
 - [x] All core CLI commands return stable exit codes and human-actionable errors.
 - [x] Transient network failures are retried with bounded backoff and clear logs.
-- [ ] Long-running operations provide progress and cancellation safety.
+- [x] Long-running operations provide progress and cancellation safety.
 - [x] Timeouts are explicit and tuned for CI and real-world remote hosts.
-- [ ] Interrupted operations can resume or safely restart without data loss.
+- [x] Interrupted operations can resume or safely restart without data loss.
 - [x] System doctor diagnostics can identify and prioritize root causes.
 
 ## Testing Architecture and Coverage
