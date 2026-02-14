@@ -17,9 +17,15 @@ command="${1:-}"
 LOG_DIR="$HOME/.config/cafaye/logs"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/sync.log"
-exec > >(tee -a "$LOG_FILE") 2>&1
+LOG_LEVEL="${CAFAYE_LOG_LEVEL:-info}" # quiet|info|debug
+if [[ "$LOG_LEVEL" == "quiet" ]]; then
+    exec >>"$LOG_FILE" 2>&1
+else
+    exec > >(tee -a "$LOG_FILE") 2>&1
+fi
+[[ "$LOG_LEVEL" == "debug" ]] && set -x
 
-echo "--- Sync $command started: $(date) [Trace: ${CAFAYE_TRACE_ID:-none}] ---"
+echo "--- Sync $command started: $(date) [Trace: ${CAFAYE_TRACE_ID:-none}] [level: $LOG_LEVEL] ---"
 
 case "$command" in
     push)

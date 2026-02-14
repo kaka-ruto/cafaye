@@ -1,6 +1,6 @@
 # Cafaye OS Release Progress Summary
 
-**Last Updated:** 2026-02-14 00:25 UTC
+**Last Updated:** 2026-02-14 01:05 UTC
 
 ## ✅ Completed Milestones (64/134 items - 48%)
 
@@ -193,6 +193,13 @@ Users cannot onboard without this.
    - Added cross-platform smoke job on `ubuntu-latest` and `macos-latest`
    - Added explicit Packaging Gate (`checks.x86_64-linux.installer`) after test gates
    - Aligned release checklist status with implemented CI coverage improvements
+
+18. **Security, Docs, and Diagnostics Hardening (NEW)**
+   - Added distributed workflow operations guide for fleet setup, daily flow, and troubleshooting
+   - Added explicit security model with threat assumptions and incident response baseline
+   - Added secret rotation runbook with validation and rollback procedure
+   - Added CI artifact uploads for lint/unit/behavioral/packaging diagnostics on every run
+   - Added adjustable log verbosity controls (`CAFAYE_LOG_LEVEL`) for core operational scripts
 
 ## 🎯 Recommended Focus Areas
 

@@ -54,7 +54,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 
 ## Security and Secrets
 - [x] Secrets are encrypted at rest and never committed to version control.
-- [ ] Secret rotation workflows are documented and tested.
+- [x] Secret rotation workflows are documented and tested.
 - [x] SOPS integration works reliably across local and remote nodes.
 - [x] Sensitive data is never leaked to logs, terminal history, or CI artifacts.
 - [ ] Principle of least privilege is enforced for scripts and remote operations.
@@ -84,7 +84,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] CI runs on every PR and on every push to the main branch.
 - [x] Required checks enforce lint, unit, behavioral integration, and packaging gates.
 - [x] CI status tooling can fetch latest/commit-specific runs with logs in one command.
-- [ ] Failed CI jobs provide enough diagnostics to debug without reruns.
+- [x] Failed CI jobs provide enough diagnostics to debug without reruns.
 - [ ] Release builds are reproducible and signed where applicable.
 - [ ] Versioning, changelog generation, and release notes are consistent and automated.
 - [ ] Branch protections prevent unreviewed or failing changes from merging.
@@ -99,7 +99,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 
 ## Observability and Diagnostics
 - [x] Structured logs exist for install, update, sync, and fleet workflows.
-- [ ] Log verbosity can be adjusted without losing essential diagnostics.
+- [x] Log verbosity can be adjusted without losing essential diagnostics.
 - [x] Diagnostic bundles are safe to share and redact sensitive material.
 - [x] Health commands provide concise summary plus deep-dive details.
 - [x] Failure telemetry can be correlated across local and remote nodes using Trace IDs.
@@ -109,8 +109,8 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] Supported OS versions, limitations, and known constraints are explicit.
 - [x] Migration guides exist for users coming from other dotfile/dev-env systems.
 - [x] Customization docs clearly explain what users should and should not edit.
-- [ ] Distributed workflow docs cover fleet setup, daily flow, and troubleshooting.
-- [ ] Security model and threat assumptions are clearly documented.
+- [x] Distributed workflow docs cover fleet setup, daily flow, and troubleshooting.
+- [x] Security model and threat assumptions are clearly documented.
 
 ## Product and Ecosystem Fit
 - [ ] Default templates cover major engineer personas and common stack combinations.

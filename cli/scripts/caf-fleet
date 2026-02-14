@@ -39,10 +39,16 @@ export CAFAYE_TRACE_ID="caf-$(date +%s)-$RANDOM"
 LOG_DIR="$HOME/.config/cafaye/logs"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/fleet.log"
-# We only redirect for heavy operations, not status
+LOG_LEVEL="${CAFAYE_LOG_LEVEL:-info}" # quiet|info|debug
+# We only redirect for heavy operations, not status.
 if [[ "${1:-}" != "status" ]] && [[ "${1:-}" != "" ]]; then
-    exec > >(tee -a "$LOG_FILE") 2>&1
-    echo "--- Fleet $1 started: $(date) [Trace: $CAFAYE_TRACE_ID] ---"
+    if [[ "$LOG_LEVEL" == "quiet" ]]; then
+        exec >>"$LOG_FILE" 2>&1
+    else
+        exec > >(tee -a "$LOG_FILE") 2>&1
+    fi
+    [[ "$LOG_LEVEL" == "debug" ]] && set -x
+    echo "--- Fleet $1 started: $(date) [Trace: $CAFAYE_TRACE_ID] [level: $LOG_LEVEL] ---"
 fi
 
 CAFAYE_DIR=""

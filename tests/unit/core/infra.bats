@@ -131,3 +131,32 @@ load "../../lib/test_helper"
   run rg -n "caf-ci-status|--latest|--commit|--logs|gh run list|gh run view" cli/scripts/caf-ci-status
   [ "$status" -eq 0 ]
 }
+
+@test "ci workflow uploads diagnostics artifacts for failed jobs" {
+  run rg -n "upload-artifact@v4|lint-and-eval-logs|unit-test-logs|behavioral-single-vm-logs|packaging-gate-logs" .github/workflows/factory.yml
+  [ "$status" -eq 0 ]
+}
+
+@test "core scripts support adjustable log verbosity levels" {
+  run rg -n "CAFAYE_LOG_LEVEL|quiet\\|info\\|debug|level: \\$LOG_LEVEL" cli/scripts/caf-fleet cli/scripts/caf-sync cli/scripts/caf-system-rebuild
+  [ "$status" -eq 0 ]
+}
+
+@test "distributed workflow and security model docs exist" {
+  run test -f docs/DISTRIBUTED-WORKFLOW.md
+  [ "$status" -eq 0 ]
+
+  run test -f docs/SECURITY-MODEL.md
+  [ "$status" -eq 0 ]
+
+  run rg -n "Threat Assumptions|Trust Boundaries|Incident Response" docs/SECURITY-MODEL.md
+  [ "$status" -eq 0 ]
+}
+
+@test "secret rotation runbook exists with validation workflow" {
+  run test -f docs/SECRET-ROTATION.md
+  [ "$status" -eq 0 ]
+
+  run rg -n "Rotation Workflow|Validation Checklist|Rollback Plan" docs/SECRET-ROTATION.md
+  [ "$status" -eq 0 ]
+}

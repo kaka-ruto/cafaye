@@ -22,7 +22,16 @@ jobs:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
         continue-on-error: true
       - name: Fast lint and evaluation
-        run: bash bin/test.sh --lint
+        run: |
+          set -o pipefail
+          bash bin/test.sh --lint 2>&1 | tee lint-and-eval.log
+      - name: Upload lint diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-and-eval-logs
+          path: |
+            lint-and-eval.log
 
   cross-platform-smoke:
     name: Cross-Platform Smoke (${{ matrix.os }})
@@ -55,7 +64,16 @@ jobs:
       - name: Install bats
         run: sudo apt-get update && sudo apt-get install -y bats
       - name: Run unit tests
-        run: bash bin/test.sh unit
+        run: |
+          set -o pipefail
+          bash bin/test.sh unit 2>&1 | tee unit-tests.log
+      - name: Upload unit diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-logs
+          path: |
+            unit-tests.log
 
   behavioral-single-vm:
     name: Behavioral (Single VM)
@@ -74,7 +92,16 @@ jobs:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
         continue-on-error: true
       - name: Run one behavioral VM test
-        run: nix build --show-trace '.#checks.x86_64-linux."integration.behavioral_core_single_vm"'
+        run: |
+          set -o pipefail
+          nix build --show-trace '.#checks.x86_64-linux."integration.behavioral_core_single_vm"' 2>&1 | tee behavioral-single-vm.log
+      - name: Upload behavioral diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: behavioral-single-vm-logs
+          path: |
+            behavioral-single-vm.log
 
   packaging:
     name: Packaging Gate
@@ -96,4 +123,13 @@ jobs:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
         continue-on-error: true
       - name: Build installer package gate
-        run: nix build --show-trace '.#checks.x86_64-linux.installer'
+        run: |
+          set -o pipefail
+          nix build --show-trace '.#checks.x86_64-linux.installer' 2>&1 | tee packaging-gate.log
+      - name: Upload packaging diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaging-gate-logs
+          path: |
+            packaging-gate.log

@@ -11,9 +11,15 @@ export NIX_CONFIG="experimental-features = nix-command flakes"
 LOG_DIR="$HOME/.config/cafaye/logs"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/rebuild.log"
-exec > >(tee -a "$LOG_FILE") 2>&1
+LOG_LEVEL="${CAFAYE_LOG_LEVEL:-info}" # quiet|info|debug
+if [[ "$LOG_LEVEL" == "quiet" ]]; then
+    exec >>"$LOG_FILE" 2>&1
+else
+    exec > >(tee -a "$LOG_FILE") 2>&1
+fi
+[[ "$LOG_LEVEL" == "debug" ]] && set -x
 
-echo "--- Rebuild started: $(date) [Trace: ${CAFAYE_TRACE_ID:-none}] ---"
+echo "--- Rebuild started: $(date) [Trace: ${CAFAYE_TRACE_ID:-none}] [level: $LOG_LEVEL] ---"
 
 CAFAYE_DIR="$HOME/.config/cafaye"
 if [[ ! -d "$CAFAYE_DIR" ]]; then
