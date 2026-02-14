@@ -76,8 +76,8 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] Cross-platform test matrix validates Linux and macOS critical paths.
 - [x] Tests assert expected behavior, not implementation details.
 - [x] Test runtime is bounded and fast enough for PR feedback loops.
-- [ ] Flaky tests are tracked, quarantined, and driven to zero.
-- [ ] Real-world smoke tests validate fleet workflows against remote hosts.
+- [x] Flaky tests are tracked, quarantined, and driven to zero.
+- [x] Real-world smoke tests validate fleet workflows against remote hosts.
 - [x] Fresh install test suite validates installer on clean VPS/VM.
 
 ## CI/CD and Release Gates

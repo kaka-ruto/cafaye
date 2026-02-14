@@ -77,6 +77,11 @@ run_real_world_single_vm() {
     bash tests/integration/behavioral_realworld_gcp_single_vm.sh
 }
 
+run_real_world_fleet_smoke() {
+    echo -e "\n${BLUE}☁️  Running real-world fleet smoke test...${NC}"
+    bash tests/integration/real-world/fleet-smoke.sh
+}
+
 # --- Main Logic ---
 
 TARGET=""
@@ -126,6 +131,9 @@ else
             ;;
         "real-world")
             run_real_world_single_vm
+            ;;
+        "real-world-fleet")
+            run_real_world_fleet_smoke
             ;;
         "unit")
             run_unit

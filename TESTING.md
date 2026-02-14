@@ -48,6 +48,7 @@ caf-test integration modules-ruby        # Test specific module
 
 # --- Real-World Tests (VPS) ---
 caf-test real-world                      # Full VPS provisioning tests
+caf-test real-world-fleet                # Fleet workflow smoke tests (non-destructive by default)
 
 # --- Shortcut Suites ---
 caf-test lint           # Static analysis only (fastest)
@@ -187,6 +188,21 @@ If tests timeout:
 - Check available RAM (need 4GB+ free)
 - Check disk space (need 20GB+ free)
 - Try running specific tests instead of `all`
+
+### Flaky Test Quarantine
+
+Use the quarantine registry to track unstable tests and enforce zero tolerated flaky tests in CI:
+
+```bash
+# Show quarantine entries
+cli/scripts/caf-test-quarantine
+
+# Enforce empty quarantine list (CI mode)
+cli/scripts/caf-test-quarantine --strict
+```
+
+Registry location:
+- `tests/flaky/quarantine.txt`
 
 ---
 

@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+FILE="$REPO_ROOT/tests/flaky/quarantine.txt"
+STRICT=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --strict) STRICT=1 ;;
+    --help|-h)
+      echo "Usage: caf-test-quarantine [--strict]"
+      echo "  --strict   fail if any quarantined tests are present"
+      exit 0
+      ;;
+    *) echo "Unknown option: $1"; exit 1 ;;
+  esac
+  shift
+done
+
+if [[ ! -f "$FILE" ]]; then
+  echo "❌ Missing quarantine file: $FILE"
+  exit 1
+fi
+
+entries="$(grep -vE '^\s*#|^\s*$' "$FILE" || true)"
+count=0
+if [[ -n "$entries" ]]; then
+  count="$(printf '%s\n' "$entries" | wc -l | tr -d ' ')"
+fi
+
+echo "Flaky quarantine entries: $count"
+if [[ "$count" -gt 0 ]]; then
+  echo ""
+  echo "$entries"
+fi
+
+if [[ "$STRICT" -eq 1 && "$count" -gt 0 ]]; then
+  echo "❌ Strict mode enabled: quarantined tests must be driven to zero."
+  exit 1
+fi
+
+echo "✅ Quarantine check complete"

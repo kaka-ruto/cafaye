@@ -1,0 +1,6 @@
+# Flaky test quarantine list
+# Format:
+# <test-id>|<owner>|<added-date>|<reason>
+#
+# Example:
+# tests/integration/foo.nix::boot-race|@cafaye/core|2026-02-14|Intermittent VM boot timing variance

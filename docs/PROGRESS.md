@@ -1,6 +1,6 @@
 # Cafaye OS Release Progress Summary
 
-**Last Updated:** 2026-02-14 01:50 UTC
+**Last Updated:** 2026-02-14 02:05 UTC
 
 ## ✅ Completed Milestones (64/134 items - 48%)
 
@@ -212,6 +212,12 @@ Users cannot onboard without this.
    - Added `cdf` helper for fuzzy directory jumping with graceful fallback
    - Added `Alt+j` binding for keyboard-first navigation flow
    - Added dedicated terminal navigation behavior documentation
+
+21. **Test Governance and Fleet Smoke (NEW)**
+   - Added flaky test quarantine registry (`tests/flaky/quarantine.txt`)
+   - Added quarantine checker with strict CI enforcement (`caf-test-quarantine --strict`)
+   - Added real-world fleet smoke test harness (`tests/integration/real-world/fleet-smoke.sh`)
+   - Added `caf-test real-world-fleet` entry point for repeatable operator validation
 
 ## 🎯 Recommended Focus Areas
 

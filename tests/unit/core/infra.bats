@@ -133,7 +133,7 @@ load "../../lib/test_helper"
 }
 
 @test "single-vm real-world audit exists and is wired in test runner" {
-  run rg -n "behavioral_realworld_gcp_single_vm\\.sh|cafaye-vps-test|us-central1-a|real-world" tests/integration/behavioral_realworld_gcp_single_vm.sh bin/test.sh
+  run rg -n "behavioral_realworld_gcp_single_vm\\.sh|cafaye-vps-test|us-central1-a|real-world|real-world-fleet|fleet-smoke\\.sh" tests/integration/behavioral_realworld_gcp_single_vm.sh tests/integration/real-world/fleet-smoke.sh bin/test.sh
   [ "$status" -eq 0 ]
 }
 
@@ -152,6 +152,14 @@ load "../../lib/test_helper"
 
 @test "ci workflow uploads diagnostics artifacts for failed jobs" {
   run rg -n "upload-artifact@v4|lint-and-eval-logs|unit-test-logs|behavioral-single-vm-logs|packaging-gate-logs" .github/workflows/factory.yml
+  [ "$status" -eq 0 ]
+}
+
+@test "flaky test quarantine is tracked and enforceable in ci" {
+  run test -f tests/flaky/quarantine.txt
+  [ "$status" -eq 0 ]
+
+  run rg -n "caf-test-quarantine|--strict|Flaky quarantine tracking" cli/scripts/caf-test-quarantine .github/workflows/factory.yml
   [ "$status" -eq 0 ]
 }
 
