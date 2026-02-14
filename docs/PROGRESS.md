@@ -1,6 +1,6 @@
 # Cafaye OS Release Progress Summary
 
-**Last Updated:** 2026-02-14 02:20 UTC
+**Last Updated:** 2026-02-14 02:35 UTC
 
 ## ✅ Completed Milestones (64/134 items - 48%)
 
@@ -224,6 +224,11 @@ Users cannot onboard without this.
    - Enforced batch/identity-only SSH options for least-privilege remote operations
    - Added automated security/supply-chain audit gate in CI
    - Added explicit checks for lockfile presence and floating workflow action refs
+
+23. **Reproducibility and Safe Upgrades (NEW)**
+   - Added `caf-bootstrap-from-git` for reproducible environment creation from repo/ref state
+   - Added `caf-upgrade-safe` with state backup, pull/rebuild, and restore-on-failure semantics
+   - Added dedicated reproducibility and upgrade runbook documentation
 
 ## 🎯 Recommended Focus Areas
 

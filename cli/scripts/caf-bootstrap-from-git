@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<USAGE
+Usage: caf-bootstrap-from-git <repo-url> [ref] [--dry-run] [--force]
+
+Examples:
+  caf-bootstrap-from-git https://github.com/cafaye/cafaye main
+  caf-bootstrap-from-git git@github.com:user/cafaye.git v1.0.0 --force
+USAGE
+}
+
+[[ $# -lt 1 ]] && usage && exit 1
+
+REPO_URL="$1"
+shift
+REF=""
+DRY_RUN=0
+FORCE=0
+
+if [[ $# -gt 0 && "$1" != --* ]]; then
+  REF="$1"
+  shift
+fi
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --dry-run) DRY_RUN=1 ;;
+    --force) FORCE=1 ;;
+    --help|-h) usage; exit 0 ;;
+    *) echo "Unknown option: $1"; usage; exit 1 ;;
+  esac
+  shift
+done
+
+TARGET_DIR="${HOME}/.config/cafaye"
+TMP_DIR="${TARGET_DIR}.bootstrap.tmp"
+
+if [[ -d "$TARGET_DIR" && "$FORCE" -ne 1 ]]; then
+  echo "❌ ${TARGET_DIR} already exists. Use --force to replace it."
+  exit 1
+fi
+
+echo "🚀 Cafaye bootstrap from git"
+echo "  repo: $REPO_URL"
+echo "  ref:  ${REF:-default}"
+echo "  dest: $TARGET_DIR"
+
+if [[ "$DRY_RUN" -eq 1 ]]; then
+  echo "🧪 Dry run: no changes made."
+  exit 0
+fi
+
+rm -rf "$TMP_DIR"
+
+git clone "$REPO_URL" "$TMP_DIR"
+if [[ -n "$REF" ]]; then
+  git -C "$TMP_DIR" fetch --all --tags
+  git -C "$TMP_DIR" checkout "$REF"
+fi
+
+if [[ -d "$TARGET_DIR" ]]; then
+  backup_dir="${TARGET_DIR}.backup.$(date +%Y%m%d%H%M%S)"
+  mv "$TARGET_DIR" "$backup_dir"
+  echo "📦 Existing install backed up to: $backup_dir"
+fi
+
+mv "$TMP_DIR" "$TARGET_DIR"
+
+cd "$TARGET_DIR"
+if [[ -x "./install.sh" ]]; then
+  echo "🔨 Running installer for reproducible setup..."
+  bash ./install.sh --yes
+else
+  echo "❌ install.sh not found in cloned repository."
+  exit 1
+fi
+
+echo "✅ Bootstrap complete from Git source state."

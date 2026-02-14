@@ -171,6 +171,17 @@ load "../../lib/test_helper"
   [ "$status" -eq 0 ]
 }
 
+@test "reproducibility bootstrap and safe upgrade scripts exist" {
+  run rg -n "caf-bootstrap-from-git|--dry-run|--force|install.sh --yes|Bootstrap complete" cli/scripts/caf-bootstrap-from-git
+  [ "$status" -eq 0 ]
+
+  run rg -n "caf-upgrade-safe|backups/upgrades|git pull --rebase|caf-system-rebuild|State backup captured" cli/scripts/caf-upgrade-safe
+  [ "$status" -eq 0 ]
+
+  run test -f docs/REPRODUCIBILITY.md
+  [ "$status" -eq 0 ]
+}
+
 @test "core scripts support adjustable log verbosity levels" {
   run rg -n "CAFAYE_LOG_LEVEL|quiet\\|info\\|debug|level: \\$LOG_LEVEL" cli/scripts/caf-fleet cli/scripts/caf-sync cli/scripts/caf-system-rebuild
   [ "$status" -eq 0 ]

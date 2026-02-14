@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<USAGE
+Usage: caf-upgrade-safe [--yes] [--dry-run]
+USAGE
+}
+
+CONFIRM=1
+DRY_RUN=0
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --yes|-y) CONFIRM=0 ;;
+    --dry-run) DRY_RUN=1 ;;
+    --help|-h) usage; exit 0 ;;
+    *) echo "Unknown option: $1"; usage; exit 1 ;;
+  esac
+  shift
+done
+
+CAFAYE_DIR="${HOME}/.config/cafaye"
+[[ -d "$CAFAYE_DIR" ]] || CAFAYE_DIR="$(pwd)"
+
+if [[ ! -f "$CAFAYE_DIR/flake.nix" ]]; then
+  echo "❌ Cafaye repository not found at: $CAFAYE_DIR"
+  exit 1
+fi
+
+cd "$CAFAYE_DIR"
+
+backup_root="$HOME/.config/cafaye/backups/upgrades"
+backup_dir="$backup_root/$(date +%Y%m%d%H%M%S)"
+
+cat <<INFO
+⬆️  Safe upgrade plan
+  repo: $CAFAYE_DIR
+  backup: $backup_dir
+INFO
+
+if [[ "$CONFIRM" -eq 1 ]]; then
+  read -r -p "Proceed with safe upgrade? [y/N] " ans
+  [[ "$ans" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 0; }
+fi
+
+if [[ "$DRY_RUN" -eq 1 ]]; then
+  echo "🧪 Dry run: no changes made."
+  exit 0
+fi
+
+mkdir -p "$backup_dir"
+
+# Preserve user/state-critical data before pulling changes.
+for p in config/user settings.json environment.json projects.json secrets; do
+  if [[ -e "$p" ]]; then
+    cp -a "$p" "$backup_dir/"
+  fi
+done
+
+echo "📦 State backup captured at: $backup_dir"
+
+current_branch="$(git rev-parse --abbrev-ref HEAD)"
+
+echo "📥 Pulling latest changes from origin/$current_branch..."
+if ! git pull --rebase origin "$current_branch"; then
+  echo "❌ Pull/rebase failed. Your backup is safe at: $backup_dir"
+  exit 1
+fi
+
+echo "🔨 Rebuilding Cafaye..."
+if ! bash cli/scripts/caf-system-rebuild; then
+  echo "❌ Rebuild failed. Restoring preserved state..."
+  for p in config/user settings.json environment.json projects.json secrets; do
+    if [[ -e "$backup_dir/$p" ]]; then
+      rm -rf "$p"
+      cp -a "$backup_dir/$p" "$p"
+    fi
+  done
+  echo "⚠️  State restored from backup."
+  exit 1
+fi
+
+echo "✅ Safe upgrade complete."
