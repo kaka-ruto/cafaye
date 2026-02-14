@@ -142,6 +142,25 @@ maybe_add_fleet_window() {
 }
 maybe_add_fleet_window
 
+# Ensure deterministic window definitions and prevent duplicate names.
+dedupe_workspace_windows() {
+  local -A seen=()
+  local deduped=()
+  local w name
+  for w in "${CAF_WORKSPACE_WINDOWS[@]}"; do
+    name="${w%%|*}"
+    [[ -z "$name" ]] && continue
+    if [[ -n "${seen[$name]:-}" ]]; then
+      echo "⚠️  Duplicate workspace window '$name' ignored." >&2
+      continue
+    fi
+    seen["$name"]=1
+    deduped+=("$w")
+  done
+  CAF_WORKSPACE_WINDOWS=("${deduped[@]}")
+}
+dedupe_workspace_windows
+
 if [[ "$DRY_RUN" -eq 1 ]]; then
   echo -e "\033[1;34m🏗️  Cafaye Workspace Plan\033[0m"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -172,6 +191,11 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
 fi
 
 create_session() {
+  if ! command -v tmux >/dev/null 2>&1; then
+    echo "❌ tmux is required to run workspace sessions. Install tmux or use --dry-run." >&2
+    exit 1
+  fi
+
   local first=1
   local window_def name cmd
 

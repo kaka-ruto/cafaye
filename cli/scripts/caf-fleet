@@ -125,7 +125,7 @@ show_fleet_status() {
              if [[ "$host" == "$local_node" || "$name" == "$local_node" ]]; then
                  marker=" [current]"
              fi
-             echo "  - ${name}: ${ip} (${role})${marker}"
+             echo "  - ${name}: ip=${ip} role=${role} host=${host}${marker}"
          done
          echo ""
          echo "Connectivity:"

@@ -19,7 +19,7 @@ load "../../lib/test_helper"
   run rg -n "caf-workspace-run" cli/scripts/caf-workspace-init
   [ "$status" -eq 0 ]
 
-  run rg -n "workspace\\.yml|parse_workspace_yaml|CAF_WORKSPACE_WINDOWS" cli/scripts/caf-workspace-run
+  run rg -n "workspace\\.yml|parse_workspace_yaml|CAF_WORKSPACE_WINDOWS|dedupe_workspace_windows|Duplicate workspace window|tmux is required" cli/scripts/caf-workspace-run
   [ "$status" -eq 0 ]
 
   run rg -n "session:|start_window:|windows:" config/user/tmux/workspace.yml
@@ -67,7 +67,7 @@ load "../../lib/test_helper"
 }
 
 @test "fleet status has current-node visual indicator" {
-  run rg -n "\\[current\\]|local_node|hostname -s" cli/scripts/caf-fleet
+  run rg -n "\\[current\\]|local_node|hostname -s|ip=|role=|host=" cli/scripts/caf-fleet
   [ "$status" -eq 0 ]
 }
 

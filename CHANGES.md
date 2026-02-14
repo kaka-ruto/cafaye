@@ -26,15 +26,15 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] Fleet apply operations show clear per-node success/failure outcomes.
 - [x] Partial fleet failures do not block healthy nodes from completing operations.
 - [x] Fleet attach/switch workflows are stable across many concurrent nodes.
-- [ ] Node identity, role, and current project context are always unambiguous.
+- [x] Node identity, role, and current project context are always unambiguous.
 
 ## Workspace Orchestration
 - [x] Workspace definitions are customizable via user-owned config only.
 - [x] Workspace startup is deterministic across local and remote hosts.
 - [x] Dry-run mode always reports exact session/window/command plan.
 - [x] Invalid workspace configs fail fast with actionable validation errors.
-- [ ] Default workspace works even when optional tools are unavailable.
-- [ ] Multi-node workspace behavior is predictable and does not duplicate windows.
+- [x] Default workspace works even when optional tools are unavailable.
+- [x] Multi-node workspace behavior is predictable and does not duplicate windows.
 
 ## Terminal and Shell Experience
 - [x] tmux startup, session reuse, and keybindings are consistent across platforms.
