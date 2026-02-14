@@ -187,6 +187,37 @@ load "../../lib/test_helper"
   [ "$status" -eq 0 ]
 }
 
+@test "persona templates and extensibility/team/ai docs exist" {
+  run test -f templates/personas/backend.md
+  [ "$status" -eq 0 ]
+  run test -f templates/personas/frontend.md
+  [ "$status" -eq 0 ]
+  run test -f templates/personas/data-ml.md
+  [ "$status" -eq 0 ]
+  run test -f templates/personas/platform-devops.md
+  [ "$status" -eq 0 ]
+
+  run test -f docs/EXTENSIBILITY.md
+  [ "$status" -eq 0 ]
+  run test -f docs/TEAM-ONBOARDING.md
+  [ "$status" -eq 0 ]
+  run test -f docs/AI-REMOTE-WORKFLOW.md
+  [ "$status" -eq 0 ]
+}
+
+@test "governance policies are documented" {
+  run test -f docs/GOVERNANCE.md
+  [ "$status" -eq 0 ]
+
+  run rg -n "Ownership|Incident Process|Backward Compatibility|Deprecation Policy|Support Model" docs/GOVERNANCE.md
+  [ "$status" -eq 0 ]
+}
+
+@test "optional-module stability check target exists" {
+  run rg -n "all-modules|checks\\..*all-modules" flake.nix
+  [ "$status" -eq 0 ]
+}
+
 @test "core scripts support adjustable log verbosity levels" {
   run rg -n "CAFAYE_LOG_LEVEL|quiet\\|info\\|debug|level: \\$LOG_LEVEL" cli/scripts/caf-fleet cli/scripts/caf-sync cli/scripts/caf-system-rebuild
   [ "$status" -eq 0 ]

@@ -113,18 +113,18 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] Security model and threat assumptions are clearly documented.
 
 ## Product and Ecosystem Fit
-- [ ] Default templates cover major engineer personas and common stack combinations.
-- [ ] Extensibility model supports user modules/extensions without fork pressure.
-- [ ] Team onboarding flow supports shared baselines plus personal overrides.
-- [ ] Remote node workflows support AI-agent and human collaboration patterns.
-- [ ] Core UX remains stable as optional modules are added or removed.
+- [x] Default templates cover major engineer personas and common stack combinations.
+- [x] Extensibility model supports user modules/extensions without fork pressure.
+- [x] Team onboarding flow supports shared baselines plus personal overrides.
+- [x] Remote node workflows support AI-agent and human collaboration patterns.
+- [x] Core UX remains stable as optional modules are added or removed.
 
 ## Governance and Maintenance
-- [ ] Clear ownership exists for core modules, CI, docs, and release operations.
-- [ ] Incident process exists for regressions affecting install or fleet operations.
-- [ ] Backward-compatibility policy is defined and enforced.
-- [ ] Deprecation policy includes migration windows and communication standards.
-- [ ] Support model and response expectations are defined for community users.
+- [x] Clear ownership exists for core modules, CI, docs, and release operations.
+- [x] Incident process exists for regressions affecting install or fleet operations.
+- [x] Backward-compatibility policy is defined and enforced.
+- [x] Deprecation policy includes migration windows and communication standards.
+- [x] Support model and response expectations are defined for community users.
 
 ## Final Release Decision
 - [ ] All release-blocking checklist items above are complete.
