@@ -1,6 +1,6 @@
 # Cafaye OS Release Progress Summary
 
-**Last Updated:** 2026-02-13 22:40 UTC
+**Last Updated:** 2026-02-14 00:25 UTC
 
 ## ✅ Completed Milestones (64/134 items - 48%)
 
@@ -187,6 +187,12 @@ Users cannot onboard without this.
    - Implemented cross-node Trace IDs for fleet operation correlation
    - Added unit test suite for `caf-project` and verified BATS infrastructure
    - Validated shell/tmux startup latency is within sub-second budgets
+
+17. **CI/CD Release Gates (NEW)**
+   - Expanded Factory CI push triggers to both `master` and `main`
+   - Added cross-platform smoke job on `ubuntu-latest` and `macos-latest`
+   - Added explicit Packaging Gate (`checks.x86_64-linux.installer`) after test gates
+   - Aligned release checklist status with implemented CI coverage improvements
 
 ## 🎯 Recommended Focus Areas
 

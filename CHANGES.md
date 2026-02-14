@@ -73,7 +73,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] Single-VM integration test suite covers all core infra behaviors end-to-end.
 - [x] Integration tests avoid spawning multiple nested VMs for behavioral coverage.
 - [x] Unit tests cover command parsing, config resolution, and failure handling.
-- [ ] Cross-platform test matrix validates Linux and macOS critical paths.
+- [x] Cross-platform test matrix validates Linux and macOS critical paths.
 - [x] Tests assert expected behavior, not implementation details.
 - [x] Test runtime is bounded and fast enough for PR feedback loops.
 - [ ] Flaky tests are tracked, quarantined, and driven to zero.
@@ -81,8 +81,8 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] Fresh install test suite validates installer on clean VPS/VM.
 
 ## CI/CD and Release Gates
-- [ ] CI runs on every PR and on every push to the main branch.
-- [ ] Required checks enforce lint, unit, behavioral integration, and packaging gates.
+- [x] CI runs on every PR and on every push to the main branch.
+- [x] Required checks enforce lint, unit, behavioral integration, and packaging gates.
 - [x] CI status tooling can fetch latest/commit-specific runs with logs in one command.
 - [ ] Failed CI jobs provide enough diagnostics to debug without reruns.
 - [ ] Release builds are reproducible and signed where applicable.

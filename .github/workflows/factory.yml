@@ -2,7 +2,7 @@ name: Factory CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, main ]
   pull_request: {}
 
 jobs:
@@ -22,6 +22,23 @@ jobs:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
         continue-on-error: true
       - name: Fast lint and evaluation
+        run: bash bin/test.sh --lint
+
+  cross-platform-smoke:
+    name: Cross-Platform Smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Cross-platform lint and eval smoke
         run: bash bin/test.sh --lint
 
   unit:
@@ -58,3 +75,25 @@ jobs:
         continue-on-error: true
       - name: Run one behavioral VM test
         run: nix build --show-trace '.#checks.x86_64-linux."integration.behavioral_core_single_vm"'
+
+  packaging:
+    name: Packaging Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs:
+      - lint-and-eval
+      - unit
+      - behavioral-single-vm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - uses: cachix/cachix-action@v14
+        with:
+          name: cafaye
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+        continue-on-error: true
+      - name: Build installer package gate
+        run: nix build --show-trace '.#checks.x86_64-linux.installer'
