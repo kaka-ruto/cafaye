@@ -80,7 +80,7 @@ load "../../lib/test_helper"
 }
 
 @test "fleet status has current-node visual indicator" {
-  run rg -n "\\[current\\]|local_node|hostname -s|ip=|role=|host=" cli/scripts/caf-fleet
+  run rg -n "\\[current\\]|local_node|hostname -s|ip=|role=|host=|CAFAYE_FLEET_NO_PROBE|CAFAYE_FLEET_JSON|probe-skipped" cli/scripts/caf-fleet
   [ "$status" -eq 0 ]
 }
 
@@ -172,7 +172,7 @@ load "../../lib/test_helper"
 }
 
 @test "performance audit script exists with core responsiveness thresholds" {
-  run rg -n "caf-perf-audit|CAF_PERF_STATUS_MS|CAF_PERF_FLEET_MS|CAF_PERF_WORKSPACE_DRYRUN_MS|caf-fleet status|caf-workspace-run --dry-run" cli/scripts/caf-perf-audit
+  run rg -n "caf-perf-audit|CAF_PERF_STATUS_MS|CAF_PERF_FLEET_MS|CAF_PERF_WORKSPACE_DRYRUN_MS|CAF_PERF_SYNC_DRYRUN_MS|CAF_PERF_REBUILD_DRYRUN_MS|CAF_PERF_FLEET_200_MS|predictability_check|fleet_high_node_check|caf-sync pull --dry-run|caf-system-rebuild --dry-run|caf-fleet status" cli/scripts/caf-perf-audit
   [ "$status" -eq 0 ]
 }
 

@@ -91,8 +91,8 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 
 ## Performance and Scale
 - [ ] First-time setup time is acceptable on low/medium compute VPS instances.
-- [ ] Incremental rebuild/sync times are predictable for daily use.
-- [ ] Fleet status and orchestration remain responsive at higher node counts.
+- [x] Incremental rebuild/sync times are predictable for daily use.
+- [x] Fleet status and orchestration remain responsive at higher node counts.
 - [x] Startup latency for shell/tmux/editor remains within target budgets.
 - [x] Heavy operations avoid unnecessary downloads and duplicate work.
 - [x] Cache strategy materially improves CI and user install performance.

@@ -7,6 +7,11 @@ set -euo pipefail
 echo "🚀 Applying Cafaye Foundation Changes..."
 export NIX_CONFIG="experimental-features = nix-command flakes"
 
+DRY_RUN=0
+if [[ "${1:-}" == "--dry-run" ]]; then
+  DRY_RUN=1
+fi
+
 # Structured Logging
 LOG_DIR="$HOME/.config/cafaye/logs"
 mkdir -p "$LOG_DIR"
@@ -37,12 +42,28 @@ FLAKE_CONFIG="${SYSTEM_ARCH}-${OS_SUFFIX}"
 
 echo "🔨 Switching to flake: .#${FLAKE_CONFIG}"
 git add -A || true
+now_ms() {
+    local ts
+    ts="$(date +%s%3N 2>/dev/null || true)"
+    if [[ "$ts" =~ ^[0-9]+$ ]]; then
+        echo "$ts"
+    else
+        echo "$(( $(date +%s) * 1000 ))"
+    fi
+}
+start_ms="$(now_ms)"
 
 attempt=1
 max_attempts=2
 while true; do
-    if nix run --extra-experimental-features "nix-command flakes" nixpkgs#home-manager -- switch --flake ".#${FLAKE_CONFIG}" -b "backup-$(date +%Y%m%d%H%M%S)" --show-trace; then
-        break
+    if [[ "$DRY_RUN" -eq 1 ]]; then
+        if nix run --extra-experimental-features "nix-command flakes" nixpkgs#home-manager -- build --flake ".#${FLAKE_CONFIG}" --show-trace; then
+            break
+        fi
+    else
+        if nix run --extra-experimental-features "nix-command flakes" nixpkgs#home-manager -- switch --flake ".#${FLAKE_CONFIG}" -b "backup-$(date +%Y%m%d%H%M%S)" --show-trace; then
+            break
+        fi
     fi
     if [[ "$attempt" -ge "$max_attempts" ]]; then
         echo "❌ Rebuild failed after ${max_attempts} attempts."
@@ -55,4 +76,10 @@ while true; do
     echo "⚠️  Rebuild failed, retrying (${attempt}/${max_attempts})..."
 done
 
-echo "✅ Changes applied successfully!"
+end_ms="$(now_ms)"
+duration_ms="$((end_ms - start_ms))"
+if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "✅ Dry-run build successful in ${duration_ms}ms"
+else
+    echo "✅ Changes applied successfully in ${duration_ms}ms"
+fi

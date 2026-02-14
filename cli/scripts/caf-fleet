@@ -118,11 +118,18 @@ show_fleet_status() {
     echo "📋 Cafaye Fleet Dashboard"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     
-    [[ ! -f "secrets/fleet.yaml" ]] && { echo "Registry empty."; return; }
+    if [[ -z "${CAFAYE_FLEET_JSON:-}" ]] && [[ ! -f "secrets/fleet.yaml" ]]; then
+      echo "Registry empty."
+      return
+    fi
 
     echo "Nodes:"
     # Use JSON output for jq
-    DATA=$(run_sops -d --output-type json secrets/fleet.yaml 2>/dev/null)
+    if [[ -n "${CAFAYE_FLEET_JSON:-}" ]]; then
+      DATA="$CAFAYE_FLEET_JSON"
+    else
+      DATA=$(run_sops -d --output-type json secrets/fleet.yaml 2>/dev/null)
+    fi
     if [[ -z "$DATA" ]]; then
          echo "❌ Unable to decrypt/parse fleet registry."
     else
@@ -140,6 +147,10 @@ show_fleet_status() {
              name="$(echo "$entry" | jq -r '.key')"
              ip="$(echo "$entry" | jq -r '.value.tailscale_ip')"
              
+             if [[ "${CAFAYE_FLEET_NO_PROBE:-0}" == "1" ]]; then
+                 echo "  - ${name}: probe-skipped"
+                 continue
+             fi
              if check_reachable "$ip"; then
                  echo "  - ${name}: reachable"
                  # Try to get more info via SSH if possible (batch mode to avoid hanging/prompting)

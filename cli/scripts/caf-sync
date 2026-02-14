@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Cafaye Sync: Sync state between nodes via Git
-# Usage: caf-sync [push|pull]
+# Usage: caf-sync [push|pull] [--dry-run]
 
 CAFAYE_DIR="$HOME/.config/cafaye"
 if [[ ! -d "$CAFAYE_DIR" ]]; then
@@ -12,6 +12,10 @@ fi
 cd "$CAFAYE_DIR"
 
 command="${1:-}"
+dry_run=0
+if [[ "${2:-}" == "--dry-run" ]] || [[ "${1:-}" == "--dry-run" ]]; then
+    dry_run=1
+fi
 
 # Structured Logging
 LOG_DIR="$HOME/.config/cafaye/logs"
@@ -26,10 +30,24 @@ fi
 [[ "$LOG_LEVEL" == "debug" ]] && set -x
 
 echo "--- Sync $command started: $(date) [Trace: ${CAFAYE_TRACE_ID:-none}] [level: $LOG_LEVEL] ---"
+now_ms() {
+    local ts
+    ts="$(date +%s%3N 2>/dev/null || true)"
+    if [[ "$ts" =~ ^[0-9]+$ ]]; then
+        echo "$ts"
+    else
+        echo "$(( $(date +%s) * 1000 ))"
+    fi
+}
+start_ms="$(now_ms)"
 
 case "$command" in
     push)
         echo "📤 Syncing changes to Git Source of Truth..."
+        if [[ "$dry_run" -eq 1 ]]; then
+            echo "🧪 Dry run: would stage, commit (if needed), and push current branch."
+            exit 0
+        fi
         git add -A || true
         # Check if there are changes to commit
         if ! git diff-index --quiet HEAD --; then
@@ -41,6 +59,10 @@ case "$command" in
         ;;
     pull)
         echo "📥 Pulling updates from Git Source of Truth..."
+        if [[ "$dry_run" -eq 1 ]]; then
+            echo "🧪 Dry run: would pull --rebase and run caf-system-rebuild."
+            exit 0
+        fi
         current_branch="$(git rev-parse --abbrev-ref HEAD)"
         if ! git pull --rebase origin "$current_branch"; then
             echo "⚠️  Rebase conflict detected."
@@ -55,7 +77,10 @@ case "$command" in
         echo "✅ Sync complete."
         ;;
     *)
-        echo "Usage: caf-sync [push|pull]"
+        echo "Usage: caf-sync [push|pull] [--dry-run]"
         exit 1
         ;;
 esac
+
+end_ms="$(now_ms)"
+echo "⏱️  Sync completed in $((end_ms - start_ms))ms"

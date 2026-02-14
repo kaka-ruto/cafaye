@@ -1,6 +1,6 @@
 # Cafaye OS Release Progress Summary
 
-**Last Updated:** 2026-02-14 03:30 UTC
+**Last Updated:** 2026-02-14 03:50 UTC
 
 ## ✅ Completed Milestones (64/134 items - 48%)
 
@@ -251,6 +251,11 @@ Users cannot onboard without this.
    - Added Cachix integration to cross-platform smoke jobs to improve CI cache hit coverage
    - Reduced bootstrap clone transfer volume using shallow/filter clone defaults
    - Reduced fleet sync duplicate transfer work with delayed-delete rsync strategy
+
+28. **Performance Predictability and Scale Checks (NEW)**
+   - Added dry-run support/timing output for sync and rebuild operations
+   - Added high-node fleet status benchmark mode (probe-skipped synthetic fleet)
+   - Added predictability checks (multi-iteration variance thresholds) for incremental operations
 
 ## 🎯 Recommended Focus Areas
 

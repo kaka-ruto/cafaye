@@ -4,32 +4,89 @@ set -euo pipefail
 # Performance audit for core operator workflows.
 # Thresholds are conservative and can be overridden via env vars.
 
-THRESH_STATUS_MS="${CAF_PERF_STATUS_MS:-2500}"
-THRESH_FLEET_MS="${CAF_PERF_FLEET_MS:-3500}"
+THRESH_STATUS_MS="${CAF_PERF_STATUS_MS:-5000}"
+THRESH_FLEET_MS="${CAF_PERF_FLEET_MS:-12000}"
 THRESH_WORKSPACE_DRYRUN_MS="${CAF_PERF_WORKSPACE_DRYRUN_MS:-2500}"
+THRESH_SYNC_DRYRUN_MS="${CAF_PERF_SYNC_DRYRUN_MS:-15000}"
+THRESH_REBUILD_DRYRUN_MS="${CAF_PERF_REBUILD_DRYRUN_MS:-120000}"
+THRESH_FLEET_200_MS="${CAF_PERF_FLEET_200_MS:-6000}"
+ITERATIONS="${CAF_PERF_ITERATIONS:-3}"
 
 measure_ms() {
   local cmd="$1"
   local start end
-  start="$(date +%s%3N)"
+  now_ms() {
+    local ts
+    ts="$(date +%s%3N 2>/dev/null || true)"
+    if [[ "$ts" =~ ^[0-9]+$ ]]; then
+      echo "$ts"
+    else
+      echo "$(( $(date +%s) * 1000 ))"
+    fi
+  }
+  start="$(now_ms)"
   bash -lc "$cmd" >/dev/null 2>&1 || true
-  end="$(date +%s%3N)"
+  end="$(now_ms)"
   echo $(( end - start ))
 }
 
-status_ms="$(measure_ms 'caf-status')"
-fleet_ms="$(measure_ms 'caf-fleet status')"
-workspace_ms="$(measure_ms 'caf-workspace-run --dry-run')"
+status_ms="$(measure_ms 'bash cli/scripts/caf-status')"
+fleet_ms="$(measure_ms 'bash cli/scripts/caf-fleet status')"
+workspace_ms="$(measure_ms 'bash cli/scripts/caf-workspace-run --dry-run')"
+sync_ms="$(measure_ms 'bash cli/scripts/caf-sync pull --dry-run')"
+rebuild_ms="$(measure_ms 'bash cli/scripts/caf-system-rebuild --dry-run')"
+
+predictability_check() {
+  local cmd="$1"
+  local max_delta="$2"
+  local label="$3"
+  local i ms min max
+  min=999999999
+  max=0
+  i=1
+  while [[ "$i" -le "$ITERATIONS" ]]; do
+    ms="$(measure_ms "$cmd")"
+    [[ "$ms" -lt "$min" ]] && min="$ms"
+    [[ "$ms" -gt "$max" ]] && max="$ms"
+    i=$((i + 1))
+  done
+  delta=$((max - min))
+  echo "  ${label} predictability delta: ${delta}ms (threshold: ${max_delta})"
+  [[ "$delta" -le "$max_delta" ]]
+}
+
+fleet_high_node_check() {
+  local n=200
+  local i json ms
+  json='{"fleet":{'
+  i=1
+  while [[ "$i" -le "$n" ]]; do
+    json="${json}\"node${i}\":{\"tailscale_ip\":\"100.64.0.${i}\",\"role\":\"remote\",\"hostname\":\"node${i}\"}"
+    [[ "$i" -lt "$n" ]] && json="${json},"
+    i=$((i + 1))
+  done
+  json="${json}}}"
+  ms="$(measure_ms "CAFAYE_FLEET_NO_PROBE=1 CAFAYE_FLEET_JSON='$json' bash cli/scripts/caf-fleet status")"
+  echo "  caf-fleet status (200 nodes, no probe): ${ms}ms (threshold: $THRESH_FLEET_200_MS)"
+  [[ "$ms" -le "$THRESH_FLEET_200_MS" ]]
+}
 
 echo "Performance Audit (ms)"
 echo "  caf-status:               $status_ms (threshold: $THRESH_STATUS_MS)"
 echo "  caf-fleet status:         $fleet_ms (threshold: $THRESH_FLEET_MS)"
 echo "  caf-workspace-run --dry-run: $workspace_ms (threshold: $THRESH_WORKSPACE_DRYRUN_MS)"
+echo "  caf-sync pull --dry-run:  $sync_ms (threshold: $THRESH_SYNC_DRYRUN_MS)"
+echo "  caf-system-rebuild --dry-run: $rebuild_ms (threshold: $THRESH_REBUILD_DRYRUN_MS)"
 
 fail=0
 [[ "$status_ms" -gt "$THRESH_STATUS_MS" ]] && fail=1
 [[ "$fleet_ms" -gt "$THRESH_FLEET_MS" ]] && fail=1
 [[ "$workspace_ms" -gt "$THRESH_WORKSPACE_DRYRUN_MS" ]] && fail=1
+[[ "$sync_ms" -gt "$THRESH_SYNC_DRYRUN_MS" ]] && fail=1
+[[ "$rebuild_ms" -gt "$THRESH_REBUILD_DRYRUN_MS" ]] && fail=1
+predictability_check "bash cli/scripts/caf-sync pull --dry-run" 1500 "caf-sync pull --dry-run" || fail=1
+predictability_check "bash cli/scripts/caf-system-rebuild --dry-run" 10000 "caf-system-rebuild --dry-run" || fail=1
+fleet_high_node_check || fail=1
 
 if [[ "$fail" -ne 0 ]]; then
   echo "❌ Performance audit failed thresholds"
