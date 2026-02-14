@@ -85,7 +85,7 @@ load "../../lib/test_helper"
 }
 
 @test "fleet supports resumable sync/apply with progress and cancellation safety" {
-  run rg -n "--resume|Cancel requested|\\[[0-9]+/[0-9]+\\]|fleet-apply.state|fleet-sync.state|summary: success=|trap 'cancelled=1|BatchMode=yes|IdentitiesOnly=yes|StrictHostKeyChecking=accept-new" cli/scripts/caf-fleet
+  run rg -n "--resume|Cancel requested|\\[[0-9]+/[0-9]+\\]|fleet-apply.state|fleet-sync.state|summary: success=|trap 'cancelled=1|BatchMode=yes|IdentitiesOnly=yes|StrictHostKeyChecking=accept-new|rsync -avz --delete-delay" cli/scripts/caf-fleet
   [ "$status" -eq 0 ]
 }
 
@@ -177,7 +177,7 @@ load "../../lib/test_helper"
 }
 
 @test "reproducibility bootstrap and safe upgrade scripts exist" {
-  run rg -n "caf-bootstrap-from-git|--dry-run|--force|install.sh --yes|Bootstrap complete" cli/scripts/caf-bootstrap-from-git
+  run rg -n "caf-bootstrap-from-git|--dry-run|--force|install.sh --yes|Bootstrap complete|--depth 1|--filter=blob:none" cli/scripts/caf-bootstrap-from-git
   [ "$status" -eq 0 ]
 
   run rg -n "caf-upgrade-safe|backups/upgrades|git pull --rebase|caf-system-rebuild|State backup captured" cli/scripts/caf-upgrade-safe

@@ -311,7 +311,7 @@ fleet_sync() {
         fi
         [[ "$cancelled" -eq 1 ]] && break
         echo "📤 [${index}/${total}] Syncing to $remote..."
-        if with_retry rsync -avz --exclude '.git' --exclude '.devbox' --exclude '.cache' --exclude 'result' \
+        if with_retry rsync -avz --delete-delay --exclude '.git' --exclude '.devbox' --exclude '.cache' --exclude 'result' \
             -e "ssh $SSH_OPT $SSH_COMMON_OPTS" \
             ./ "$(whoami)@${remote}:~/.config/cafaye/"; then
              echo "$remote" >> "$state_file"

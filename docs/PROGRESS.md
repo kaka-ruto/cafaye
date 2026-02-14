@@ -1,6 +1,6 @@
 # Cafaye OS Release Progress Summary
 
-**Last Updated:** 2026-02-14 03:15 UTC
+**Last Updated:** 2026-02-14 03:30 UTC
 
 ## ✅ Completed Milestones (64/134 items - 48%)
 
@@ -246,6 +246,11 @@ Users cannot onboard without this.
    - Added tag-triggered release build workflow with reproducible installer build output
    - Added checksum generation and optional cosign signing path for release artifacts
    - Added automated release-notes generation script from commit history
+
+27. **Performance Efficiency and Cache Strategy (NEW)**
+   - Added Cachix integration to cross-platform smoke jobs to improve CI cache hit coverage
+   - Reduced bootstrap clone transfer volume using shallow/filter clone defaults
+   - Reduced fleet sync duplicate transfer work with delayed-delete rsync strategy
 
 ## 🎯 Recommended Focus Areas
 

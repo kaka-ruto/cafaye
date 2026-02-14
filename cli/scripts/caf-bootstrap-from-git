@@ -54,9 +54,9 @@ fi
 
 rm -rf "$TMP_DIR"
 
-git clone "$REPO_URL" "$TMP_DIR"
+git clone --depth 1 --filter=blob:none "$REPO_URL" "$TMP_DIR"
 if [[ -n "$REF" ]]; then
-  git -C "$TMP_DIR" fetch --all --tags
+  git -C "$TMP_DIR" fetch --all --tags --depth 1
   git -C "$TMP_DIR" checkout "$REF"
 fi
 

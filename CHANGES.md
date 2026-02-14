@@ -94,8 +94,8 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [ ] Incremental rebuild/sync times are predictable for daily use.
 - [ ] Fleet status and orchestration remain responsive at higher node counts.
 - [x] Startup latency for shell/tmux/editor remains within target budgets.
-- [ ] Heavy operations avoid unnecessary downloads and duplicate work.
-- [ ] Cache strategy materially improves CI and user install performance.
+- [x] Heavy operations avoid unnecessary downloads and duplicate work.
+- [x] Cache strategy materially improves CI and user install performance.
 
 ## Observability and Diagnostics
 - [x] Structured logs exist for install, update, sync, and fleet workflows.

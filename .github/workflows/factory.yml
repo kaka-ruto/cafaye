@@ -49,6 +49,11 @@ jobs:
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
+      - uses: cachix/cachix-action@v14
+        with:
+          name: cafaye
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+        continue-on-error: true
       - name: Cross-platform lint and eval smoke
         run: bash bin/test.sh --lint
 
