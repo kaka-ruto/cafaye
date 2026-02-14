@@ -171,6 +171,11 @@ load "../../lib/test_helper"
   [ "$status" -eq 0 ]
 }
 
+@test "performance audit script exists with core responsiveness thresholds" {
+  run rg -n "caf-perf-audit|CAF_PERF_STATUS_MS|CAF_PERF_FLEET_MS|CAF_PERF_WORKSPACE_DRYRUN_MS|caf-fleet status|caf-workspace-run --dry-run" cli/scripts/caf-perf-audit
+  [ "$status" -eq 0 ]
+}
+
 @test "reproducibility bootstrap and safe upgrade scripts exist" {
   run rg -n "caf-bootstrap-from-git|--dry-run|--force|install.sh --yes|Bootstrap complete" cli/scripts/caf-bootstrap-from-git
   [ "$status" -eq 0 ]

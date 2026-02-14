@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Performance audit for core operator workflows.
+# Thresholds are conservative and can be overridden via env vars.
+
+THRESH_STATUS_MS="${CAF_PERF_STATUS_MS:-2500}"
+THRESH_FLEET_MS="${CAF_PERF_FLEET_MS:-3500}"
+THRESH_WORKSPACE_DRYRUN_MS="${CAF_PERF_WORKSPACE_DRYRUN_MS:-2500}"
+
+measure_ms() {
+  local cmd="$1"
+  local start end
+  start="$(date +%s%3N)"
+  bash -lc "$cmd" >/dev/null 2>&1 || true
+  end="$(date +%s%3N)"
+  echo $(( end - start ))
+}
+
+status_ms="$(measure_ms 'caf-status')"
+fleet_ms="$(measure_ms 'caf-fleet status')"
+workspace_ms="$(measure_ms 'caf-workspace-run --dry-run')"
+
+echo "Performance Audit (ms)"
+echo "  caf-status:               $status_ms (threshold: $THRESH_STATUS_MS)"
+echo "  caf-fleet status:         $fleet_ms (threshold: $THRESH_FLEET_MS)"
+echo "  caf-workspace-run --dry-run: $workspace_ms (threshold: $THRESH_WORKSPACE_DRYRUN_MS)"
+
+fail=0
+[[ "$status_ms" -gt "$THRESH_STATUS_MS" ]] && fail=1
+[[ "$fleet_ms" -gt "$THRESH_FLEET_MS" ]] && fail=1
+[[ "$workspace_ms" -gt "$THRESH_WORKSPACE_DRYRUN_MS" ]] && fail=1
+
+if [[ "$fail" -ne 0 ]]; then
+  echo "❌ Performance audit failed thresholds"
+  exit 1
+fi
+
+echo "✅ Performance audit passed"

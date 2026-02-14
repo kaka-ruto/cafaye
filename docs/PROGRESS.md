@@ -1,6 +1,6 @@
 # Cafaye OS Release Progress Summary
 
-**Last Updated:** 2026-02-14 02:35 UTC
+**Last Updated:** 2026-02-14 02:45 UTC
 
 ## ✅ Completed Milestones (64/134 items - 48%)
 
@@ -229,6 +229,10 @@ Users cannot onboard without this.
    - Added `caf-bootstrap-from-git` for reproducible environment creation from repo/ref state
    - Added `caf-upgrade-safe` with state backup, pull/rebuild, and restore-on-failure semantics
    - Added dedicated reproducibility and upgrade runbook documentation
+
+24. **Performance Instrumentation (NEW)**
+   - Added `caf-perf-audit` baseline performance checker for core CLI responsiveness
+   - Added configurable thresholds for status, fleet status, and workspace dry-run latency
 
 ## 🎯 Recommended Focus Areas
 
