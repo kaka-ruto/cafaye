@@ -30,10 +30,18 @@ load "../../lib/test_helper"
 }
 
 @test "zsh leader/alt keybindings and search command are present" {
-  run rg -n "CAFAYE_LEADER_KEY|CAFAYE_LEADER_TIMEOUT_MS|CAFAYE_DOUBLE_TAP_MS|bindkey '\\\\em'|bindkey '\\\\ec'|bindkey '\\\\es'|bindkey '\\\\er'|bindkey '\\\\ed'" config/cafaye/zsh/config.zsh
+  run rg -n "CAFAYE_LEADER_KEY|CAFAYE_LEADER_TIMEOUT_MS|CAFAYE_DOUBLE_TAP_MS|bindkey '\\\\em'|bindkey '\\\\ec'|bindkey '\\\\es'|bindkey '\\\\er'|bindkey '\\\\ed'|bindkey '\\\\ej'" config/cafaye/zsh/config.zsh
   [ "$status" -eq 0 ]
 
   run rg -n "caf-search|run_caf|CLI_MAIN" cli/scripts/caf-search config/cafaye/zsh/config.zsh
+  [ "$status" -eq 0 ]
+}
+
+@test "terminal navigation defaults and docs are present" {
+  run rg -n "alias \\.\\.=|alias \\.\\.\\.=|alias \\.\\.\\.\\.=|alias -- -='cd -'|cdf\\(\\)" config/cafaye/zsh/config.zsh
+  [ "$status" -eq 0 ]
+
+  run test -f docs/TERMINAL-NAVIGATION.md
   [ "$status" -eq 0 ]
 }
 

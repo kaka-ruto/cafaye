@@ -39,7 +39,7 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 ## Terminal and Shell Experience
 - [x] tmux startup, session reuse, and keybindings are consistent across platforms.
 - [x] zsh startup is fast and deterministic with no noisy errors.
-- [ ] Terminal navigation defaults are coherent for common engineering workflows.
+- [x] Terminal navigation defaults are coherent for common engineering workflows.
 - [x] Core terminal UX works in headless, SSH, and local GUI contexts.
 - [x] Lazygit integration works with declared git repos and sane defaults.
 - [x] Ghostty behavior degrades gracefully on systems where it is unsupported.

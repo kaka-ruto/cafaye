@@ -68,6 +68,20 @@ if whence compdef >/dev/null 2>&1; then
   compdef _cafaye_complete caf
 fi
 
+# Terminal navigation defaults.
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias -- -='cd -'
+
+cdf() {
+  if command -v c >/dev/null 2>&1; then
+    eval "$(c "${1:-$HOME}")"
+  else
+    cd "${1:-$HOME}" || return
+  fi
+}
+
 # Search interface used by leader/shortcut workflows.
 if ! command -v caf-search >/dev/null 2>&1; then
   caf-search() { caf install; }
@@ -148,10 +162,12 @@ if [[ $- == *i* ]] && [[ -t 0 ]] && [[ -t 1 ]] && whence zle >/dev/null 2>&1; th
   _cafaye_search_widget() { _cafaye_run_command "caf-search"; }
   _cafaye_rebuild_widget() { _cafaye_run_command "caf apply"; }
   _cafaye_status_widget() { _cafaye_run_command "caf status"; }
+  _cafaye_jump_widget() { _cafaye_run_command "cdf"; }
   zle -N _cafaye_menu_widget
   zle -N _cafaye_search_widget
   zle -N _cafaye_rebuild_widget
   zle -N _cafaye_status_widget
+  zle -N _cafaye_jump_widget
 
   # Space leader and Alt shortcuts for power users.
   bindkey "$_cafaye_leader_bindkey" _cafaye_leader_widget
@@ -160,6 +176,7 @@ if [[ $- == *i* ]] && [[ -t 0 ]] && [[ -t 1 ]] && whence zle >/dev/null 2>&1; th
   bindkey '\es' _cafaye_search_widget
   bindkey '\er' _cafaye_rebuild_widget
   bindkey '\ed' _cafaye_status_widget
+  bindkey '\ej' _cafaye_jump_widget
 fi
 
 # Example function: extract many types of archives

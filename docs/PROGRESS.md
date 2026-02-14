@@ -1,6 +1,6 @@
 # Cafaye OS Release Progress Summary
 
-**Last Updated:** 2026-02-14 01:35 UTC
+**Last Updated:** 2026-02-14 01:50 UTC
 
 ## ✅ Completed Milestones (64/134 items - 48%)
 
@@ -206,6 +206,12 @@ Users cannot onboard without this.
    - Added explicit per-node progress counters and operation summaries for long-running fleet actions
    - Added cancellation-safe handling with resumable hints on interrupt
    - Added Neovim plugin state doctor and repair workflows (`caf-nvim-distribution-setup --doctor|--repair`)
+
+20. **Terminal Navigation Coherence (NEW)**
+   - Added consistent directory traversal aliases (`..`, `...`, `....`, `-`)
+   - Added `cdf` helper for fuzzy directory jumping with graceful fallback
+   - Added `Alt+j` binding for keyboard-first navigation flow
+   - Added dedicated terminal navigation behavior documentation
 
 ## 🎯 Recommended Focus Areas
 
