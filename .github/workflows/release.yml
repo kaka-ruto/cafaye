@@ -1,0 +1,56 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - uses: cachix/cachix-action@v14
+        with:
+          name: cafaye
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+        continue-on-error: true
+
+      - name: Build reproducible installer check
+        run: |
+          nix build --show-trace '.#checks.x86_64-linux.installer' --out-link result-installer
+          nix path-info --json ./result-installer > installer-path.json
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          cp installer-path.json release-assets/
+          bash cli/scripts/caf-release-notes > release-assets/RELEASE_NOTES.md
+          sha256sum release-assets/* > release-assets/SHA256SUMS
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.8.1
+
+      - name: Sign checksums (when key is configured)
+        if: ${{ secrets.COSIGN_PRIVATE_KEY != '' }}
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+        run: |
+          printf '%s' "$COSIGN_PRIVATE_KEY" > cosign.key
+          cosign sign-blob --key cosign.key release-assets/SHA256SUMS --output-signature release-assets/SHA256SUMS.sig
+          rm -f cosign.key
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-assets/RELEASE_NOTES.md
+          files: |
+            release-assets/RELEASE_NOTES.md
+            release-assets/SHA256SUMS*
+            release-assets/installer-path.json

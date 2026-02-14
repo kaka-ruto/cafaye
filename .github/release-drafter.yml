@@ -1,0 +1,23 @@
+name-template: 'Cafaye $RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+change-template: '- $TITLE (#$NUMBER)'
+version-template: '$MAJOR.$MINOR.$PATCH'
+categories:
+  - title: 'Core Infrastructure'
+    labels: ['infra', 'core']
+  - title: 'Testing and CI'
+    labels: ['ci', 'test']
+  - title: 'Docs and Onboarding'
+    labels: ['docs']
+  - title: 'Security'
+    labels: ['security']
+change-title-escapes: '\\<*_&'
+template: |
+  ## What changed
+
+  $CHANGES
+
+  ## Notes
+
+  - Built with reproducible Nix-based checks.
+  - See attached checksums/signatures where available.

@@ -218,6 +218,17 @@ load "../../lib/test_helper"
   [ "$status" -eq 0 ]
 }
 
+@test "release automation and release notes generation are configured" {
+  run rg -n "caf-release-notes|git describe --tags|git log --pretty=format" cli/scripts/caf-release-notes
+  [ "$status" -eq 0 ]
+
+  run rg -n "Release Build|push:\\s*\\n\\s*tags:|checks.x86_64-linux.installer|cosign|action-gh-release" .github/workflows/release.yml
+  [ "$status" -eq 0 ]
+
+  run rg -n "Release Drafter|release-drafter" .github/workflows/release-drafter.yml .github/release-drafter.yml
+  [ "$status" -eq 0 ]
+}
+
 @test "core scripts support adjustable log verbosity levels" {
   run rg -n "CAFAYE_LOG_LEVEL|quiet\\|info\\|debug|level: \\$LOG_LEVEL" cli/scripts/caf-fleet cli/scripts/caf-sync cli/scripts/caf-system-rebuild
   [ "$status" -eq 0 ]

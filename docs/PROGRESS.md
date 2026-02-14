@@ -1,6 +1,6 @@
 # Cafaye OS Release Progress Summary
 
-**Last Updated:** 2026-02-14 03:00 UTC
+**Last Updated:** 2026-02-14 03:15 UTC
 
 ## ✅ Completed Milestones (64/134 items - 48%)
 
@@ -240,6 +240,12 @@ Users cannot onboard without this.
    - Added team onboarding model for shared baseline + personal overrides
    - Added remote AI collaboration workflow documentation for distributed node operations
    - Added governance policy doc (ownership, incidents, compatibility, deprecation, support)
+
+26. **Release Automation Foundations (NEW)**
+   - Added automated release drafter workflow and release categorization config
+   - Added tag-triggered release build workflow with reproducible installer build output
+   - Added checksum generation and optional cosign signing path for release artifacts
+   - Added automated release-notes generation script from commit history
 
 ## 🎯 Recommended Focus Areas
 

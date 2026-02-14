@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$REPO_ROOT"
+
+latest_tag="$(git describe --tags --abbrev=0 2>/dev/null || echo '')"
+if [[ -n "$latest_tag" ]]; then
+  range="${latest_tag}..HEAD"
+else
+  range="HEAD"
+fi
+
+version="$(cat version 2>/dev/null || echo "dev")"
+
+echo "# Cafaye Release ${version}"
+echo ""
+if [[ -n "$latest_tag" ]]; then
+  echo "Changes since ${latest_tag}:"
+else
+  echo "Initial release notes:"
+fi
+
+echo ""
+
+git log --pretty=format:'- %s (%h)' "$range"
