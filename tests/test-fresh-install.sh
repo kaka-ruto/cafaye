@@ -98,12 +98,17 @@ run_test_suite() {
     
     # Test 2: Run installer (non-interactive)
     log "Test 2: Running installer (non-interactive)..."
+    local install_start install_end install_ms
+    install_start=$(date +%s)
     $ssh_prefix "cd /tmp/cafaye-test && ./install.sh --yes" || {
         error "Installer failed"
         $ssh_prefix "cat ~/.config/cafaye/logs/install.log" || true
         return 1
     }
+    install_end=$(date +%s)
+    install_ms=$(( (install_end - install_start) * 1000 ))
     success "Installer completed"
+    log "Install duration: ${install_ms}ms"
     
     # Test 3: Verify installation
     log "Test 3: Verifying installation..."
@@ -202,7 +207,8 @@ elif [[ -n "$VPS_NAME" ]]; then
     }
     
     # Get VPS IP
-    VPS_IP=$(gcloud compute instances describe "$VPS_NAME" --zone="$ZONE" --format='get(networkInterfaces[0].accessConfigs[0].externalIp)')
+    VPS_IP=$(gcloud compute instances describe "$VPS_NAME" --zone="$ZONE" --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+    [[ -z "$VPS_IP" ]] && VPS_IP=$(gcloud compute instances describe "$VPS_NAME" --zone="$ZONE" --format='get(networkInterfaces[0].accessConfigs[0].externalIp)')
     if [[ -z "$VPS_IP" ]]; then
         error "Could not determine VPS IP"
         exit 1

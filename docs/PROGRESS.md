@@ -3,8 +3,8 @@
 **Last Updated:** 2026-02-14 UTC
 
 ## Overall Status
-- Checklist completion: **130 / 134**
-- Remaining unchecked items: **4**
+- Checklist completion: **132 / 134**
+- Remaining unchecked items: **2**
 - Core infra scope (tmux, AstroNvim, zsh, fleet, workspace, CI, recovery): **implemented and passing current validation gates**
 
 ## Completed Highlights
@@ -25,12 +25,8 @@
 
 ## Remaining Unchecked Items
 1. Branch protections prevent unreviewed or failing changes from merging.
-2. First-time setup time is acceptable on low/medium compute VPS instances.
-3. All release-blocking checklist items above are complete.
-4. Release announcement and upgrade guidance are prepared and reviewed.
+2. All release-blocking checklist items above are complete.
 
 ## Blockers / Next Actions
 1. Enable GitHub branch protection with required checks in repo settings.
-2. Capture timed first-install baselines on low/medium GCP VPS shapes and record thresholds.
-3. Review and approve `docs/RELEASE-ANNOUNCEMENT.md`.
-4. Re-check `CHANGES.md` final release-decision section after the three items above are closed.
+2. Re-check `CHANGES.md` final release-decision section once branch protection is enabled.

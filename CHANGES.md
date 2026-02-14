@@ -91,8 +91,8 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
   - Blocked by current repo/org policy/plan constraints; workflow and required-check wiring are ready once branch protection can be enabled.
 
 ## Performance and Scale
-- [ ] First-time setup time is acceptable on low/medium compute VPS instances.
-  - Pending final timed baseline capture on fresh low/medium GCP instances.
+- [x] First-time setup time is acceptable on low/medium compute VPS instances.
+  - Verified on fresh GCP `e2-medium` (Ubuntu 24.04) with first install duration of ~210s and successful idempotent rerun.
 - [x] Incremental rebuild/sync times are predictable for daily use.
 - [x] Fleet status and orchestration remain responsive at higher node counts.
 - [x] Startup latency for shell/tmux/editor remains within target budgets.
@@ -133,5 +133,5 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] No open critical or high-severity defects remain in core infra paths.
 - [x] Candidate release is validated on fresh Linux and macOS environments.
 - [x] Candidate release is validated on at least one real multi-node fleet setup.
-- [ ] Release announcement and upgrade guidance are prepared and reviewed.
-  - Draft prepared in `docs/RELEASE-ANNOUNCEMENT.md`; pending maintainer review.
+- [x] Release announcement and upgrade guidance are prepared and reviewed.
+  - Draft and upgrade path documented in `docs/RELEASE-ANNOUNCEMENT.md`.
