@@ -57,8 +57,8 @@ Release-readiness checklist for Cafaye distributed development infrastructure.
 - [x] Secret rotation workflows are documented and tested.
 - [x] SOPS integration works reliably across local and remote nodes.
 - [x] Sensitive data is never leaked to logs, terminal history, or CI artifacts.
-- [ ] Principle of least privilege is enforced for scripts and remote operations.
-- [ ] Supply chain integrity checks exist for critical dependencies.
+- [x] Principle of least privilege is enforced for scripts and remote operations.
+- [x] Supply chain integrity checks exist for critical dependencies.
 - [x] Secure defaults are enforced for SSH and remote execution pathways.
 
 ## Reliability, Errors, and Recovery

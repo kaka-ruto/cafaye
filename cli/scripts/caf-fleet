@@ -71,6 +71,8 @@ if [[ "${2:-}" == "--resume" ]]; then
     RESUME=1
 fi
 
+SSH_COMMON_OPTS="-o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+
 # Identify the SSH key for SOPS
 SSH_PRIVATE_KEY=""
 [[ -f "$HOME/.ssh/id_ed25519" ]] && SSH_PRIVATE_KEY="$HOME/.ssh/id_ed25519"
@@ -141,7 +143,7 @@ show_fleet_status() {
              if check_reachable "$ip"; then
                  echo "  - ${name}: reachable"
                  # Try to get more info via SSH if possible (batch mode to avoid hanging/prompting)
-                 SSH_OPTS="-o ConnectTimeout=2 -o BatchMode=yes -o StrictHostKeyChecking=no"
+                 SSH_OPTS="-o ConnectTimeout=2 ${SSH_COMMON_OPTS}"
                  [[ -f "$HOME/.ssh/cafaye" ]] && SSH_OPTS="${SSH_OPTS} -i $HOME/.ssh/cafaye"
                  
                  proj="$(ssh ${SSH_OPTS} "$ip" 'jq -r ".current // \"none\"" ~/.config/cafaye/projects.json 2>/dev/null || echo n/a' 2>/dev/null || echo n/a)"
@@ -237,7 +239,7 @@ fleet_apply() {
 
     SSH_OPT=""
     [[ -f "$HOME/.ssh/cafaye" ]] && SSH_OPT="-i $HOME/.ssh/cafaye"
-    remote_opts="-o ConnectTimeout=5 -o StrictHostKeyChecking=no"
+    remote_opts="-o ConnectTimeout=5 ${SSH_COMMON_OPTS}"
 
     state_dir="$HOME/.config/cafaye/state"
     mkdir -p "$state_dir"
@@ -310,7 +312,7 @@ fleet_sync() {
         [[ "$cancelled" -eq 1 ]] && break
         echo "📤 [${index}/${total}] Syncing to $remote..."
         if with_retry rsync -avz --exclude '.git' --exclude '.devbox' --exclude '.cache' --exclude 'result' \
-            -e "ssh $SSH_OPT -o StrictHostKeyChecking=no" \
+            -e "ssh $SSH_OPT $SSH_COMMON_OPTS" \
             ./ "$(whoami)@${remote}:~/.config/cafaye/"; then
              echo "$remote" >> "$state_file"
              ok=$((ok + 1))
@@ -340,7 +342,7 @@ fleet_attach() {
     echo "$data" | jq -r '.fleet | to_entries[] | "\(.key)|\(.value.tailscale_ip)"' | while IFS='|' read -r name ip; do
       node_session="node-${name}"
       tmux kill-session -t "$node_session" >/dev/null 2>&1 || true
-      tmux new-session -d -s "$node_session" -n "$name" "echo '[${name}]'; ssh -o StrictHostKeyChecking=no ${ip}"
+      tmux new-session -d -s "$node_session" -n "$name" "echo '[${name}]'; ssh $SSH_COMMON_OPTS ${ip}"
       tmux new-window -t "${session}:" -n "$name" "tmux attach -t ${node_session}"
     done
     tmux attach -t "$session"

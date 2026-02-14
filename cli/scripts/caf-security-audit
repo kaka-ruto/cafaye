@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$REPO_ROOT"
+
+echo "🔒 Cafaye security/supply-chain audit"
+
+fail=0
+
+# 1) Disallow floating GitHub Action refs such as @main/@master.
+if rg -n "uses:\s+[^@]+@(main|master)$" .github/workflows >/tmp/caf-sec-actions.out 2>/dev/null; then
+  echo "❌ Floating GitHub Action refs found (pin to version tags):"
+  cat /tmp/caf-sec-actions.out
+  fail=1
+else
+  echo "✅ Workflow actions do not use floating main/master refs"
+fi
+
+# 2) Detect insecure SSH host-key bypass in core scripts.
+if rg -n "StrictHostKeyChecking=no" cli/scripts -g '!caf-security-audit' >/tmp/caf-sec-ssh.out 2>/dev/null; then
+  echo "❌ Insecure SSH option detected (StrictHostKeyChecking=no):"
+  cat /tmp/caf-sec-ssh.out
+  fail=1
+else
+  echo "✅ No insecure StrictHostKeyChecking=no in CLI scripts"
+fi
+
+# 3) Ensure lockfiles exist for reproducible dependency input state.
+for f in flake.lock devbox.lock; do
+  if [[ ! -f "$f" ]]; then
+    echo "❌ Missing lockfile: $f"
+    fail=1
+  fi
+done
+if [[ "$fail" -eq 0 ]]; then
+  echo "✅ Required lockfiles present"
+fi
+
+if [[ "$fail" -ne 0 ]]; then
+  echo "❌ Security audit failed"
+  exit 1
+fi
+
+echo "✅ Security audit passed"

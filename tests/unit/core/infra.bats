@@ -85,7 +85,7 @@ load "../../lib/test_helper"
 }
 
 @test "fleet supports resumable sync/apply with progress and cancellation safety" {
-  run rg -n "--resume|Cancel requested|\\[[0-9]+/[0-9]+\\]|fleet-apply.state|fleet-sync.state|summary: success=|trap 'cancelled=1" cli/scripts/caf-fleet
+  run rg -n "--resume|Cancel requested|\\[[0-9]+/[0-9]+\\]|fleet-apply.state|fleet-sync.state|summary: success=|trap 'cancelled=1|BatchMode=yes|IdentitiesOnly=yes|StrictHostKeyChecking=accept-new" cli/scripts/caf-fleet
   [ "$status" -eq 0 ]
 }
 
@@ -160,6 +160,14 @@ load "../../lib/test_helper"
   [ "$status" -eq 0 ]
 
   run rg -n "caf-test-quarantine|--strict|Flaky quarantine tracking" cli/scripts/caf-test-quarantine .github/workflows/factory.yml
+  [ "$status" -eq 0 ]
+}
+
+@test "security audit exists and is enforced in ci" {
+  run rg -n "caf-security-audit|Floating GitHub Action refs|StrictHostKeyChecking=no|flake.lock|devbox.lock" cli/scripts/caf-security-audit
+  [ "$status" -eq 0 ]
+
+  run rg -n "Security and supply-chain audit|caf-security-audit" .github/workflows/factory.yml
   [ "$status" -eq 0 ]
 }
 

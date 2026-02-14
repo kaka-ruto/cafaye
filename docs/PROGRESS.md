@@ -1,6 +1,6 @@
 # Cafaye OS Release Progress Summary
 
-**Last Updated:** 2026-02-14 02:05 UTC
+**Last Updated:** 2026-02-14 02:20 UTC
 
 ## ✅ Completed Milestones (64/134 items - 48%)
 
@@ -218,6 +218,12 @@ Users cannot onboard without this.
    - Added quarantine checker with strict CI enforcement (`caf-test-quarantine --strict`)
    - Added real-world fleet smoke test harness (`tests/integration/real-world/fleet-smoke.sh`)
    - Added `caf-test real-world-fleet` entry point for repeatable operator validation
+
+22. **Security Hardening and Supply-Chain Controls (NEW)**
+   - Replaced permissive SSH host-key bypass with strict non-interactive defaults in fleet/VPS workflows
+   - Enforced batch/identity-only SSH options for least-privilege remote operations
+   - Added automated security/supply-chain audit gate in CI
+   - Added explicit checks for lockfile presence and floating workflow action refs
 
 ## 🎯 Recommended Focus Areas
 

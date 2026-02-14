@@ -75,8 +75,8 @@ echo -e "${GREEN}✅ VPS Created! IP: $VPS_IP${NC}"
 
 # 4. Wait for SSH
 echo -e "\n${BLUE}⏳ Waiting for SSH to be ready...${NC}"
-SSH_OPTS="-i $HOME/.ssh/cafaye -o StrictHostKeyChecking=no -o ConnectTimeout=5"
-[[ ! -f "$HOME/.ssh/cafaye" ]] && SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=5"
+SSH_OPTS="-i $HOME/.ssh/cafaye -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5"
+[[ ! -f "$HOME/.ssh/cafaye" ]] && SSH_OPTS="-o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5"
 
 until ssh $SSH_OPTS "${SSH_USER}@${VPS_IP}" "echo ready" &> /dev/null; do
     printf "."
