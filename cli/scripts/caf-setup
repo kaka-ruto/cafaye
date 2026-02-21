@@ -4,6 +4,13 @@
 
 set -e
 
+# Sanitize TERM
+if [[ -n "${TERM:-}" ]] && command -v infocmp >/dev/null 2>&1; then
+    if ! infocmp "$TERM" >/dev/null 2>&1; then
+        export TERM=xterm-256color
+    fi
+fi
+
 # Colors
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -24,8 +31,18 @@ if ! command -v jq &> /dev/null; then
     exit 1
 fi
 
+# Flag parsing
+YES=false
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --yes|-y) YES=true; shift ;;
+        *) shift ;;
+    esac
+done
+
 # Show welcome screen
 show_welcome() {
+    [[ "$YES" == "true" ]] && return
     clear
     if command -v caf-logo-show &> /dev/null; then
         caf-logo-show
@@ -385,37 +402,39 @@ main() {
         exit 1
     fi
     
-    # Get initial preset
-    local preset_choice=$(show_presets)
-    
-    # Configure based on preset or custom
-    if [[ $preset_choice -gt 0 ]]; then
-        case $preset_choice in
-            1) # Ruby on Rails
-                EDITOR_CONFIG=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.lazyvim = true' <<< '{}')
-                STACK_CONFIG='{"languages": {"ruby": true}, "frameworks": {"rails": true}, "services": {"postgresql": true, "docker": true}}'
-                ;;
-            2) # Python Django
-                EDITOR_CONFIG=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.lazyvim = true' <<< '{}')
-                STACK_CONFIG='{"languages": {"python": true}, "frameworks": {"django": true}, "services": {"postgresql": true, "docker": true}}'
-                ;;
-            3) # Node.js/React
-                EDITOR_CONFIG=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.lazyvim = true' <<< '{}')
-                STACK_CONFIG='{"languages": {"nodejs": true}, "frameworks": {"nextjs": true}, "services": {"docker": true}}'
-                ;;
-            4) # Go
-                EDITOR_CONFIG=$(jq '.helix = true | .default = "helix"' <<< '{}')
-                STACK_CONFIG='{"languages": {"go": true}, "frameworks": {}, "services": {"docker": true}}'
-                ;;
-            5) # Rust
-                EDITOR_CONFIG=$(jq '.helix = true | .default = "helix"' <<< '{}')
-                STACK_CONFIG='{"languages": {"rust": true}, "frameworks": {}, "services": {"docker": true}}'
-                ;;
-            6) # Full-Stack
-                EDITOR_CONFIG=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.lazyvim = true' <<< '{}')
-                STACK_CONFIG='{"languages": {"nodejs": true, "python": true}, "frameworks": {"nextjs": true, "django": true}, "services": {"postgresql": true, "redis": true, "docker": true}}'
-                ;;
-        esac
+    if [[ "$YES" == "true" ]]; then
+        EDITOR_CONFIG=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.lazyvim = true' <<< '{}')
+        STACK_CONFIG='{"languages": {"nodejs": true, "ruby": true}, "frameworks": {"nextjs": true, "rails": true}, "services": {"postgresql": true, "docker": true}}'
+    elif gum confirm "Would you like to use a pre-set configuration?"; then
+        if show_presets; then
+            preset_id=$?
+            case "$preset_id" in
+                1) # Rails
+                    EDITOR_CONFIG=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.astronvim = true' <<< '{}')
+                    STACK_CONFIG='{"languages": {"ruby": true}, "frameworks": {"rails": true}, "services": {"postgresql": true, "redis": true, "docker": true}}'
+                    ;;
+                2) # Python
+                    EDITOR_CONFIG=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.lazyvim = true' <<< '{}')
+                    STACK_CONFIG='{"languages": {"python": true}, "frameworks": {"django": true}, "services": {"postgresql": true, "docker": true}}'
+                    ;;
+                3) # Node.js/React
+                    EDITOR_CONFIG=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.lazyvim = true' <<< '{}')
+                    STACK_CONFIG='{"languages": {"nodejs": true}, "frameworks": {"nextjs": true}, "services": {"docker": true}}'
+                    ;;
+                4) # Go
+                    EDITOR_CONFIG=$(jq '.helix = true | .default = "helix"' <<< '{}')
+                    STACK_CONFIG='{"languages": {"go": true}, "frameworks": {}, "services": {"docker": true}}'
+                    ;;
+                5) # Rust
+                    EDITOR_CONFIG=$(jq '.helix = true | .default = "helix"' <<< '{}')
+                    STACK_CONFIG='{"languages": {"rust": true}, "frameworks": {}, "services": {"docker": true}}'
+                    ;;
+                6) # Full-Stack
+                    EDITOR_CONFIG=$(jq '.neovim = true | .default = "neovim" | .distributions.nvim.lazyvim = true' <<< '{}')
+                    STACK_CONFIG='{"languages": {"nodejs": true, "python": true}, "frameworks": {"nextjs": true, "django": true}, "services": {"postgresql": true, "redis": true, "docker": true}}'
+                    ;;
+            esac
+        fi
     else
         # Custom configuration
         EDITOR_CONFIG=$(configure_editor)
@@ -425,21 +444,23 @@ main() {
     
     # Security check
     DISABLE_BOOTSTRAP=false
-    if security_check; then
-        DISABLE_BOOTSTRAP=true
+    if [[ "$YES" != "true" ]]; then
+        if security_check; then
+            DISABLE_BOOTSTRAP=true
+        fi
+        
+        # Show summary
+        echo ""
+        gum style --border double --margin "1 2" --padding "2 4" --foreground 212 "Configuration Summary"
+        echo "Editor: $(echo "$EDITOR_CONFIG" | jq -r '.default // "not set"')"
+        echo "Languages: $(echo "$STACK_CONFIG" | jq -r '.languages | keys[]' 2>/dev/null | tr '\n' ', ' | sed 's/,$//')"
+        echo "Frameworks: $(echo "$STACK_CONFIG" | jq -r '.frameworks | keys[]' 2>/dev/null | tr '\n' ', ' | sed 's/,$//')"
+        echo "Services: $(echo "$STACK_CONFIG" | jq -r '.services | keys[]' 2>/dev/null | tr '\n' ', ' | sed 's/,$//')"
+        echo ""
+        
+        # Confirmation
+        gum confirm "Apply this configuration?" || exit 0
     fi
-    
-    # Show summary
-    echo ""
-    gum style --border double --margin "1 2" --padding "2 4" --foreground 212 "Configuration Summary"
-    echo "Editor: $(echo "$EDITOR_CONFIG" | jq -r '.default // "not set"')"
-    echo "Languages: $(echo "$STACK_CONFIG" | jq -r '.languages | keys[]' 2>/dev/null | tr '\n' ', ' | sed 's/,$//')"
-    echo "Frameworks: $(echo "$STACK_CONFIG" | jq -r '.frameworks | keys[]' 2>/dev/null | tr '\n' ', ' | sed 's/,$//')"
-    echo "Services: $(echo "$STACK_CONFIG" | jq -r '.services | keys[]' 2>/dev/null | tr '\n' ', ' | sed 's/,$//')"
-    echo ""
-    
-    # Confirmation
-    gum confirm "Apply this configuration?" || exit 0
     
     # Apply everything
     apply_configuration

@@ -5,7 +5,8 @@
     "sops",
     "age",
     "git",
-    "jq"
+    "jq",
+    "bats"
   ],
   "shell": {
     "init_hook": [

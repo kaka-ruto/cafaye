@@ -64,12 +64,16 @@ load "../../lib/test_helper"
 }
 
 @test "neovim distribution setup supports plugin doctor and repair flows" {
-  run rg -n "--doctor|--repair|plugin_health_check|repair_plugin_state|lazy-lock.json|Missing ~/.local/share/nvim" cli/scripts/caf-nvim-distribution-setup
-  [ "$status" -eq 0 ]
+  for pattern in "--doctor" "--repair" "plugin_health_check" "repair_plugin_state" "lazy-lock.json" "Missing ~/.local/share/nvim"; do
+    run rg -n -e "$pattern" cli/scripts/caf-nvim-distribution-setup
+    [ "$status" -eq 0 ]
+  done
 }
 
 @test "neovim modules wire user config symlinks" {
-  run rg -n "nvim/lua/user|force = true" modules/editors/neovim/astronvim.nix
+  run rg -n "nvim/lua/user" modules/editors/neovim/astronvim.nix
+  [ "$status" -eq 0 ]
+  run rg -n "force = true" modules/editors/neovim/astronvim.nix
   [ "$status" -eq 0 ]
 
   run rg -n "autocmds.lua" modules/editors/neovim/lazyvim.nix
@@ -80,12 +84,34 @@ load "../../lib/test_helper"
 }
 
 @test "fleet status has current-node visual indicator" {
-  run rg -n "\\[current\\]|local_node|hostname -s|ip=|role=|host=|CAFAYE_FLEET_NO_PROBE|CAFAYE_FLEET_JSON|probe-skipped" cli/scripts/caf-fleet
-  [ "$status" -eq 0 ]
+  for pattern in "\[current\]" "local_node" "hostname -s" "ip=" "role=" "host=" "CAFAYE_FLEET_NO_PROBE" "CAFAYE_FLEET_JSON" "probe-skipped"; do
+    run rg -n -e "$pattern" cli/scripts/caf-fleet
+    [ "$status" -eq 0 ]
+  done
 }
 
 @test "fleet supports resumable sync/apply with progress and cancellation safety" {
-  run rg -n "--resume|Cancel requested|\\[[0-9]+/[0-9]+\\]|fleet-apply.state|fleet-sync.state|summary: success=|trap 'cancelled=1|BatchMode=yes|IdentitiesOnly=yes|StrictHostKeyChecking=accept-new|rsync -avz --delete-delay" cli/scripts/caf-fleet
+  run rg -n -e "--resume" cli/scripts/caf-fleet
+  [ "$status" -eq 0 ]
+  run rg -n -e "Cancel requested" cli/scripts/caf-fleet
+  [ "$status" -eq 0 ]
+  run rg -n -F '[${index}/${total}]' cli/scripts/caf-fleet
+  [ "$status" -eq 0 ]
+  run rg -n -e "fleet-apply.state" cli/scripts/caf-fleet
+  [ "$status" -eq 0 ]
+  run rg -n -e "fleet-sync.state" cli/scripts/caf-fleet
+  [ "$status" -eq 0 ]
+  run rg -n -e "summary: success=" cli/scripts/caf-fleet
+  [ "$status" -eq 0 ]
+  run rg -n -e "trap 'cancelled=1" cli/scripts/caf-fleet
+  [ "$status" -eq 0 ]
+  run rg -n -e "BatchMode=yes" cli/scripts/caf-fleet
+  [ "$status" -eq 0 ]
+  run rg -n -e "IdentitiesOnly=yes" cli/scripts/caf-fleet
+  [ "$status" -eq 0 ]
+  run rg -n -e "StrictHostKeyChecking=accept-new" cli/scripts/caf-fleet
+  [ "$status" -eq 0 ]
+  run rg -n -e "rsync -avz --delete-delay" cli/scripts/caf-fleet
   [ "$status" -eq 0 ]
 }
 
@@ -219,19 +245,39 @@ load "../../lib/test_helper"
 }
 
 @test "release automation and release notes generation are configured" {
-  run rg -n "caf-release-notes|git describe --tags|git log --pretty=format" cli/scripts/caf-release-notes
+  run rg -F "Release Build" .github/workflows/release.yml
+  [ "$status" -eq 0 ]
+  run rg -F "push:" .github/workflows/release.yml
+  [ "$status" -eq 0 ]
+  run rg -F "tags:" .github/workflows/release.yml
+  [ "$status" -eq 0 ]
+  run rg -F "checks.x86_64-linux.installer" .github/workflows/release.yml
+  [ "$status" -eq 0 ]
+  run rg -F "cosign" .github/workflows/release.yml
+  [ "$status" -eq 0 ]
+  run rg -F "softprops/action-gh-release" .github/workflows/release.yml
   [ "$status" -eq 0 ]
 
-  run rg -n "Release Build|push:\\s*\\n\\s*tags:|checks.x86_64-linux.installer|cosign|action-gh-release" .github/workflows/release.yml
+  run rg -F "git describe --tags" cli/scripts/caf-release-notes
+  [ "$status" -eq 0 ]
+  run rg -F "git log --pretty=format" cli/scripts/caf-release-notes
   [ "$status" -eq 0 ]
 
-  run rg -n "Release Drafter|release-drafter" .github/workflows/release-drafter.yml .github/release-drafter.yml
+  run test -f .github/workflows/release-drafter.yml
+  [ "$status" -eq 0 ]
+  run test -f .github/release-drafter.yml
   [ "$status" -eq 0 ]
 }
 
 @test "core scripts support adjustable log verbosity levels" {
-  run rg -n "CAFAYE_LOG_LEVEL|quiet\\|info\\|debug|level: \\$LOG_LEVEL" cli/scripts/caf-fleet cli/scripts/caf-sync cli/scripts/caf-system-rebuild
-  [ "$status" -eq 0 ]
+  for script in cli/scripts/caf-fleet cli/scripts/caf-sync cli/scripts/caf-system-rebuild; do
+    run rg -F "CAFAYE_LOG_LEVEL" "$script"
+    [ "$status" -eq 0 ]
+    run rg "quiet|info|debug" "$script"
+    [ "$status" -eq 0 ]
+    run rg -F "level: \$LOG_LEVEL" "$script"
+    [ "$status" -eq 0 ]
+  done
 }
 
 @test "distributed workflow and security model docs exist" {

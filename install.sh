@@ -4,6 +4,13 @@
 
 set -e
 
+# Sanitize TERM to avoid 'unknown terminal type' errors
+if [[ -n "${TERM:-}" ]] && command -v infocmp >/dev/null 2>&1; then
+    if ! infocmp "$TERM" >/dev/null 2>&1; then
+        export TERM=xterm-256color
+    fi
+fi
+
 # --- Automation ---
 NON_INTERACTIVE=false
 if [[ "$1" == "--yes" ]] || [[ "$1" == "-y" ]]; then
@@ -757,19 +764,43 @@ EOF
         sed -E 's/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}/[REDACTED-EMAIL]/g' > "$INSTALL_LOG.tmp" && mv "$INSTALL_LOG.tmp" "$INSTALL_LOG"
     fi
 
-    # --- System Hardening (VPS Only) ---
+    # --- System Hardening & Experience (VPS Only) ---
     if [[ "$OS" == "Linux" && "$IS_VPS" == "yes" ]]; then
         echo "🔒 Hardening system security (SSH, Firewall)..."
         if command -v sudo >/dev/null 2>&1; then
-            # We use the script directly as 'caf' wrapper might not be fully active in shell
-            # Sudo might prompt for password
-            if sudo "$CAFAYE_DIR/cli/scripts/caf-system-harden"; then
-                echo "✅ System hardened."
-            else
-                echo "⚠️  System hardening failed. You can run 'caf system harden' manually."
+            sudo "$CAFAYE_DIR/cli/scripts/caf-system-harden" || echo "⚠️  System hardening failed."
+        fi
+
+        echo "🎨 Installing premium terminal definitions (terminfo)..."
+        mkdir -p "$HOME/.terminfo"
+        # Common premium terminfos
+        for term in "tmux-256color-italic" "xterm-ghostty"; do
+            case "$term" in
+                "tmux-256color-italic") URL="https://raw.githubusercontent.com/catppuccin/tmux/main/terminfo/tmux-256color-italic.terminfo" ;;
+                "xterm-ghostty") URL="https://raw.githubusercontent.com/ghostty-org/ghostty/main/termtools/xterm-ghostty.terminfo" ;;
+            esac
+            if ! infocmp "$term" &>/dev/null; then
+                echo "   Installing $term..."
+                curl -sSL "$URL" -o "/tmp/$term.terminfo" && tic -x -o "$HOME/.terminfo" "/tmp/$term.terminfo" || true
             fi
-        else
-            echo "ℹ️  Skipping system hardening (sudo not available)."
+        done
+        
+        echo "🐚 Configuring automatic shell transition..."
+        # Add auto-exec guard to ~/.bashrc to ensure user lands in Zsh even if chsh is restricted
+        if [[ -f "$HOME/.bashrc" ]] && ! grep -q "exec zsh" "$HOME/.bashrc"; then
+            cat >> "$HOME/.bashrc" <<EOF
+
+# --- Cafaye Auto-Shell ---
+if [[ \$- == *i* ]] && [ -z "\$ZSH_VERSION" ] && command -v zsh >/dev/null 2>&1; then
+    export SHELL=\$(command -v zsh)
+    exec \$(command -v zsh) -l
+fi
+EOF
+        fi
+        
+        # Also try chsh as the "proper" way if possible
+        if [[ "$SHELL" != *"zsh"* ]] && command -v chsh >/dev/null 2>&1; then
+            sudo chsh -s "$(which zsh)" "$(whoami)" 2>/dev/null || true
         fi
     fi
 
