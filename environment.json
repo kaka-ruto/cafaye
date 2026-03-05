@@ -10,8 +10,8 @@
     "neovim": true,
     "distributions": {
       "nvim": {
-        "lazyvim": true,
-        "astronvim": false,
+        "lazyvim": false,
+        "astronvim": true,
         "nvchad": false
       }
     }

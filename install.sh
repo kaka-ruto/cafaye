@@ -550,9 +550,13 @@ execute_phase() {
     echo "📦 Initializing directory structure..."
     # If we are in the repo already, sync files excluding .git, .devbox, and state files
     if [[ -f "./flake.nix" ]]; then
-        # Use find/cp to avoid permission issues and preserve state
-        # Exclude result (Nix symlink) and .cache to prevent permission errors
-        find . -maxdepth 1 ! -name ".git" ! -name ".devbox" ! -name ".cache" ! -name "result" ! -name "environment.json" ! -name "local-user.nix" ! -name "." -exec cp -r {} "$CAFAYE_DIR/" \;
+        # Skip copy if we're already installing from target directory.
+        # This avoids noisy "source and destination are the same file" output.
+        if [[ "$(pwd -P)" != "$CAFAYE_DIR" ]]; then
+            # Use find/cp to avoid permission issues and preserve state
+            # Exclude result (Nix symlink) and .cache to prevent permission errors
+            find . -maxdepth 1 ! -name ".git" ! -name ".devbox" ! -name ".cache" ! -name "result" ! -name "environment.json" ! -name "local-user.nix" ! -name "." -exec cp -r {} "$CAFAYE_DIR/" \;
+        fi
     else
         echo "Cloning Cafaye repository..."
         git clone --depth 1 https://github.com/cafaye/cafaye "$CAFAYE_DIR"
